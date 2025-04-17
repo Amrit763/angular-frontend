@@ -1,0 +1,66 @@
+/* src/app/features/chef/chef-dashboard/chef-dashboard.component.css */
+.card {
+    border-radius: 10px;
+    border: none;
+    transition: transform 0.3s, box-shadow 0.3s;
+  }
+  
+  .card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1) !important;
+  }
+  
+  .card-title {
+    color: #333;
+  }
+  
+  .table th {
+    font-weight: 600;
+    color: #555;
+  }
+  
+  .form-check-input {
+    width: 50px;
+    height: 24px;
+  }
+  
+  .form-switch .form-check-input {
+    cursor: pointer;
+  }
+  
+  .btn-primary {
+    background-color: #ff6b6b;
+    border-color: #ff6b6b;
+  }
+  
+  .btn-primary:hover {
+    background-color: #ff5252;
+    border-color: #ff5252;
+  }
+  
+  .btn-outline-primary {
+    color: #ff6b6b;
+    border-color: #ff6b6b;
+  }
+  
+  .btn-outline-primary:hover {
+    background-color: #ff6b6b;
+    border-color: #ff6b6b;
+  }
+  
+  .bg-success {
+    background-color: #66bb6a !important;
+  }
+  
+  .bg-danger {
+    background-color: #ff5252 !important;
+  }
+  
+  .table-responsive {
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  
+  .img-thumbnail {
+    border-radius: 8px;
+  }

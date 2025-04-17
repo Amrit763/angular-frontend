@@ -1,0 +1,15 @@
+<!-- src/app/shared/components/chef-toggle/chef-toggle.component.html -->
+<div class="chef-toggle">
+    <div class="form-check form-switch">
+      <input 
+        class="form-check-input" 
+        type="checkbox" 
+        id="chefModeSwitch" 
+        [checked]="isChefMode" 
+        (change)="toggle()"
+      >
+      <label class="form-check-label" for="chefModeSwitch">
+        {{ isChefMode ? 'Chef Mode' : 'Customer Mode' }}
+      </label>
+    </div>
+  </div>

@@ -1,0 +1,131 @@
+/* src/app/features/home/product-search/product-search.component.css */
+.section-title {
+    position: relative;
+    color: #333;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.5rem;
+  }
+  
+  .section-title::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 50px;
+    height: 3px;
+    background-color: #ff6b6b;
+  }
+  
+  .card {
+    border-radius: 12px;
+    border: none;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+  
+  .input-group .form-control:focus {
+    box-shadow: none;
+    border-color: #ced4da;
+  }
+  
+  .input-group-text {
+    color: #777;
+  }
+  
+  .filter-section {
+    margin-bottom: 25px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #f0f0f0;
+  }
+  
+  .filter-section:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+    margin-bottom: 0;
+  }
+  
+  .filter-section h6 {
+    color: #555;
+    font-weight: 600;
+    margin-bottom: 15px;
+  }
+  
+  .category-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .category-item {
+    cursor: pointer;
+    padding: 5px 0;
+    color: #555;
+    transition: all 0.2s;
+    border-radius: 4px;
+  }
+  
+  .category-item:hover {
+    color: #ff6b6b;
+  }
+  
+  .category-item.active {
+    color: #ff6b6b;
+    font-weight: 600;
+  }
+  
+  .form-check-input:checked {
+    background-color: #ff6b6b;
+    border-color: #ff6b6b;
+  }
+  
+  .form-range::-webkit-slider-thumb {
+    background: #ff6b6b;
+  }
+  
+  .form-range::-moz-range-thumb {
+    background: #ff6b6b;
+  }
+  
+  .form-range::-ms-thumb {
+    background: #ff6b6b;
+  }
+  
+  .btn-link {
+    color: #ff6b6b;
+    text-decoration: none;
+  }
+  
+  .btn-link:hover {
+    color: #ff5252;
+    text-decoration: underline;
+  }
+  
+  .form-select:focus {
+    border-color: #ff6b6b;
+    box-shadow: 0 0 0 0.25rem rgba(255, 107, 107, 0.25);
+  }
+  
+  .btn-outline-primary {
+    color: #ff6b6b;
+    border-color: #ff6b6b;
+  }
+  
+  .btn-outline-primary:hover {
+    background-color: #ff6b6b;
+    border-color: #ff6b6b;
+  }
+  
+  .empty-state {
+    padding: 40px 0;
+  }
+  
+  .empty-state i {
+    opacity: 0.3;
+  }
+  
+  /* Media Queries */
+  @media (max-width: 768px) {
+    .price-range {
+      margin-bottom: 10px;
+    }
+  }

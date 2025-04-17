@@ -1,0 +1,79 @@
+/* src/app/features/chef/product-list/product-list.component.css */
+.card {
+    border-radius: 10px;
+    border: none;
+    transition: transform 0.3s, box-shadow 0.3s;
+  }
+  
+  .card:hover {
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1) !important;
+  }
+  
+  .btn-primary {
+    background-color: #ff6b6b;
+    border-color: #ff6b6b;
+  }
+  
+  .btn-primary:hover {
+    background-color: #ff5252;
+    border-color: #ff5252;
+  }
+  
+  .btn-outline-primary {
+    color: #ff6b6b;
+    border-color: #ff6b6b;
+  }
+  
+  .btn-outline-primary:hover {
+    background-color: #ff6b6b;
+    border-color: #ff6b6b;
+    color: white;
+  }
+  
+  .form-check-input:checked {
+    background-color: #ff6b6b;
+    border-color: #ff6b6b;
+  }
+  
+  .form-switch .form-check-input {
+    width: 3em;
+    cursor: pointer;
+  }
+  
+  .product-thumbnail {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+  }
+  
+  .table th {
+    font-weight: 600;
+    color: #555;
+  }
+  
+  .table-responsive {
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  
+  .text-success {
+    color: #66bb6a !important;
+  }
+  
+  .text-danger {
+    color: #ff5252 !important;
+  }
+  
+  .alert {
+    border-radius: 10px;
+  }
+  
+  .bi-basket {
+    opacity: 0.3;
+  }
+  
+  .rating .bi-star-fill {
+    font-size: 0.9rem;
+  }

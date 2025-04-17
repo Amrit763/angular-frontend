@@ -1,0 +1,28 @@
+/* src/app/shared/components/chef-toggle/chef-toggle.component.css */
+.chef-toggle {
+    display: flex;
+    align-items: center;
+  }
+  
+  .form-check-input {
+    width: 50px;
+    height: 24px;
+    cursor: pointer;
+  }
+  
+  .form-check-input:checked {
+    background-color: #ff6b6b;
+    border-color: #ff6b6b;
+  }
+  
+  .form-check-input:focus {
+    border-color: #ff6b6b;
+    box-shadow: 0 0 0 0.25rem rgba(255, 107, 107, 0.25);
+  }
+  
+  .form-check-label {
+    padding-left: 5px;
+    color: #555;
+    font-weight: 500;
+    cursor: pointer;
+  }

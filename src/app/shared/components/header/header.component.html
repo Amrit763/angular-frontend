@@ -1,47 +1,108 @@
 <!-- src/app/shared/components/header/header.component.html -->
-<header class="header">
-  <div class="container">
-    <div class="header-content">
-      <div class="logo">
-        <a routerLink="/">FoodHub</a>
-      </div>
+<header class="fixed-top">
+  <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+    <div class="container">
+      <!-- Logo -->
+      <a class="navbar-brand" routerLink="/">
+        <span class="logo-text">HomemadeEats</span>
+      </a>
       
-      <nav class="nav-menu">
-        <ul class="nav-list">
-          <li><a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">Home</a></li>
-          
-          <!-- Show when not authenticated -->
-          <ng-container *ngIf="!isLoggedIn">
-            <li><a routerLink="/auth/login" routerLinkActive="active">Login</a></li>
-            <li><a routerLink="/auth/register" routerLinkActive="active">Register</a></li>
-          </ng-container>
-          
-          <!-- Show when authenticated -->
-          <ng-container *ngIf="isLoggedIn">
-            <!-- Admin links -->
-            <li *ngIf="isAdmin">
-              <a routerLink="/admin/dashboard" routerLinkActive="active">Admin Dashboard</a>
-            </li>
-            
-            <!-- Chef links -->
-            <li *ngIf="isChef">
-              <a routerLink="/chef/dashboard" routerLinkActive="active">Chef Dashboard</a>
-            </li>
-            
-            <!-- User dropdown menu -->
-            <li class="dropdown">
-              <a class="dropdown-toggle" (click)="toggleDropdown($event)">
-                {{ userName }} <span class="caret"></span>
-              </a>
-              <ul class="dropdown-menu" [class.show]="isDropdownOpen">
-                <li><a routerLink="/user/profile">My Profile</a></li>
-                <li><a routerLink="/user/dashboard">Dashboard</a></li>
-                <li><a (click)="logout()">Logout</a></li>
-              </ul>
-            </li>
-          </ng-container>
+      <!-- Toggle button for mobile -->
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      
+      <!-- Navigation items -->
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <!-- Regular navigation -->
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0" *ngIf="!isChefMode">
+          <li class="nav-item">
+            <a class="nav-link" routerLink="/home" routerLinkActive="active">Home</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" routerLink="/home/search" routerLinkActive="active">Browse</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#">How It Works</a>
+          </li>
         </ul>
-      </nav>
+        
+        <!-- Chef mode navigation -->
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0" *ngIf="isChefMode">
+          <li class="nav-item">
+            <a class="nav-link" routerLink="/chef/dashboard" routerLinkActive="active">Dashboard</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" routerLink="/chef/products" routerLinkActive="active">My Products</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" routerLink="/chef/products/new" routerLinkActive="active">Add Product</a>
+          </li>
+        </ul>
+        
+        <!-- Right navigation items -->
+        <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+          <!-- Chef mode toggle - Only show if user is a chef -->
+          <li class="nav-item" *ngIf="isLoggedIn() && isChef()">
+            <div class="chef-toggle-wrapper">
+              <app-chef-toggle 
+                [isChefMode]="isChefMode" 
+                (toggleMode)="toggleChefMode()"
+              ></app-chef-toggle>
+            </div>
+          </li>
+          
+          <!-- User not logged in -->
+          <ng-container *ngIf="!isLoggedIn()">
+            <li class="nav-item">
+              <a class="nav-link" routerLink="/auth/login">Login</a>
+            </li>
+            <li class="nav-item">
+              <a class="btn btn-primary" routerLink="/auth/register">Sign Up</a>
+            </li>
+          </ng-container>
+          
+          <!-- User logged in -->
+          <li class="nav-item dropdown" *ngIf="isLoggedIn() && currentUser">
+            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+              <img 
+                [src]="currentUser.profileImage || 'assets/images/default-user.jpg'" 
+                alt="Profile" 
+                class="profile-image me-2"
+              >
+              {{ currentUser.fullName }}
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+              <li><a class="dropdown-item" routerLink="/user/profile">My Profile</a></li>
+              <li><a class="dropdown-item" routerLink="/user/dashboard">Dashboard</a></li>
+              
+              <!-- Admin dashboard link -->
+              <li *ngIf="isAdmin()">
+                <a class="dropdown-item" routerLink="/admin/dashboard">Admin Dashboard</a>
+              </li>
+              
+              <!-- Chef application link for non-chefs -->
+              <li *ngIf="!isChef() && !isAdmin()">
+                <a class="dropdown-item" routerLink="/user/chef-application">Become a Chef</a>
+              </li>
+              
+              <li><hr class="dropdown-divider"></li>
+              <li><a class="dropdown-item text-danger" href="#" (click)="logout(); $event.preventDefault()">Logout</a></li>
+            </ul>
+          </li>
+          
+          <!-- Cart button -->
+          <li class="nav-item">
+            <a class="nav-link cart-icon" href="#">
+              <i class="bi bi-cart"></i>
+              <span class="cart-badge">0</span>
+            </a>
+          </li>
+        </ul>
+      </div>
     </div>
-  </div>
+  </nav>
 </header>
+
+<!-- Empty space to prevent content from hiding behind the fixed header -->
+<div class="header-spacer"></div>

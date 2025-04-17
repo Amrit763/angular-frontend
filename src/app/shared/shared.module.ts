@@ -3,27 +3,29 @@ import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+
 import { HeaderComponent } from './components/header/header.component';
 import { FooterComponent } from './components/footer/footer.component';
+import { ChefToggleComponent } from './components/chef-toggle/chef-toggle.component';
 
 @NgModule({
-  // Remove HeaderComponent and FooterComponent from declarations since they're standalone
   imports: [
     CommonModule,
     RouterModule,
     FormsModule,
     ReactiveFormsModule,
-    // Import standalone components instead
+    // Import standalone components
     HeaderComponent,
-    FooterComponent
+    FooterComponent,
+    ChefToggleComponent
   ],
   exports: [
     CommonModule,
-    RouterModule,
     FormsModule,
     ReactiveFormsModule,
     HeaderComponent,
-    FooterComponent
+    FooterComponent,
+    ChefToggleComponent
   ]
 })
 export class SharedModule { }

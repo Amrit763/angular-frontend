@@ -23,6 +23,16 @@ export const routes: Routes = [
     data: { role: 'admin' }
   },
   {
+    path: 'chef',
+    loadChildren: () => import('./features/chef/chef.module').then(m => m.ChefModule),
+    canActivate: [AuthGuard],
+    data: { role: 'chef' }
+  },
+  {
+    path: 'home',
+    loadChildren: () => import('./features/home/home.module').then(m => m.HomeModule)
+  },
+  {
     path: '',
     redirectTo: 'home',
     pathMatch: 'full'

@@ -1,0 +1,212 @@
+/* src/app/features/home/product-details/product-details.component.css */
+.card {
+    border-radius: 12px;
+    border: none;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+  
+  .product-gallery {
+    position: relative;
+  }
+  
+  .main-image-container {
+    width: 100%;
+    height: 400px;
+    overflow: hidden;
+    border-radius: 10px 10px 0 0;
+    position: relative;
+  }
+  
+  .main-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s;
+  }
+  
+  .main-image:hover {
+    transform: scale(1.05);
+  }
+  
+  .thumbnails-container {
+    display: flex;
+    padding: 10px;
+    gap: 10px;
+    overflow-x: auto;
+  }
+  
+  .thumbnail {
+    width: 70px;
+    height: 70px;
+    border-radius: 8px;
+    overflow: hidden;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: all 0.2s;
+  }
+  
+  .thumbnail.active {
+    border-color: #ff6b6b;
+  }
+  
+  .thumbnail img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  
+  .dietary-badges {
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
+    z-index: 2;
+  }
+  
+  .product-name {
+    color: #333;
+    font-weight: 600;
+  }
+  
+  .price {
+    color: #ff6b6b;
+    font-weight: 700;
+  }
+  
+  .description {
+    color: #555;
+    line-height: 1.6;
+  }
+  
+  .detail-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #555;
+  }
+  
+  .detail-item i {
+    font-size: 1.2rem;
+    color: #777;
+  }
+  
+  .chef-image {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+  
+  .chef-info a {
+    color: #ff6b6b;
+    text-decoration: none;
+  }
+  
+  .chef-info a:hover {
+    text-decoration: underline;
+  }
+  
+  .rating {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  
+  .rating i {
+    color: #ffb100;
+  }
+  
+  .quantity-selector {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .quantity-selector .btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .ingredients-list, .allergens-list {
+    list-style-type: none;
+    padding-left: 0;
+  }
+  
+  .ingredients-list li, .allergens-list li {
+    padding: 8px 0;
+    border-bottom: 1px solid #f0f0f0;
+  }
+  
+  .ingredients-list li:last-child, .allergens-list li:last-child {
+    border-bottom: none;
+  }
+  
+  .btn-primary {
+    background-color: #ff6b6b;
+    border-color: #ff6b6b;
+  }
+  
+  .btn-primary:hover {
+    background-color: #ff5252;
+    border-color: #ff5252;
+  }
+  
+  .btn-outline-secondary:hover {
+    background-color: #f0f0f0;
+    color: #333;
+  }
+  
+  .nav-tabs {
+    border-bottom: 1px solid #f0f0f0;
+  }
+  
+  .nav-tabs .nav-link {
+    color: #555;
+    border: none;
+    padding: 10px 15px;
+    margin-right: 5px;
+    border-radius: 5px 5px 0 0;
+  }
+  
+  .nav-tabs .nav-link:hover {
+    border-color: transparent;
+    background-color: rgba(255, 107, 107, 0.05);
+  }
+  
+  .nav-tabs .nav-link.active {
+    color: #ff6b6b;
+    background-color: transparent;
+    border-bottom: 2px solid #ff6b6b;
+  }
+  
+  .tab-content {
+    padding-top: 20px;
+  }
+  
+  .breadcrumb-item a {
+    color: #ff6b6b;
+    text-decoration: none;
+  }
+  
+  .breadcrumb-item a:hover {
+    text-decoration: underline;
+  }
+  
+  .breadcrumb-item.active {
+    color: #555;
+  }
+  
+  /* Media Queries */
+  @media (max-width: 768px) {
+    .main-image-container {
+      height: 300px;
+    }
+    
+    .thumbnail {
+      width: 60px;
+      height: 60px;
+    }
+  }

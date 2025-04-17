@@ -1,0 +1,244 @@
+<!-- src/app/features/home/home/home.component.html -->
+<div class="container-fluid">
+    <!-- Hero Section -->
+    <section class="hero-section py-5">
+      <div class="container">
+        <div class="row align-items-center">
+          <div class="col-lg-6">
+            <h1 class="display-4 fw-bold mb-3">Homemade Meals Delivered To Your Door</h1>
+            <p class="lead mb-4">Discover delicious dishes made by talented chefs in your neighborhood</p>
+            <div class="d-grid gap-2 d-md-flex justify-content-md-start">
+              <a href="#browse-products" class="btn btn-primary btn-lg px-4 me-md-2">Browse Menu</a>
+              <a routerLink="/auth/register" class="btn btn-outline-primary btn-lg px-4">Join as Chef</a>
+            </div>
+          </div>
+          <div class="col-lg-6">
+            <img src="assets/images/hero-image.jpg" alt="Food delivery" class="img-fluid rounded-3 shadow">
+          </div>
+        </div>
+      </div>
+    </section>
+  
+    <!-- Featured Products Section -->
+    <section class="py-5 bg-light">
+      <div class="container">
+        <div class="row mb-4">
+          <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+              <h2 class="section-title">Featured Homemade Products</h2>
+              <a routerLink="/home/search" class="btn btn-outline-primary">View All</a>
+            </div>
+          </div>
+        </div>
+  
+        <!-- Loading indicator -->
+        <div *ngIf="isLoading" class="text-center py-5">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+        </div>
+  
+        <!-- Error message -->
+        <div *ngIf="error" class="alert alert-danger">
+          {{ error }}
+        </div>
+  
+        <!-- Featured products -->
+        <div *ngIf="!isLoading && !error" class="row">
+          <div class="col-md-4 mb-4" *ngFor="let product of featuredProducts">
+            <div class="card h-100 product-card">
+              <div class="position-relative">
+                <img 
+                  [src]="product.images && product.images.length > 0 ? product.images[0] : 'assets/images/placeholder-food.jpg'" 
+                  class="card-img-top product-image" 
+                  alt="{{ product.name }}"
+                >
+                <div class="category-badge">
+                  <span class="badge bg-primary">{{ product.category | titlecase }}</span>
+                </div>
+              </div>
+              <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                  <h5 class="card-title">{{ product.name }}</h5>
+                  <div class="rating">
+                    <i class="bi bi-star-fill text-warning"></i>
+                    <span>{{ product.rating.toFixed(1) }}</span>
+                  </div>
+                </div>
+                <p class="card-text description">{{ product.description | slice:0:100 }}{{ product.description.length > 100 ? '...' : '' }}</p>
+                <div class="d-flex justify-content-between align-items-center mt-3">
+                  <span class="price">${{ product.price.toFixed(2) }}</span>
+                  <div class="chef-info" *ngIf="isChefObject(product.chef)">
+                    <small>By {{ product.chef.fullName }}</small>
+                  </div>
+                </div>
+                <div class="product-meta mt-3">
+                  <span class="prep-time">
+                    <i class="bi bi-clock me-1"></i> {{ product.preparationTime }} mins
+                  </span>
+                  <span class="serving-size">
+                    <i class="bi bi-people me-1"></i> {{ product.servingSize }}
+                  </span>
+                </div>
+              </div>
+              <div class="card-footer bg-white border-top-0">
+                <a [routerLink]="['/home/products', product._id]" class="btn btn-primary w-100">View Details</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  
+    <!-- Browse All Products Section -->
+    <section id="browse-products" class="py-5">
+      <div class="container">
+        <div class="row mb-4">
+          <div class="col-12">
+            <h2 class="section-title">Browse All Products</h2>
+          </div>
+        </div>
+  
+        <!-- Category pills -->
+        <div class="row mb-4">
+          <div class="col-12">
+            <div class="categories-container">
+              <button 
+                class="btn rounded-pill me-2 mb-2" 
+                [ngClass]="selectedCategory === '' ? 'btn-primary' : 'btn-outline-primary'"
+                (click)="clearFilter()"
+              >
+                All
+              </button>
+              <button 
+                *ngFor="let category of categories" 
+                class="btn rounded-pill me-2 mb-2" 
+                [ngClass]="selectedCategory === category ? 'btn-primary' : 'btn-outline-primary'"
+                (click)="filterProductsByCategory(category)"
+              >
+                {{ category | titlecase }}
+              </button>
+            </div>
+          </div>
+        </div>
+  
+        <!-- Products grid -->
+        <div class="row">
+          <div class="col-md-4 col-lg-3 mb-4" *ngFor="let product of getFilteredProducts()">
+            <div class="card h-100 product-card">
+              <div class="position-relative">
+                <img 
+                  [src]="product.images && product.images.length > 0 ? product.images[0] : 'assets/images/placeholder-food.jpg'" 
+                  class="card-img-top product-image" 
+                  alt="{{ product.name }}"
+                >
+                <div class="category-badge">
+                  <span class="badge bg-primary">{{ product.category | titlecase }}</span>
+                </div>
+              </div>
+              <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                  <h5 class="card-title">{{ product.name }}</h5>
+                  <div class="rating">
+                    <i class="bi bi-star-fill text-warning"></i>
+                    <span>{{ product.rating.toFixed(1) }}</span>
+                  </div>
+                </div>
+                <p class="card-text description">{{ product.description | slice:0:80 }}{{ product.description.length > 80 ? '...' : '' }}</p>
+                <div class="product-meta">
+                  <span class="prep-time">
+                    <i class="bi bi-clock me-1"></i> {{ product.preparationTime }} mins
+                  </span>
+                </div>
+                <div class="d-flex justify-content-between align-items-center mt-2">
+                  <span class="price">${{ product.price.toFixed(2) }}</span>
+                  <div class="chef-info" *ngIf="isChefObject(product.chef)">
+                    <small>By {{ product.chef.fullName }}</small>
+                  </div>
+                </div>
+              </div>
+              <div class="card-footer bg-white border-top-0">
+                <a [routerLink]="['/home/products', product._id]" class="btn btn-sm btn-primary w-100">View Details</a>
+              </div>
+            </div>
+          </div>
+  
+          <!-- No products message -->
+          <div class="col-12 text-center py-5" *ngIf="getFilteredProducts().length === 0 && !isLoading">
+            <div class="empty-state">
+              <i class="bi bi-basket display-1 text-muted"></i>
+              <h3 class="mt-3">No products found</h3>
+              <p class="text-muted">Try selecting a different category or check back later</p>
+              <button class="btn btn-outline-primary mt-3" (click)="clearFilter()">Show All Products</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  
+    <!-- How It Works Section -->
+    <section class="py-5 bg-light">
+      <div class="container">
+        <div class="row mb-5 text-center">
+          <div class="col-12">
+            <h2 class="section-title">How It Works</h2>
+            <p class="text-muted">Simple steps to get delicious homemade food delivered to your door</p>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-md-4 mb-4">
+            <div class="card h-100 text-center shadow-sm how-it-works-card">
+              <div class="card-body">
+                <div class="icon-wrapper">
+                  <i class="bi bi-search display-4"></i>
+                </div>
+                <h4 class="mt-4">Browse & Order</h4>
+                <p class="text-muted">Explore a wide variety of homemade dishes from local chefs and place your order online</p>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4 mb-4">
+            <div class="card h-100 text-center shadow-sm how-it-works-card">
+              <div class="card-body">
+                <div class="icon-wrapper">
+                  <i class="bi bi-clock-history display-4"></i>
+                </div>
+                <h4 class="mt-4">Chef Prepares</h4>
+                <p class="text-muted">Your chosen chef prepares your meal with fresh ingredients and careful attention</p>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4 mb-4">
+            <div class="card h-100 text-center shadow-sm how-it-works-card">
+              <div class="card-body">
+                <div class="icon-wrapper">
+                  <i class="bi bi-truck display-4"></i>
+                </div>
+                <h4 class="mt-4">Delivery</h4>
+                <p class="text-muted">We deliver your delicious homemade meal directly to your doorstep at the scheduled time</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  
+    <!-- Join as Chef Section -->
+    <section class="py-5 chef-cta">
+      <div class="container">
+        <div class="row align-items-center">
+          <div class="col-lg-7">
+            <h2 class="display-5 fw-bold">Love Cooking? Join as a Chef</h2>
+            <p class="lead mb-4">Share your culinary skills, earn money, and build your own food business</p>
+            <div class="d-grid gap-2 d-md-flex">
+              <a routerLink="/user/chef-application" class="btn btn-primary btn-lg px-4">Apply Now</a>
+              <a routerLink="/auth/login" class="btn btn-outline-primary btn-lg px-4">Login</a>
+            </div>
+          </div>
+          <div class="col-lg-5 mt-4 mt-lg-0">
+            <img src="assets/images/chef.jpg" alt="Chef cooking" class="img-fluid rounded-3 shadow">
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
