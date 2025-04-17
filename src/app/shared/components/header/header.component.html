@@ -1,0 +1,47 @@
+<!-- src/app/shared/components/header/header.component.html -->
+<header class="header">
+  <div class="container">
+    <div class="header-content">
+      <div class="logo">
+        <a routerLink="/">FoodHub</a>
+      </div>
+      
+      <nav class="nav-menu">
+        <ul class="nav-list">
+          <li><a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">Home</a></li>
+          
+          <!-- Show when not authenticated -->
+          <ng-container *ngIf="!isLoggedIn">
+            <li><a routerLink="/auth/login" routerLinkActive="active">Login</a></li>
+            <li><a routerLink="/auth/register" routerLinkActive="active">Register</a></li>
+          </ng-container>
+          
+          <!-- Show when authenticated -->
+          <ng-container *ngIf="isLoggedIn">
+            <!-- Admin links -->
+            <li *ngIf="isAdmin">
+              <a routerLink="/admin/dashboard" routerLinkActive="active">Admin Dashboard</a>
+            </li>
+            
+            <!-- Chef links -->
+            <li *ngIf="isChef">
+              <a routerLink="/chef/dashboard" routerLinkActive="active">Chef Dashboard</a>
+            </li>
+            
+            <!-- User dropdown menu -->
+            <li class="dropdown">
+              <a class="dropdown-toggle" (click)="toggleDropdown($event)">
+                {{ userName }} <span class="caret"></span>
+              </a>
+              <ul class="dropdown-menu" [class.show]="isDropdownOpen">
+                <li><a routerLink="/user/profile">My Profile</a></li>
+                <li><a routerLink="/user/dashboard">Dashboard</a></li>
+                <li><a (click)="logout()">Logout</a></li>
+              </ul>
+            </li>
+          </ng-container>
+        </ul>
+      </nav>
+    </div>
+  </div>
+</header>

@@ -1,0 +1,89 @@
+/* src/app/features/admin/dashboard/admin-dashboard.component.css */
+.admin-dashboard {
+    min-height: 100vh;
+    background-color: #f8f9fa;
+  }
+  
+  .sidebar {
+    box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
+    height: 100vh;
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 100;
+    padding: 0;
+  }
+  
+  .dashboard-header {
+    padding: 20px 15px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    margin-bottom: 15px;
+  }
+  
+  .sidebar .nav-link {
+    color: rgba(255, 255, 255, 0.8);
+    padding: 12px 15px;
+    margin-bottom: 5px;
+    border-radius: 0 30px 30px 0;
+    width: 90%;
+    transition: all 0.3s;
+  }
+  
+  .sidebar .nav-link:hover {
+    color: #fff;
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+  
+  .sidebar .nav-link.active {
+    color: #fff;
+    background-color: #007bff;
+  }
+  
+  .admin-profile {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  
+  .admin-name {
+    font-weight: 500;
+  }
+  
+  .dashboard-icon {
+    font-size: 2.5rem;
+    opacity: 0.7;
+  }
+  
+  .card {
+    border-radius: 10px;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    border: none;
+    transition: transform 0.2s;
+  }
+  
+  .card:hover {
+    transform: translateY(-5px);
+  }
+  
+  main {
+    padding-top: 20px;
+  }
+  
+  .list-group-item-action:hover {
+    background-color: #f8f9fa;
+  }
+  
+  /* Adjust sidebar for smaller screens */
+  @media (max-width: 767.98px) {
+    .sidebar {
+      position: static;
+      height: auto;
+      margin-bottom: 20px;
+    }
+    
+    .sidebar .nav-link {
+      border-radius: 0;
+      width: 100%;
+    }
+  }

@@ -1,0 +1,193 @@
+<!-- src/app/features/user/settings/two-factor/two-factor-settings.component.html -->
+<div class="two-factor-container">
+    <div class="two-factor-header">
+      <h2>Two-Factor Authentication</h2>
+      <p class="description">
+        Add an extra layer of security to your account by enabling two-factor authentication.
+        Once enabled, you'll need both your password and an authentication code from your phone to sign in.
+      </p>
+    </div>
+  
+    <!-- Alert messages -->
+    <div *ngIf="errorMessage" class="alert alert-danger">
+      {{ errorMessage }}
+    </div>
+  
+    <div *ngIf="successMessage" class="alert alert-success">
+      {{ successMessage }}
+    </div>
+  
+    <!-- Loading indicator -->
+    <div *ngIf="loading" class="loading-indicator">
+      <div class="spinner-border"></div>
+      <span>Loading...</span>
+    </div>
+  
+    <!-- Current Status Section -->
+    <div class="two-factor-status" *ngIf="!loading">
+      <div class="current-status">
+        <h3>Current Status</h3>
+        <div class="status-indicator">
+          <span class="status-badge" [class.enabled]="twoFactorStatus.enabled" [class.disabled]="!twoFactorStatus.enabled">
+            {{ twoFactorStatus.enabled ? 'Enabled' : 'Disabled' }}
+          </span>
+        </div>
+      </div>
+  
+      <!-- Action buttons based on current status -->
+      <div class="action-buttons">
+        <button *ngIf="!twoFactorStatus.enabled && setupStep === 0" 
+                class="btn btn-primary" 
+                (click)="initiateTwoFactorSetup()">
+          Enable Two-Factor Authentication
+        </button>
+  
+        <div *ngIf="twoFactorStatus.enabled" class="manage-buttons">
+          <button class="btn btn-secondary" (click)="getBackupCodes()">
+            View Backup Codes
+          </button>
+          <button class="btn btn-secondary" (click)="regenerateBackupCodes()">
+            Generate New Backup Codes
+          </button>
+          <button class="btn btn-danger" data-toggle="modal" data-target="#disableTwoFactorModal">
+            Disable Two-Factor Authentication
+          </button>
+        </div>
+      </div>
+    </div>
+  
+    <!-- Setup Process -->
+    <div class="setup-container" *ngIf="setupStep > 0 && !twoFactorStatus.enabled">
+      <!-- Step 1: QR Code -->
+      <div class="setup-step" *ngIf="setupStep === 1">
+        <h3>Step 1: Scan QR Code</h3>
+        <div class="qr-container">
+          <img [src]="qrCodeDataUrl" alt="QR Code for Two-Factor Authentication" *ngIf="qrCodeDataUrl">
+        </div>
+        <div class="manual-setup">
+          <p>If you can't scan the QR code, enter this code manually in your authenticator app:</p>
+          <div class="secret-key">{{ tempSecret }}</div>
+        </div>
+        <p class="setup-instructions">
+          1. Download an authenticator app like Google Authenticator, Microsoft Authenticator, or Authy.<br>
+          2. Scan the QR code or enter the secret key manually.<br>
+          3. Once added, the app will generate a 6-digit code that changes every 30 seconds.
+        </p>
+        <button class="btn btn-primary" (click)="setupStep = 2">
+          Next: Verify Code
+        </button>
+      </div>
+  
+      <!-- Step 2: Verification -->
+      <div class="setup-step" *ngIf="setupStep === 2">
+        <h3>Step 2: Verify Code</h3>
+        <p>Enter the 6-digit code from your authenticator app to verify setup:</p>
+        <form [formGroup]="verificationForm" (ngSubmit)="submitVerificationCode()">
+          <div class="form-group">
+            <input 
+              type="text" 
+              formControlName="verificationCode" 
+              class="form-control verification-input" 
+              placeholder="Enter 6-digit code"
+              autocomplete="off"
+              [ngClass]="{'is-invalid': verificationForm.get('verificationCode')?.invalid && verificationForm.get('verificationCode')?.touched}"
+            >
+            <div class="invalid-feedback" *ngIf="verificationForm.get('verificationCode')?.errors?.['required'] && verificationForm.get('verificationCode')?.touched">
+              Verification code is required
+            </div>
+            <div class="invalid-feedback" *ngIf="verificationForm.get('verificationCode')?.errors?.['pattern'] && verificationForm.get('verificationCode')?.touched">
+              Code must be 6 digits
+            </div>
+          </div>
+          <div class="form-actions">
+            <button type="button" class="btn btn-secondary" (click)="setupStep = 1">
+              Back
+            </button>
+            <button type="submit" class="btn btn-primary" [disabled]="verificationForm.invalid || loading">
+              Verify and Enable
+            </button>
+          </div>
+        </form>
+      </div>
+  
+      <!-- Step 3: Success & Backup Codes -->
+      <div class="setup-step" *ngIf="setupStep === 3">
+        <h3>Setup Complete!</h3>
+        <div class="success-message">
+          <p>Two-factor authentication has been successfully enabled for your account.</p>
+        </div>
+  
+        <div class="backup-codes-container">
+          <h4>Backup Codes</h4>
+          <p class="warning">
+            <strong>Important:</strong> Save these backup codes in a secure place. 
+            If you lose access to your authenticator app, you can use one of these codes to sign in. 
+            Each code can only be used once.
+          </p>
+          <div class="backup-codes-grid">
+            <div class="backup-code" *ngFor="let code of backupCodes">{{ code }}</div>
+          </div>
+          <button class="btn btn-secondary" (click)="regenerateBackupCodes()">
+            Generate New Backup Codes
+          </button>
+        </div>
+  
+        <div class="form-actions">
+          <button class="btn btn-primary" routerLink="/user/settings">
+            Done
+          </button>
+        </div>
+      </div>
+    </div>
+  
+    <!-- Backup Codes Display (when already set up) -->
+    <div class="backup-codes-container" *ngIf="backupCodes.length > 0 && twoFactorStatus.enabled && setupStep === 0">
+      <h3>Backup Codes</h3>
+      <p class="warning">
+        <strong>Important:</strong> Save these backup codes in a secure place. 
+        If you lose access to your authenticator app, you can use one of these codes to sign in. 
+        Each code can only be used once.
+      </p>
+      <div class="backup-codes-grid">
+        <div class="backup-code" *ngFor="let code of backupCodes">{{ code }}</div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Disable 2FA Modal -->
+  <div class="modal fade" id="disableTwoFactorModal" tabindex="-1" role="dialog" aria-labelledby="disableTwoFactorModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="disableTwoFactorModalLabel">Disable Two-Factor Authentication</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <p class="warning">
+            <strong>Warning:</strong> Disabling two-factor authentication will remove this additional security layer from your account.
+          </p>
+          <form [formGroup]="disableForm">
+            <div class="form-group">
+              <label for="password">Confirm your password to disable 2FA:</label>
+              <input 
+                type="password" 
+                id="password" 
+                formControlName="password" 
+                class="form-control" 
+                [ngClass]="{'is-invalid': disableForm.get('password')?.invalid && disableForm.get('password')?.touched}"
+              >
+              <div class="invalid-feedback" *ngIf="disableForm.get('password')?.errors?.['required'] && disableForm.get('password')?.touched">
+                Password is required
+              </div>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-danger" [disabled]="disableForm.invalid || loading" (click)="disableTwoFactor()">Disable Two-Factor Authentication</button>
+        </div>
+      </div>
+    </div>
+  </div>

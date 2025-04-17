@@ -1,0 +1,84 @@
+/* src/app/features/chef-application/chef-application.component.css */
+.chef-application-container {
+  padding: 2rem 0;
+}
+
+.custom-file-upload {
+  position: relative;
+}
+
+.selected-files {
+  margin-top: 0.5rem;
+}
+
+.selected-file {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem;
+  margin-bottom: 0.5rem;
+  background-color: #f8f9fa;
+  border-radius: 0.25rem;
+  font-size: 0.9rem;
+}
+
+.selected-file .btn-close {
+  font-size: 0.75rem;
+  padding: 0.25rem;
+}
+
+.application-success {
+  padding: 2rem 0;
+}
+
+.success-icon {
+  font-size: 4rem;
+  color: #198754;
+}
+
+.text-muted {
+  display: block;
+  margin-top: 0.25rem;
+}
+
+/* Add visual indicator for form errors */
+.is-invalid {
+  border-color: #dc3545;
+}
+
+/* Style the file upload display */
+.selected-file {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  background-color: #f0f0f0;
+  border-radius: 4px;
+  margin-bottom: 8px;
+}
+
+.selected-file span {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-right: 10px;
+}
+
+/* Make spinner more visible */
+.spinner-border {
+  width: 1rem;
+  height: 1rem;
+}
+
+/* Error message styling */
+.error-message {
+  color: #dc3545;
+  background-color: #f8d7da;
+  border: 1px solid #f5c6cb;
+  border-radius: 4px;
+  padding: 10px 15px;
+  font-size: 14px;
+  margin-top: 10px;
+  font-weight: 500;
+  text-align: center;
+}

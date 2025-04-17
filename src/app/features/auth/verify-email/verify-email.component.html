@@ -1,0 +1,38 @@
+<!-- src/app/features/auth/verify-email/verify-email.component.html -->
+<div class="auth-container">
+    <div class="auth-card">
+      <div class="auth-header">
+        <h2>Email Verification</h2>
+      </div>
+      
+      <!-- Loading state -->
+      <div *ngIf="loading" class="verification-loading">
+        <div class="spinner-border"></div>
+        <p>Verifying your email...</p>
+      </div>
+      
+      <!-- Error state -->
+      <div *ngIf="error" class="verification-error">
+        <div class="error-icon">
+          <i class="fa fa-times-circle"></i>
+        </div>
+        <h3>Verification Failed</h3>
+        <p>{{ errorMessage }}</p>
+        <button class="btn btn-primary btn-block" routerLink="/auth/login">
+          Back to Login
+        </button>
+      </div>
+      
+      <!-- Success state -->
+      <div *ngIf="verified" class="verification-success">
+        <div class="success-icon">
+          <i class="fa fa-check-circle"></i>
+        </div>
+        <h3>Email Verified Successfully!</h3>
+        <p>Your email has been verified. You can now log in to your account.</p>
+        <button class="btn btn-primary btn-block" routerLink="/auth/login">
+          Proceed to Login
+        </button>
+      </div>
+    </div>
+  </div>

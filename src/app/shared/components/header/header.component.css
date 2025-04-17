@@ -1,0 +1,137 @@
+/* src/app/shared/components/header/header.component.css */
+.header {
+  background-color: #ffffff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 15px 0;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 15px;
+}
+
+.header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.logo a {
+  font-size: 24px;
+  font-weight: bold;
+  color: #4CAF50;
+  text-decoration: none;
+}
+
+.nav-list {
+  display: flex;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.nav-list li {
+  margin-left: 20px;
+  position: relative;
+}
+
+.nav-list a {
+  color: #333;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.3s;
+  cursor: pointer;
+}
+
+.nav-list a:hover, .nav-list a.active {
+  color: #4CAF50;
+}
+
+/* Dropdown styles */
+.dropdown {
+  position: relative;
+}
+
+.dropdown-toggle {
+  display: flex;
+  align-items: center;
+}
+
+.dropdown-toggle .caret {
+  display: inline-block;
+  width: 0;
+  height: 0;
+  margin-left: 5px;
+  border-top: 4px solid;
+  border-right: 4px solid transparent;
+  border-left: 4px solid transparent;
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  min-width: 180px;
+  background-color: #fff;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
+  padding: 8px 0;
+  margin-top: 10px;
+  list-style: none;
+  display: none;
+  z-index: 1000;
+}
+
+/* Changed from hover-based to class-based display */
+.dropdown-menu.show {
+  display: block;
+}
+
+.dropdown-menu li {
+  margin: 0;
+}
+
+.dropdown-menu a {
+  display: block;
+  padding: 8px 15px;
+  color: #333;
+  text-decoration: none;
+  transition: background-color 0.3s;
+}
+
+.dropdown-menu a:hover {
+  background-color: #f5f5f5;
+  color: #4CAF50;
+}
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+  .header-content {
+    flex-direction: column;
+  }
+  
+  .nav-menu {
+    margin-top: 15px;
+    width: 100%;
+  }
+  
+  .nav-list {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .nav-list li {
+    margin: 10px 0;
+  }
+  
+  .dropdown-menu {
+    position: static;
+    box-shadow: none;
+    margin-top: 5px;
+    padding-left: 15px;
+  }
+}

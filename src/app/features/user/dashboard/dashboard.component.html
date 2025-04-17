@@ -1,0 +1,28 @@
+<!-- src/app/features/user/dashboard/dashboard.component.html -->
+<!-- Add this inside your dashboard -->
+<div class="dashboard-card security-card">
+  <h2>Security Settings</h2>
+  
+  <div class="security-option">
+    <div class="security-info">
+      <h3>Two-Factor Authentication</h3>
+      <p>Add an extra layer of security to your account</p>
+    </div>
+    <div class="security-status">
+      <span class="status-badge" [ngClass]="user?.twoFactorEnabled ? 'enabled' : 'disabled'">
+        {{ user?.twoFactorEnabled ? 'Enabled' : 'Disabled' }}
+      </span>
+      <a routerLink="/user/security/two-factor" class="btn btn-primary">Manage</a>
+    </div>
+  </div>
+  
+  <div class="security-option">
+    <div class="security-info">
+      <h3>Password</h3>
+      <p>Change your password regularly for better security</p>
+    </div>
+    <div class="security-status">
+      <a routerLink="/user/profile" class="btn btn-primary">Change Password</a>
+    </div>
+  </div>
+</div>

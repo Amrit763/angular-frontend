@@ -1,0 +1,27 @@
+<!-- src/app/features/user/settings/settings.component.html -->
+<div class="settings-container">
+  <div class="settings-header">
+    <h1>Account Settings</h1>
+    <p>Manage your account preferences and security settings</p>
+  </div>
+  
+  <div class="settings-content">
+    <div class="settings-sidebar">
+      <ul class="settings-nav">
+        <li><a routerLink="/user/settings" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">General</a></li>
+        <li><a routerLink="/user/settings/two-factor" routerLinkActive="active">Security</a></li>
+        <li><a routerLink="/user/settings/notifications" routerLinkActive="active">Notifications</a></li>
+        <li><a routerLink="/user/settings/privacy" routerLinkActive="active">Privacy</a></li>
+      </ul>
+    </div>
+    
+    <div class="settings-main-content">
+      <!-- This is where the router outlet would go in a regular settings page -->
+      <!-- For now, show a placeholder message if we're on the main settings page -->
+      <div class="settings-placeholder">
+        <h2>General Settings</h2>
+        <p>Select a settings category from the sidebar to manage your preferences.</p>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,133 @@
+<!-- src/app/features/auth/login/login.component.html -->
+<div class="auth-container">
+    <div class="auth-card">
+      <div class="auth-header">
+        <h2>Login to your account</h2>
+        <p>Welcome back! Please enter your credentials to continue.</p>
+      </div>
+      
+      <!-- Alert message -->
+      <div *ngIf="errorMessage" class="alert alert-danger">
+        {{ errorMessage }}
+      </div>
+      
+      <div *ngIf="successMessage" class="alert alert-success">
+        {{ successMessage }}
+      </div>
+      
+      <!-- Login Form -->
+      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" *ngIf="!requiresTwoFactor">
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input 
+            type="email" 
+            id="email" 
+            formControlName="email" 
+            class="form-control" 
+            [ngClass]="{'is-invalid': submitted && f['email'].errors}"
+          >
+          <div *ngIf="submitted && f['email'].errors" class="invalid-feedback">
+            <div *ngIf="f['email'].errors['required']">Email is required</div>
+            <div *ngIf="f['email'].errors['email']">Enter a valid email address</div>
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input 
+            type="password" 
+            id="password" 
+            formControlName="password" 
+            class="form-control" 
+            [ngClass]="{'is-invalid': submitted && f['password'].errors}"
+          >
+          <div *ngIf="submitted && f['password'].errors" class="invalid-feedback">
+            <div *ngIf="f['password'].errors['required']">Password is required</div>
+          </div>
+        </div>
+        
+        <div class="form-options">
+          <div class="remember-me">
+            <input type="checkbox" id="remember" formControlName="remember">
+            <label for="remember">Remember me</label>
+          </div>
+          <div class="forgot-password">
+            <a routerLink="/auth/forgot-password">Forgot password?</a>
+          </div>
+        </div>
+        
+        <button type="submit" class="btn btn-primary btn-block" [disabled]="loading">
+          <span *ngIf="loading" class="spinner-border spinner-border-sm mr-1"></span>
+          Login
+        </button>
+        
+        <div class="auth-separator">
+          <span>OR</span>
+        </div>
+        
+        <button type="button" class="btn btn-google btn-block" (click)="loginWithGoogle()">
+          <i class="fa fa-google"></i> Login with Google
+        </button>
+        
+        <div class="auth-footer">
+          Don't have an account? <a routerLink="/auth/register">Register now</a>
+        </div>
+      </form>
+      
+      <!-- Two-Factor Authentication Form -->
+      <form [formGroup]="twoFactorForm" (ngSubmit)="onTwoFactorSubmit()" *ngIf="requiresTwoFactor">
+        <div class="form-group">
+          <label for="twoFactorCode">Two-Factor Authentication Code</label>
+          <input 
+            type="text" 
+            id="twoFactorCode" 
+            formControlName="twoFactorCode" 
+            class="form-control" 
+            placeholder="Enter 6-digit code"
+            [ngClass]="{'is-invalid': twoFactorSubmitted && tf['twoFactorCode'].errors}"
+          >
+          <div *ngIf="twoFactorSubmitted && tf['twoFactorCode'].errors" class="invalid-feedback">
+            <div *ngIf="tf['twoFactorCode'].errors['required']">Authentication code is required</div>
+            <div *ngIf="tf['twoFactorCode'].errors['pattern']">Authentication code must be 6 digits</div>
+          </div>
+        </div>
+        
+        <button type="submit" class="btn btn-primary btn-block" [disabled]="loading">
+          <span *ngIf="loading" class="spinner-border spinner-border-sm mr-1"></span>
+          Verify
+        </button>
+        
+        <div class="auth-footer">
+          <a href="javascript:void(0)" (click)="showBackupCodeForm()">Use backup code instead</a>
+        </div>
+      </form>
+      
+      <!-- Backup Code Form -->
+      <form [formGroup]="backupCodeForm" (ngSubmit)="onBackupCodeSubmit()" *ngIf="requiresTwoFactor && showBackupCode">
+        <div class="form-group">
+          <label for="backupCode">Backup Code</label>
+          <input 
+            type="text" 
+            id="backupCode" 
+            formControlName="backupCode" 
+            class="form-control" 
+            placeholder="Enter backup code"
+            [ngClass]="{'is-invalid': backupCodeSubmitted && bf['backupCode'].errors}"
+          >
+          <div *ngIf="backupCodeSubmitted && bf['backupCode'].errors" class="invalid-feedback">
+            <div *ngIf="bf['backupCode'].errors['required']">Backup code is required</div>
+            <div *ngIf="bf['backupCode'].errors['pattern']">Invalid backup code format</div>
+          </div>
+        </div>
+        
+        <button type="submit" class="btn btn-primary btn-block" [disabled]="loading">
+          <span *ngIf="loading" class="spinner-border spinner-border-sm mr-1"></span>
+          Verify
+        </button>
+        
+        <div class="auth-footer">
+          <a href="javascript:void(0)" (click)="showTwoFactorForm()">Use authentication code instead</a>
+        </div>
+      </form>
+    </div>
+  </div>

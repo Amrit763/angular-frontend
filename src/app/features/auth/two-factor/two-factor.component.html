@@ -1,0 +1,147 @@
+<!-- src/app/features/user/two-factor-management/two-factor-management.component.html -->
+<div class="container two-factor-container">
+  <div class="card">
+    <div class="card-header">
+      <h2>Two-Factor Authentication</h2>
+      <p *ngIf="!setupComplete">Enhance your account security by enabling two-factor authentication.</p>
+      <p *ngIf="setupComplete">Two-factor authentication is currently enabled for your account.</p>
+    </div>
+    
+    <!-- Alert messages -->
+    <div *ngIf="errorMessage" class="alert alert-danger">
+      {{ errorMessage }}
+    </div>
+    
+    <div *ngIf="successMessage" class="alert alert-success">
+      {{ successMessage }}
+    </div>
+    
+    <div class="card-body">
+      <!-- Setup 2FA View -->
+      <div *ngIf="showSetup" class="setup-container">
+        <div class="qr-code-container">
+          <p class="setup-instruction">Scan this QR code with your authenticator app:</p>
+          <div class="qr-code">
+            <img *ngIf="qrCodeUrl" [src]="qrCodeUrl" alt="QR Code">
+          </div>
+          <div class="manual-entry">
+            <p>Or enter this code manually in your app:</p>
+            <div class="secret-key">{{ secretKey }}</div>
+          </div>
+        </div>
+        
+        <form [formGroup]="verifyForm" (ngSubmit)="onVerifySubmit()">
+          <div class="form-group">
+            <label for="verificationCode">Enter the 6-digit code from your app</label>
+            <input 
+              type="text" 
+              id="verificationCode" 
+              formControlName="verificationCode" 
+              class="form-control" 
+              placeholder="000000"
+              [ngClass]="{'is-invalid': verifySubmitted && v['verificationCode'].errors}"
+            >
+            <div *ngIf="verifySubmitted && v['verificationCode'].errors" class="invalid-feedback">
+              <div *ngIf="v['verificationCode'].errors['required']">Verification code is required</div>
+              <div *ngIf="v['verificationCode'].errors['pattern']">Verification code must be 6 digits</div>
+            </div>
+          </div>
+          
+          <button type="submit" class="btn btn-primary" [disabled]="loading">
+            <span *ngIf="loading" class="spinner-border spinner-border-sm mr-1"></span>
+            Verify and Enable
+          </button>
+        </form>
+      </div>
+      
+      <!-- Backup Codes View -->
+      <div *ngIf="showBackupCodes" class="backup-codes-container">
+        <h3>Backup Codes</h3>
+        <p>Save these backup codes in a secure place. You can use these codes to sign in if you lose access to your authenticator app.</p>
+        <p class="warning">Each code can only be used once.</p>
+        
+        <div class="backup-codes-grid">
+          <div *ngFor="let code of backupCodes" class="backup-code">{{ code }}</div>
+        </div>
+        
+        <div class="action-buttons">
+          <button class="btn btn-secondary" (click)="printBackupCodes()">Print</button>
+          <button class="btn btn-secondary" (click)="copyBackupCodes()">Copy</button>
+          <button class="btn btn-primary" (click)="showManageScreen()">Continue</button>
+        </div>
+      </div>
+      
+      <!-- Manage 2FA View -->
+      <div *ngIf="showManage" class="manage-container">
+        <div class="status-box">
+          <div class="status-icon" [ngClass]="{'enabled': setupComplete}">
+            <i class="fa" [ngClass]="setupComplete ? 'fa-check-circle' : 'fa-times-circle'"></i>
+          </div>
+          <div class="status-text">
+            <h3>Two-Factor Authentication</h3>
+            <p>{{ setupComplete ? 'Enabled' : 'Disabled' }}</p>
+          </div>
+        </div>
+        
+        <div class="info-box">
+          <h4>What is Two-Factor Authentication?</h4>
+          <p>Two-factor authentication adds an extra layer of security to your account by requiring a verification code from your mobile device in addition to your password.</p>
+        </div>
+        
+        <div class="action-buttons">
+          <ng-container *ngIf="!setupComplete">
+            <button class="btn btn-primary" (click)="setupTwoFactor()">
+              <i class="fa fa-lock"></i> Enable Two-Factor Authentication
+            </button>
+          </ng-container>
+          
+          <ng-container *ngIf="setupComplete">
+            <button class="btn btn-secondary" (click)="showDisableConfirmation = true">
+              <i class="fa fa-key"></i> Generate New Backup Codes
+            </button>
+            
+            <button class="btn btn-danger" (click)="showDisableConfirmation = true">
+              <i class="fa fa-unlock"></i> Disable Two-Factor Authentication
+            </button>
+          </ng-container>
+        </div>
+        
+        <!-- Disable 2FA Confirmation -->
+        <div *ngIf="showDisableConfirmation" class="disable-confirmation">
+          <h3>Confirm Action</h3>
+          <p>Please enter your password to continue.</p>
+          
+          <form [formGroup]="disableForm" (ngSubmit)="onDisableSubmit()">
+            <div class="form-group">
+              <label for="password">Password</label>
+              <input 
+                type="password" 
+                id="password" 
+                formControlName="password" 
+                class="form-control" 
+                [ngClass]="{'is-invalid': disableSubmitted && d['password'].errors}"
+              >
+              <div *ngIf="disableSubmitted && d['password'].errors" class="invalid-feedback">
+                <div *ngIf="d['password'].errors['required']">Password is required</div>
+              </div>
+            </div>
+            
+            <div class="action-buttons">
+              <button type="button" class="btn btn-secondary" (click)="showDisableConfirmation = false">
+                Cancel
+              </button>
+              <button type="submit" class="btn btn-danger" [disabled]="loading">
+                <span *ngIf="loading" class="spinner-border spinner-border-sm mr-1"></span>
+                Disable 2FA
+              </button>
+              <button type="button" class="btn btn-primary" (click)="getNewBackupCodes()" [disabled]="loading">
+                <span *ngIf="loading" class="spinner-border spinner-border-sm mr-1"></span>
+                Generate New Backup Codes
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

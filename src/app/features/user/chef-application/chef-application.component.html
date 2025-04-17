@@ -1,0 +1,132 @@
+<!-- src/app/features/chef-application/chef-application.component.html -->
+<div class="container chef-application-container">
+  <div class="row">
+    <div class="col-md-8 offset-md-2">
+      <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+          <h2 class="mb-0">Apply to Become a Chef</h2>
+        </div>
+        <div class="card-body">
+          <!-- Application Form -->
+          <form [formGroup]="applicationForm" (ngSubmit)="onSubmit()" *ngIf="!isSubmitted">
+            <div class="mb-3">
+              <label for="specialization" class="form-label">Culinary Specialization</label>
+              <input 
+                type="text" 
+                class="form-control" 
+                id="specialization" 
+                formControlName="specialization"
+                [ngClass]="{'is-invalid': submitted && f['specialization'].errors}"
+              >
+              <div class="invalid-feedback" *ngIf="submitted && f['specialization'].errors">
+                <div *ngIf="f['specialization'].errors['required']">Specialization is required</div>
+              </div>
+            </div>
+            
+            <div class="mb-3">
+              <label for="experience" class="form-label">Years of Experience</label>
+              <input 
+                type="number" 
+                class="form-control" 
+                id="experience" 
+                formControlName="experience"
+                [ngClass]="{'is-invalid': submitted && f['experience'].errors}"
+              >
+              <div class="invalid-feedback" *ngIf="submitted && f['experience'].errors">
+                <div *ngIf="f['experience'].errors['required']">Experience is required</div>
+                <div *ngIf="f['experience'].errors['min']">Experience should be at least 1 year</div>
+              </div>
+            </div>
+            
+            <div class="mb-3">
+              <label for="bio" class="form-label">Professional Bio</label>
+              <textarea 
+                class="form-control" 
+                id="bio" 
+                rows="5" 
+                formControlName="bio"
+                [ngClass]="{'is-invalid': submitted && f['bio'].errors}"
+              ></textarea>
+              <div class="invalid-feedback" *ngIf="submitted && f['bio'].errors">
+                <div *ngIf="f['bio'].errors['required']">Bio is required</div>
+                <div *ngIf="f['bio'].errors['minlength']">Bio should be at least 50 characters</div>
+              </div>
+              <small class="text-muted">Describe your culinary background, experience, and what makes you a great chef.</small>
+            </div>
+            
+            <div class="mb-3">
+              <label for="certificateImages" class="form-label">Certificates and Qualifications</label>
+              <div class="custom-file-upload">
+                <input 
+                  type="file" 
+                  class="form-control" 
+                  id="certificateImages" 
+                  multiple
+                  accept="image/*"
+                  (change)="onFileChange($event, 'certificates')"
+                  [ngClass]="{'is-invalid': submitted && !hasSelectedCertificates}"
+                >
+              </div>
+              <small class="text-muted">Required. Upload at least one certificate image.</small>
+              <div class="invalid-feedback d-block" *ngIf="submitted && !hasSelectedCertificates">
+                Please upload at least one certificate
+              </div>
+              <div class="selected-files mt-2" *ngIf="selectedCertificates.length > 0">
+                <div *ngFor="let file of selectedCertificates" class="selected-file">
+                  <span>{{ file.name }}</span>
+                  <button type="button" class="btn-close" (click)="removeFile(file, 'certificates')"></button>
+                </div>
+              </div>
+            </div>
+            
+            <div class="mb-3">
+              <label for="portfolioImages" class="form-label">Portfolio Images (Optional)</label>
+              <div class="custom-file-upload">
+                <input 
+                  type="file" 
+                  class="form-control" 
+                  id="portfolioImages" 
+                  multiple
+                  accept="image/*"
+                  (change)="onFileChange($event, 'portfolio')"
+                >
+              </div>
+              <small class="text-muted">Optional. Upload portfolio images of your dishes.</small>
+              <div class="selected-files mt-2" *ngIf="selectedPortfolio.length > 0">
+                <div *ngFor="let file of selectedPortfolio" class="selected-file">
+                  <span>{{ file.name }}</span>
+                  <button type="button" class="btn-close" (click)="removeFile(file, 'portfolio')"></button>
+                </div>
+              </div>
+            </div>
+            
+            <div class="d-grid gap-2">
+              <button type="submit" class="btn btn-primary" [disabled]="loading">
+                <span *ngIf="loading" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                Submit Application
+              </button>
+              
+              <!-- Error message display under submit button -->
+              <div *ngIf="errorMessage" class="error-message mt-2">
+                Application submission error: {{ errorMessage }}
+              </div>
+            </div>
+          </form>
+          
+          <!-- Success Message -->
+          <div class="text-center application-success" *ngIf="isSubmitted">
+            <div class="success-icon mb-4">
+              <i class="bi bi-check-circle-fill"></i>
+            </div>
+            <h3>Application Submitted Successfully!</h3>
+            <p class="lead">Your application to become a chef has been received and is under review.</p>
+            <p>Our admin team will review your application and credentials. You will be notified once a decision has been made.</p>
+            <div class="mt-4">
+              <a routerLink="/user/dashboard" class="btn btn-primary">Return to Dashboard</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,104 @@
+/* src/app/features/user/settings/settings.component.css */
+.settings-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+  
+  .settings-header {
+    margin-bottom: 30px;
+  }
+  
+  .settings-header h1 {
+    margin-bottom: 10px;
+    color: #333;
+  }
+  
+  .settings-header p {
+    color: #666;
+  }
+  
+  .settings-content {
+    display: flex;
+    gap: 30px;
+  }
+  
+  .settings-sidebar {
+    flex: 0 0 250px;
+    border-right: 1px solid #eee;
+  }
+  
+  .settings-nav {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  
+  .settings-nav li {
+    margin-bottom: 5px;
+  }
+  
+  .settings-nav a {
+    display: block;
+    padding: 10px 15px;
+    border-radius: 4px;
+    color: #333;
+    text-decoration: none;
+    transition: background-color 0.2s ease;
+  }
+  
+  .settings-nav a:hover {
+    background-color: #f5f5f5;
+  }
+  
+  .settings-nav a.active {
+    background-color: #e5f3ff;
+    color: #007bff;
+    font-weight: 500;
+  }
+  
+  .settings-main-content {
+    flex: 1;
+    min-width: 0;
+  }
+  
+  .settings-placeholder {
+    padding: 30px;
+    background-color: #f8f9fa;
+    border-radius: 6px;
+    text-align: center;
+  }
+  
+  .settings-placeholder h2 {
+    margin-bottom: 15px;
+    color: #333;
+  }
+  
+  .settings-placeholder p {
+    color: #666;
+  }
+  
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .settings-content {
+      flex-direction: column;
+    }
+    
+    .settings-sidebar {
+      flex: none;
+      border-right: none;
+      border-bottom: 1px solid #eee;
+      padding-bottom: 20px;
+      margin-bottom: 20px;
+    }
+    
+    .settings-nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    
+    .settings-nav li {
+      margin-bottom: 0;
+    }
+  }

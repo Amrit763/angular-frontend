@@ -1,0 +1,109 @@
+/* src/app/features/admin/chef-applications/chef-applications.component.css */
+.admin-dashboard {
+    min-height: 100vh;
+    background-color: #f8f9fa;
+  }
+  
+  .sidebar {
+    box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
+    height: 100vh;
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 100;
+    padding: 0;
+  }
+  
+  .dashboard-header {
+    padding: 20px 15px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    margin-bottom: 15px;
+  }
+  
+  .sidebar .nav-link {
+    color: rgba(255, 255, 255, 0.8);
+    padding: 12px 15px;
+    margin-bottom: 5px;
+    border-radius: 0 30px 30px 0;
+    width: 90%;
+    transition: all 0.3s;
+    cursor: pointer;
+  }
+  
+  .sidebar .nav-link:hover {
+    color: #fff;
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+  
+  .sidebar .nav-link.active {
+    color: #fff;
+    background-color: #007bff;
+  }
+  
+  .card {
+    border-radius: 10px;
+    border: none;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    transition: transform 0.2s;
+    margin-bottom: 20px;
+  }
+  
+  .card:hover {
+    transform: translateY(-5px);
+  }
+  
+  .nav-tabs .nav-link {
+    cursor: pointer;
+  }
+  
+  .applicant-avatar {
+    width: 40px;
+    height: 40px;
+    background-color: #6c757d;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+  }
+  
+  .bio-content {
+    white-space: pre-line;
+    max-height: 200px;
+    overflow-y: auto;
+  }
+  
+  .certificate-image, .portfolio-image {
+    height: 150px;
+    overflow: hidden;
+    border-radius: 5px;
+  }
+  
+  .certificate-image img, .portfolio-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  
+  .chef-info {
+    padding: 15px;
+    border-radius: 5px;
+    background-color: #f8f9fa;
+    margin-bottom: 15px;
+  }
+  
+  /* Adjust sidebar for smaller screens */
+  @media (max-width: 767.98px) {
+    .sidebar {
+      position: static;
+      height: auto;
+      margin-bottom: 20px;
+    }
+    
+    .sidebar .nav-link {
+      border-radius: 0;
+      width: 100%;
+    }
+  }

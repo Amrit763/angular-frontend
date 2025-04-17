@@ -1,0 +1,116 @@
+/* src/app/features/auth/verify-email/verify-email.component.css */
+.auth-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: calc(100vh - 200px);
+    padding: 30px 15px;
+    background-color: #f8f9fa;
+  }
+  
+  .auth-card {
+    width: 100%;
+    max-width: 450px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    padding: 30px;
+  }
+  
+  .auth-header {
+    text-align: center;
+    margin-bottom: 30px;
+  }
+  
+  .auth-header h2 {
+    color: #333;
+    margin-bottom: 10px;
+  }
+  
+  .verification-loading,
+  .verification-error,
+  .verification-success {
+    text-align: center;
+    padding: 20px 0;
+  }
+  
+  .spinner-border {
+    display: inline-block;
+    width: 3rem;
+    height: 3rem;
+    margin-bottom: 20px;
+    border: 0.3em solid #4CAF50;
+    border-right-color: transparent;
+    border-radius: 50%;
+    animation: spinner-border 0.75s linear infinite;
+  }
+  
+  @keyframes spinner-border {
+    to { transform: rotate(360deg); }
+  }
+  
+  .verification-loading p {
+    color: #777;
+    font-size: 16px;
+  }
+  
+  .success-icon {
+    font-size: 64px;
+    color: #4CAF50;
+    margin-bottom: 20px;
+  }
+  
+  .error-icon {
+    font-size: 64px;
+    color: #dc3545;
+    margin-bottom: 20px;
+  }
+  
+  .verification-success h3,
+  .verification-error h3 {
+    color: #333;
+    margin-bottom: 15px;
+  }
+  
+  .verification-success p,
+  .verification-error p {
+    color: #666;
+    margin-bottom: 30px;
+  }
+  
+  .btn {
+    display: inline-block;
+    font-weight: 500;
+    text-align: center;
+    vertical-align: middle;
+    cursor: pointer;
+    border: 1px solid transparent;
+    padding: 12px 20px;
+    font-size: 16px;
+    line-height: 1.5;
+    border-radius: 4px;
+    transition: all 0.3s;
+  }
+  
+  .btn-block {
+    display: block;
+    width: 100%;
+  }
+  
+  .btn-primary {
+    background-color: #4CAF50;
+    border-color: #4CAF50;
+    color: #fff;
+  }
+  
+  .btn-primary:hover, .btn-primary:focus {
+    background-color: #3e8e41;
+    border-color: #3e8e41;
+  }
+  
+  /* Mobile optimization */
+  @media (max-width: 576px) {
+    .auth-card {
+      padding: 20px;
+    }
+  }

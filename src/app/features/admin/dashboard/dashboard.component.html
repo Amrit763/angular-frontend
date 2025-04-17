@@ -1,0 +1,139 @@
+<!-- src/app/features/admin/dashboard/admin-dashboard.component.html -->
+<div class="admin-dashboard">
+  <div class="container-fluid">
+    <div class="row">
+      <!-- Sidebar -->
+      <nav class="col-md-3 col-lg-2 d-md-block bg-dark sidebar">
+        <div class="position-sticky pt-3">
+          <div class="dashboard-header">
+            <h4 class="text-white">Food Admin Dashboard</h4>
+          </div>
+          <ul class="nav flex-column">
+            <li class="nav-item">
+              <a class="nav-link" [routerLink]="['/admin/dashboard']" routerLinkActive="active">
+                <i class="bi bi-speedometer2 me-2"></i>Dashboard
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" [routerLink]="['/admin/users']" routerLinkActive="active">
+                <i class="bi bi-people me-2"></i>User List
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" [routerLink]="['/admin/chef-applications']" routerLinkActive="active">
+                <i class="bi bi-file-earmark-person me-2"></i>Chef Applications
+              </a>
+            </li>
+            <!-- <li class="nav-item">
+              <a class="nav-link" routerLink="/products">
+                <i class="bi bi-box-seam me-2"></i>Products
+              </a>
+            </li> -->
+            <li class="nav-item">
+              <a class="nav-link" (click)="logout()">
+                <i class="bi bi-box-arrow-right me-2"></i>Logout
+              </a>
+            </li>
+          </ul>
+        </div>
+      </nav>
+
+      <!-- Main content -->
+      <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+          <h1 class="h2">Admin Dashboard</h1>
+          <div class="admin-profile">
+            <span class="badge bg-primary">{{ adminInfo?.role }}</span>
+            <span class="admin-name">{{ adminInfo?.fullName }}</span>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-md-4">
+            <div class="card text-white bg-primary mb-3">
+              <div class="card-body d-flex justify-content-between align-items-center">
+                <div>
+                  <p class="card-text">Total Users</p>
+                  <h2 class="card-title">{{ stats.userCount }}</h2>
+                </div>
+                <i class="bi bi-people dashboard-icon"></i>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="card text-white bg-success mb-3">
+              <div class="card-body d-flex justify-content-between align-items-center">
+                <div>
+                  <p class="card-text">Active Chefs</p>
+                  <h2 class="card-title">{{ stats.chefCount }}</h2>
+                </div>
+                <i class="bi bi-person-badge-fill dashboard-icon"></i>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="card text-white bg-warning mb-3">
+              <div class="card-body d-flex justify-content-between align-items-center">
+                <div>
+                  <p class="card-text">Pending Applications</p>
+                  <h2 class="card-title">{{ stats.pendingApplications }}</h2>
+                </div>
+                <i class="bi bi-hourglass-split dashboard-icon"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row mt-4">
+          <div class="col-md-6">
+            <div class="card">
+              <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Recent Chef Applications</h5>
+                <a [routerLink]="['/admin/chef-applications']" class="btn btn-sm btn-outline-primary">View All</a>
+              </div>
+              <div class="card-body">
+                <div class="list-group">
+                  <a *ngFor="let application of recentApplications" class="list-group-item list-group-item-action">
+                    <div class="d-flex w-100 justify-content-between">
+                      <h6 class="mb-1">{{ application.user?.fullName }}</h6>
+                      <small>{{ application.createdAt | date }}</small>
+                    </div>
+                    <p class="mb-1">{{ application.specialization }}</p>
+                    <small>Experience: {{ application.experience }} years</small>
+                  </a>
+                  <div *ngIf="recentApplications.length === 0" class="text-center py-3">
+                    <p class="text-muted">No recent applications</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="col-md-6">
+            <div class="card">
+              <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Recent Users</h5>
+                <a [routerLink]="['/admin/users']" class="btn btn-sm btn-outline-primary">View All</a>
+              </div>
+              <div class="card-body">
+                <div class="list-group">
+                  <a *ngFor="let user of recentUsers" class="list-group-item list-group-item-action">
+                    <div class="d-flex w-100 justify-content-between">
+                      <h6 class="mb-1">{{ user.fullName }}</h6>
+                      <small>{{ user.createdAt | date }}</small>
+                    </div>
+                    <p class="mb-1">{{ user.email }}</p>
+                    <small>Role: <span class="badge" [ngClass]="getBadgeClass(user.role)">{{ user.role }}</span></small>
+                  </a>
+                  <div *ngIf="recentUsers.length === 0" class="text-center py-3">
+                    <p class="text-muted">No recent users</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+</div>

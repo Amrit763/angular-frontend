@@ -1,0 +1,24 @@
+<!-- src/app/features/auth/google-callback/google-callback.component.html -->
+<div class="auth-container">
+    <div class="auth-card">
+      <div class="auth-header">
+        <h2>Google Authentication</h2>
+      </div>
+      
+      <!-- Loading indicator -->
+      <div *ngIf="loading" class="text-center">
+        <div class="spinner-border" role="status">
+          <span class="sr-only">Loading...</span>
+        </div>
+        <p class="mt-3">Processing authentication. Please wait...</p>
+      </div>
+      
+      <!-- Error message -->
+      <div *ngIf="errorMessage" class="alert alert-danger">
+        {{ errorMessage }}
+        <div class="mt-3">
+          <a routerLink="/auth/login" class="btn btn-primary">Return to Login</a>
+        </div>
+      </div>
+    </div>
+  </div>

@@ -1,0 +1,8 @@
+<app-header *ngIf="!isResetPasswordRoute()"></app-header>
+
+<main class="main-content">
+  <router-outlet></router-outlet>
+</main>
+
+<app-footer *ngIf="!isResetPasswordRoute()"></app-footer>
+
