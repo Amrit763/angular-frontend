@@ -25,7 +25,7 @@ export class HomeComponent implements OnInit {
   // Filter
   selectedCategory: string = '';
   
-  constructor(private productService: ProductService) { }
+  constructor(public productService: ProductService) { }
 
   ngOnInit(): void {
     this.loadProducts();

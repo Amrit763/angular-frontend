@@ -1,140 +1,59 @@
 <!-- src/app/features/home/product-details/product-details.component.html -->
 <div class="container py-5">
-    <!-- Loading indicator -->
-    <div *ngIf="isLoading" class="text-center py-5">
-      <div class="spinner-border text-primary" role="status">
-        <span class="visually-hidden">Loading...</span>
+  <!-- Loading indicator -->
+  <div *ngIf="isLoading" class="text-center py-5">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+    <p class="mt-3">Loading product details...</p>
+  </div>
+
+  <!-- Error message -->
+  <div *ngIf="error" class="alert alert-danger">
+    {{ error }}
+  </div>
+
+  <div *ngIf="!isLoading && product" class="product-detail-container">
+    <div class="row">
+      <!-- Breadcrumb -->
+      <div class="col-12 mb-4">
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a routerLink="/home">Home</a></li>
+            <li class="breadcrumb-item"><a [routerLink]="['/home']" [queryParams]="{category: product.category}">{{ product.category | titlecase }}</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ product.name }}</li>
+          </ol>
+        </nav>
       </div>
-      <p class="mt-3">Loading product details...</p>
-    </div>
-  
-    <!-- Error message -->
-    <div *ngIf="error" class="alert alert-danger">
-      {{ error }}
-    </div>
-  
-    <div *ngIf="!isLoading && product" class="product-detail-container">
-      <div class="row">
-        <!-- Breadcrumb -->
-        <div class="col-12 mb-4">
-          <nav aria-label="breadcrumb">
-            <ol class="breadcrumb">
-              <li class="breadcrumb-item"><a routerLink="/home">Home</a></li>
-              <li class="breadcrumb-item"><a [routerLink]="['/home']" [queryParams]="{category: product.category}">{{ product.category | titlecase }}</a></li>
-              <li class="breadcrumb-item active" aria-current="page">{{ product.name }}</li>
-            </ol>
-          </nav>
-        </div>
-  
-        <!-- Left column - Images -->
-        <div class="col-md-6 mb-4">
-          <div class="card shadow-sm">
-            <div class="card-body p-0">
-              <div class="product-gallery">
-                <!-- Main image display -->
-                <div class="main-image-container">
-                  <img 
-                    [src]="product.images && product.images.length > 0 ? product.images[activeImageIndex] : 'assets/images/placeholder-food.jpg'" 
-                    alt="{{ product.name }}" 
-                    class="main-image"
-                  >
-                  <div *ngIf="product.isVegetarian || product.isVegan || product.isGlutenFree" class="dietary-badges">
-                    <span *ngIf="product.isVegetarian" class="badge bg-success me-1">Vegetarian</span>
-                    <span *ngIf="product.isVegan" class="badge bg-success me-1">Vegan</span>
-                    <span *ngIf="product.isGlutenFree" class="badge bg-success">Gluten-Free</span>
-                  </div>
-                </div>
-                
-                <!-- Thumbnails if there are multiple images -->
-                <div *ngIf="product.images && product.images.length > 1" class="thumbnails-container">
-                  <div 
-                    *ngFor="let image of product.images; let i = index" 
-                    class="thumbnail" 
-                    [ngClass]="{'active': activeImageIndex === i}"
-                    (click)="setActiveImage(i)"
-                  >
-                    <img [src]="image" alt="{{ product.name }} thumbnail {{ i + 1 }}">
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        <!-- Right column - Details -->
-        <div class="col-md-6 mb-4">
-          <div class="card shadow-sm h-100">
-            <div class="card-body">
-              <!-- Product Name and Rating -->
-              <div class="d-flex justify-content-between align-items-start mb-3">
-                <h2 class="product-name">{{ product.name }}</h2>
-                <div *ngIf="product.reviewCount > 0" class="rating">
-                  <i class="bi bi-star-fill text-warning"></i>
-                  <span>{{ product.rating.toFixed(1) }}</span>
-                  <small class="text-muted">({{ product.reviewCount }} reviews)</small>
+
+      <!-- Left column - Images -->
+      <div class="col-md-6 mb-4">
+        <div class="card shadow-sm">
+          <div class="card-body p-0">
+            <div class="product-gallery">
+              <!-- Main image display -->
+              <div class="main-image-container">
+                <img 
+                  [src]="productService.getImageUrl(product.images && product.images.length > 0 ? product.images[activeImageIndex] : '')" 
+                  alt="{{ product.name }}" 
+                  class="main-image"
+                >
+                <div *ngIf="product.isVegetarian || product.isVegan || product.isGlutenFree" class="dietary-badges">
+                  <span *ngIf="product.isVegetarian" class="badge bg-success me-1">Vegetarian</span>
+                  <span *ngIf="product.isVegan" class="badge bg-success me-1">Vegan</span>
+                  <span *ngIf="product.isGlutenFree" class="badge bg-success">Gluten-Free</span>
                 </div>
               </div>
               
-              <!-- Chef Info -->
-              <div class="chef-info mb-3" *ngIf="isChefObject(product.chef)">
-                <div class="d-flex align-items-center">
-                  <img 
-                    [src]="product.chef.profileImage || 'assets/images/default-chef.jpg'" 
-                    alt="{{ product.chef.fullName }}" 
-                    class="chef-image me-2"
-                  >
-                  <div>
-                    <p class="mb-0">Made by <strong>{{ product.chef.fullName }}</strong></p>
-                    <a [routerLink]="['/chefs', product.chef._id]" class="small">View Chef Profile</a>
-                  </div>
-                </div>
-              </div>
-              
-              <!-- Price -->
-              <h3 class="price mb-3">${{ product.price.toFixed(2) }}</h3>
-              
-              <!-- Description -->
-              <div class="mb-4">
-                <h5>Description</h5>
-                <p class="description">{{ product.description }}</p>
-              </div>
-              
-              <!-- Preparation and Serving -->
-              <div class="row mb-4">
-                <div class="col-6">
-                  <div class="detail-item">
-                    <i class="bi bi-clock"></i>
-                    <span>{{ product.preparationTime }} minutes</span>
-                  </div>
-                </div>
-                <div class="col-6">
-                  <div class="detail-item">
-                    <i class="bi bi-people"></i>
-                    <span>{{ product.servingSize }}</span>
-                  </div>
-                </div>
-              </div>
-              
-              <!-- Quantity selector -->
-              <div class="quantity-selector mb-4">
-                <h5>Quantity</h5>
-                <div class="d-flex align-items-center">
-                  <button class="btn btn-outline-secondary" (click)="decreaseQuantity()">
-                    <i class="bi bi-dash"></i>
-                  </button>
-                  <span class="mx-3">{{ quantity }}</span>
-                  <button class="btn btn-outline-secondary" (click)="increaseQuantity()">
-                    <i class="bi bi-plus"></i>
-                  </button>
-                </div>
-              </div>
-              
-              <!-- Order button -->
-              <div class="order-buttons">
-                <div class="d-grid gap-2">
-                  <button class="btn btn-primary btn-lg" (click)="addToCart()">
-                    <i class="bi bi-cart-plus me-2"></i>Add to Cart - ${{ getTotal().toFixed(2) }}
-                  </button>
+              <!-- Thumbnails if there are multiple images -->
+              <div *ngIf="product.images && product.images.length > 1" class="thumbnails-container">
+                <div 
+                  *ngFor="let image of product.images; let i = index" 
+                  class="thumbnail" 
+                  [ngClass]="{'active': activeImageIndex === i}"
+                  (click)="setActiveImage(i)"
+                >
+                  <img [src]="productService.getImageUrl(image)" alt="{{ product.name }} thumbnail {{ i + 1 }}">
                 </div>
               </div>
             </div>
@@ -142,50 +61,128 @@
         </div>
       </div>
       
-      <!-- Bottom section - Additional details -->
-      <div class="row mt-4">
-        <div class="col-12">
-          <div class="card shadow-sm">
-            <div class="card-body">
-              <ul class="nav nav-tabs" id="productTabs" role="tablist">
-                <li class="nav-item" role="presentation">
-                  <button class="nav-link active" id="ingredients-tab" data-bs-toggle="tab" data-bs-target="#ingredients" type="button" role="tab" aria-controls="ingredients" aria-selected="true">
-                    Ingredients
-                  </button>
-                </li>
-                <li class="nav-item" role="presentation">
-                  <button class="nav-link" id="allergens-tab" data-bs-toggle="tab" data-bs-target="#allergens" type="button" role="tab" aria-controls="allergens" aria-selected="false">
-                    Allergens
-                  </button>
-                </li>
-              </ul>
-              <div class="tab-content p-3" id="productTabsContent">
-                <div class="tab-pane fade show active" id="ingredients" role="tabpanel" aria-labelledby="ingredients-tab">
-                  <h5>Ingredients</h5>
-                  <ul class="ingredients-list">
-                    <li *ngFor="let ingredient of product.ingredients">{{ ingredient }}</li>
-                    <li *ngIf="!product.ingredients || product.ingredients.length === 0" class="text-muted">
-                      No ingredients listed
-                    </li>
-                  </ul>
+      <!-- Right column - Details -->
+      <div class="col-md-6 mb-4">
+        <div class="card shadow-sm h-100">
+          <div class="card-body">
+            <!-- Product Name and Rating -->
+            <div class="d-flex justify-content-between align-items-start mb-3">
+              <h2 class="product-name">{{ product.name }}</h2>
+              <div *ngIf="product.reviewCount > 0" class="rating">
+                <i class="bi bi-star-fill text-warning"></i>
+                <span>{{ product.rating.toFixed(1) }}</span>
+                <small class="text-muted">({{ product.reviewCount }} reviews)</small>
+              </div>
+            </div>
+            
+            <!-- Chef Info -->
+            <div class="chef-info mb-3" *ngIf="isChefObject(product.chef)">
+              <div class="d-flex align-items-center">
+                <img 
+                  [src]="productService.getImageUrl(product.chef.profileImage || '')" 
+                  alt="{{ product.chef.fullName }}" 
+                  class="chef-image me-2"
+                >
+                <div>
+                  <p class="mb-0">Made by <strong>{{ product.chef.fullName }}</strong></p>
+                  <a [routerLink]="['/chefs', product.chef._id]" class="small">View Chef Profile</a>
                 </div>
-                <div class="tab-pane fade" id="allergens" role="tabpanel" aria-labelledby="allergens-tab">
-                  <h5>Allergens</h5>
-                  <p class="small text-muted mb-3">This product contains the following allergens:</p>
-                  <ul class="allergens-list">
-                    <li *ngFor="let allergen of product.allergens">{{ allergen }}</li>
-                    <li *ngIf="!product.allergens || product.allergens.length === 0" class="text-muted">
-                      No allergens listed
-                    </li>
-                  </ul>
+              </div>
+            </div>
+            
+            <!-- Price -->
+            <h3 class="price mb-3">${{ product.price.toFixed(2) }}</h3>
+            
+            <!-- Description -->
+            <div class="mb-4">
+              <h5>Description</h5>
+              <p class="description">{{ product.description }}</p>
+            </div>
+            
+            <!-- Preparation and Serving -->
+            <div class="row mb-4">
+              <div class="col-6">
+                <div class="detail-item">
+                  <i class="bi bi-clock"></i>
+                  <span>{{ product.preparationTime }} minutes</span>
                 </div>
+              </div>
+              <div class="col-6">
+                <div class="detail-item">
+                  <i class="bi bi-people"></i>
+                  <span>{{ product.servingSize }}</span>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Quantity selector -->
+            <div class="quantity-selector mb-4">
+              <h5>Quantity</h5>
+              <div class="d-flex align-items-center">
+                <button class="btn btn-outline-secondary" (click)="decreaseQuantity()">
+                  <i class="bi bi-dash"></i>
+                </button>
+                <span class="mx-3">{{ quantity }}</span>
+                <button class="btn btn-outline-secondary" (click)="increaseQuantity()">
+                  <i class="bi bi-plus"></i>
+                </button>
+              </div>
+            </div>
+            
+            <!-- Order button -->
+            <div class="order-buttons">
+              <div class="d-grid gap-2">
+                <button class="btn btn-primary btn-lg" (click)="addToCart()">
+                  <i class="bi bi-cart-plus me-2"></i>Add to Cart - ${{ getTotal().toFixed(2) }}
+                </button>
               </div>
             </div>
           </div>
         </div>
       </div>
-      
-      <!-- Similar Products - Usually this would be a recommendation section -->
-      <!-- This would be implemented with a separate API call to get related products -->
+    </div>
+    
+    <!-- Bottom section - Additional details -->
+    <div class="row mt-4">
+      <div class="col-12">
+        <div class="card shadow-sm">
+          <div class="card-body">
+            <ul class="nav nav-tabs" id="productTabs" role="tablist">
+              <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="ingredients-tab" data-bs-toggle="tab" data-bs-target="#ingredients" type="button" role="tab" aria-controls="ingredients" aria-selected="true">
+                  Ingredients
+                </button>
+              </li>
+              <li class="nav-item" role="presentation">
+                <button class="nav-link" id="allergens-tab" data-bs-toggle="tab" data-bs-target="#allergens" type="button" role="tab" aria-controls="allergens" aria-selected="false">
+                  Allergens
+                </button>
+              </li>
+            </ul>
+            <div class="tab-content p-3" id="productTabsContent">
+              <div class="tab-pane fade show active" id="ingredients" role="tabpanel" aria-labelledby="ingredients-tab">
+                <h5>Ingredients</h5>
+                <ul class="ingredients-list">
+                  <li *ngFor="let ingredient of product.ingredients">{{ ingredient }}</li>
+                  <li *ngIf="!product.ingredients || product.ingredients.length === 0" class="text-muted">
+                    No ingredients listed
+                  </li>
+                </ul>
+              </div>
+              <div class="tab-pane fade" id="allergens" role="tabpanel" aria-labelledby="allergens-tab">
+                <h5>Allergens</h5>
+                <p class="small text-muted mb-3">This product contains the following allergens:</p>
+                <ul class="allergens-list">
+                  <li *ngFor="let allergen of product.allergens">{{ allergen }}</li>
+                  <li *ngIf="!product.allergens || product.allergens.length === 0" class="text-muted">
+                    No allergens listed
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
+</div>

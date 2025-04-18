@@ -31,7 +31,7 @@ export class ProductListComponent implements OnInit {
   categories: string[] = [];
   
   constructor(
-    private productService: ProductService,
+    public productService: ProductService,
     private tokenService: TokenService
   ) { }
 

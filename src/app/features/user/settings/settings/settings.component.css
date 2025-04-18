@@ -1,104 +1,159 @@
 /* src/app/features/user/settings/settings.component.css */
-.settings-container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 20px;
+/* Breadcrumb styles */
+.breadcrumb {
+  background-color: transparent;
+  padding: 0;
+  margin-bottom: 1rem;
+}
+
+.breadcrumb-item a {
+  color: #ff6b6b;
+  text-decoration: none;
+}
+
+.breadcrumb-item a:hover {
+  text-decoration: underline;
+}
+
+.breadcrumb-item.active {
+  color: #555;
+}
+
+/* Settings nav */
+.settings-nav .list-group-item {
+  border-left: none;
+  border-right: none;
+  padding: 12px 15px;
+  color: #555;
+  transition: all 0.2s;
+}
+
+.settings-nav .list-group-item:first-child {
+  border-top: none;
+}
+
+.settings-nav .list-group-item:last-child {
+  border-bottom: none;
+}
+
+.settings-nav .list-group-item.active {
+  background-color: #ff6b6b;
+  border-color: #ff6b6b;
+  color: white;
+}
+
+.settings-nav .list-group-item:hover:not(.active) {
+  background-color: #f5f5f5;
+}
+
+.settings-nav .list-group-item i {
+  width: 20px;
+  text-align: center;
+}
+
+/* Card styling */
+.card {
+  border: none;
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.05);
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 25px;
+}
+
+.card-header {
+  padding: 15px 20px;
+  background-color: #f8f9fa;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.card-header h2 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 0;
+  color: #333;
+}
+
+.card-body {
+  padding: 20px;
+}
+
+/* Setting items */
+.setting-item {
+  transition: background-color 0.2s;
+}
+
+.setting-item:hover {
+  background-color: #f9f9f9;
+}
+
+.setting-item h4 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.border-bottom {
+  border-bottom-color: #f0f0f0 !important;
+}
+
+/* Button styling */
+.btn-outline-primary {
+  color: #ff6b6b;
+  border-color: #ff6b6b;
+}
+
+.btn-outline-primary:hover {
+  background-color: #ff6b6b;
+  border-color: #ff6b6b;
+  color: white;
+}
+
+.btn-outline-danger {
+  color: #dc3545;
+  border-color: #dc3545;
+}
+
+.btn-outline-danger:hover {
+  background-color: #dc3545;
+  border-color: #dc3545;
+  color: white;
+}
+
+/* Badge styling */
+.badge.bg-success {
+  background-color: #28a745 !important;
+}
+
+.badge.bg-secondary {
+  background-color: #6c757d !important;
+}
+
+/* Modal styling */
+.modal-header {
+  background-color: #f8f9fa;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.modal-footer {
+  background-color: #f8f9fa;
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+/* Table styling for active sessions */
+.table th {
+  font-weight: 600;
+  color: #555;
+  border-top: none;
+  border-bottom-width: 1px;
+}
+
+.table td {
+  vertical-align: middle;
+}
+
+/* Responsive adjustments */
+@media (max-width: 992px) {
+  .text-md-end {
+    text-align: left !important;
   }
-  
-  .settings-header {
-    margin-bottom: 30px;
-  }
-  
-  .settings-header h1 {
-    margin-bottom: 10px;
-    color: #333;
-  }
-  
-  .settings-header p {
-    color: #666;
-  }
-  
-  .settings-content {
-    display: flex;
-    gap: 30px;
-  }
-  
-  .settings-sidebar {
-    flex: 0 0 250px;
-    border-right: 1px solid #eee;
-  }
-  
-  .settings-nav {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-  }
-  
-  .settings-nav li {
-    margin-bottom: 5px;
-  }
-  
-  .settings-nav a {
-    display: block;
-    padding: 10px 15px;
-    border-radius: 4px;
-    color: #333;
-    text-decoration: none;
-    transition: background-color 0.2s ease;
-  }
-  
-  .settings-nav a:hover {
-    background-color: #f5f5f5;
-  }
-  
-  .settings-nav a.active {
-    background-color: #e5f3ff;
-    color: #007bff;
-    font-weight: 500;
-  }
-  
-  .settings-main-content {
-    flex: 1;
-    min-width: 0;
-  }
-  
-  .settings-placeholder {
-    padding: 30px;
-    background-color: #f8f9fa;
-    border-radius: 6px;
-    text-align: center;
-  }
-  
-  .settings-placeholder h2 {
-    margin-bottom: 15px;
-    color: #333;
-  }
-  
-  .settings-placeholder p {
-    color: #666;
-  }
-  
-  /* Responsive adjustments */
-  @media (max-width: 768px) {
-    .settings-content {
-      flex-direction: column;
-    }
-    
-    .settings-sidebar {
-      flex: none;
-      border-right: none;
-      border-bottom: 1px solid #eee;
-      padding-bottom: 20px;
-      margin-bottom: 20px;
-    }
-    
-    .settings-nav {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-    }
-    
-    .settings-nav li {
-      margin-bottom: 0;
-    }
-  }
+}

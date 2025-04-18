@@ -114,7 +114,7 @@
                 <tbody>
                   <tr *ngFor="let product of applyFilters(); trackBy: trackByProductId">
                     <td>
-                      <img [src]="product.images && product.images.length > 0 ? product.images[0] : 'assets/images/placeholder-food.jpg'" 
+                      <img [src]="productService.getImageUrl(product.images && product.images.length > 0 ? product.images[0] : '')" 
                            alt="{{ product.name }}" class="product-thumbnail">
                     </td>
                     <td>{{ product.name }}</td>

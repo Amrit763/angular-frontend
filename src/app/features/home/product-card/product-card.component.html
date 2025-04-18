@@ -1,50 +1,51 @@
 <!-- src/app/features/home/product-card/product-card.component.html -->
 <div class="card h-100 product-card">
-    <div class="position-relative">
-      <img 
-        [src]="product.images && product.images.length > 0 ? product.images[0] : 'assets/images/placeholder-food.jpg'" 
-        class="card-img-top product-image" 
-        alt="{{ product.name }}"
-        [ngClass]="{'featured-image': featured}"
-      >
-      <div class="category-badge">
-        <span class="badge bg-primary">{{ product.category | titlecase }}</span>
-      </div>
-      <div *ngIf="product.isVegetarian || product.isVegan || product.isGlutenFree" class="dietary-badges">
-        <span *ngIf="product.isVegetarian" class="badge bg-success me-1">Veg</span>
-        <span *ngIf="product.isVegan" class="badge bg-success me-1">Vegan</span>
-        <span *ngIf="product.isGlutenFree" class="badge bg-success">GF</span>
-      </div>
+  <div class="position-relative">
+    <img 
+    [src]="productService.getImageUrl(product.images && product.images.length > 0 ? product.images[0] : '')" 
+    class="card-img-top product-image" 
+    alt="{{ product.name }}"
+    [ngClass]="{'featured-image': featured}"
+  >
+    <!-- Remove the "herer" text that was here -->
+    <div class="category-badge">
+      <span class="badge bg-primary">{{ product.category | titlecase }}</span>
     </div>
-    <div class="card-body">
-      <div class="d-flex justify-content-between align-items-start mb-2">
-        <h5 class="card-title">{{ product.name }}</h5>
-        <div *ngIf="product.reviewCount > 0" class="rating">
-          <i class="bi bi-star-fill text-warning"></i>
-          <span>{{ product.rating.toFixed(1) }}</span>
-        </div>
-      </div>
-      <p class="card-text description">
-        {{ product.description | slice:0:(featured ? 100 : 80) }}{{ product.description.length > (featured ? 100 : 80) ? '...' : '' }}
-      </p>
-      <div class="product-meta">
-        <span class="prep-time">
-          <i class="bi bi-clock me-1"></i> {{ product.preparationTime }} mins
-        </span>
-        <span class="serving-size">
-          <i class="bi bi-people me-1"></i> {{ product.servingSize }}
-        </span>
-      </div>
-      <div class="d-flex justify-content-between align-items-center mt-3">
-        <span class="price">${{ product.price.toFixed(2) }}</span>
-        <div class="chef-info" *ngIf="isChefObject(product.chef)">
-          <small class="text-muted">By {{ product.chef.fullName }}</small>
-        </div>
-      </div>
-    </div>
-    <div class="card-footer bg-white border-top-0">
-      <a [routerLink]="['/home/products', product._id]" class="btn btn-primary w-100">
-        {{ featured ? 'View Details' : 'Order Now' }}
-      </a>
+    <div *ngIf="product.isVegetarian || product.isVegan || product.isGlutenFree" class="dietary-badges">
+      <span *ngIf="product.isVegetarian" class="badge bg-success me-1">Veg</span>
+      <span *ngIf="product.isVegan" class="badge bg-success me-1">Vegan</span>
+      <span *ngIf="product.isGlutenFree" class="badge bg-success">GF</span>
     </div>
   </div>
+  <div class="card-body">
+    <div class="d-flex justify-content-between align-items-start mb-2">
+      <h5 class="card-title">{{ product.name }}</h5>
+      <div *ngIf="product.reviewCount > 0" class="rating">
+        <i class="bi bi-star-fill text-warning"></i>
+        <span>{{ product.rating.toFixed(1) }}</span>
+      </div>
+    </div>
+    <p class="card-text description">
+      {{ product.description | slice:0:(featured ? 100 : 80) }}{{ product.description.length > (featured ? 100 : 80) ? '...' : '' }}
+    </p>
+    <div class="product-meta">
+      <span class="prep-time">
+        <i class="bi bi-clock me-1"></i> {{ product.preparationTime }} mins
+      </span>
+      <span class="serving-size">
+        <i class="bi bi-people me-1"></i> {{ product.servingSize }}
+      </span>
+    </div>
+    <div class="d-flex justify-content-between align-items-center mt-3">
+      <span class="price">${{ product.price.toFixed(2) }}</span>
+      <div class="chef-info" *ngIf="isChefObject(product.chef)">
+        <small class="text-muted">By {{ product.chef.fullName }}</small>
+      </div>
+    </div>
+  </div>
+  <div class="card-footer bg-white border-top-0">
+    <a [routerLink]="['/home/products', product._id]" class="btn btn-primary w-100">
+      {{ featured ? 'View Details' : 'Order Now' }}
+    </a>
+  </div>
+</div>

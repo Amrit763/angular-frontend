@@ -15,9 +15,21 @@ import {
 })
 export class ProductService {
   private apiUrl = `${environment.apiUrl}/products`;
+  private baseUrl = environment.baseUrl || environment.apiUrl.split('/api')[0];
 
   constructor(private http: HttpClient) { }
 
+// In product.service.ts
+getImageUrl(path: string): string {
+  if (!path) return 'assets/placeholder-image.jpg'; // Default image
+  
+  // Use absolute URL with port 3000
+  if (!path.startsWith('http')) {
+    return `http://localhost:3000/${path}`;
+  }
+  
+  return path;
+}
   // Get all products with optional filters
   getAllProducts(
     page: number = 1, 
