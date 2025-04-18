@@ -1,108 +1,84 @@
 <!-- src/app/shared/components/header/header.component.html -->
 <header class="fixed-top">
-  <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+  <nav class="navbar navbar-expand-lg navbar-light bg-light">
     <div class="container">
-      <!-- Logo -->
-      <a class="navbar-brand" routerLink="/">
-        <span class="logo-text">HomemadeEats</span>
-      </a>
+      <!-- Left side content -->
+      <div class="navbar-brand-container">
+        <!-- Logo and brand name for all states -->
+        <a class="navbar-brand" routerLink="/">
+          <img src="assets/images/logo.png" alt="Logo" class="logo-img" *ngIf="isLoggedIn()">
+          <span class="brand-text">{{ isLoggedIn() ? 'MyBrand' : 'Home' }}</span>
+        </a>
+      </div>
       
       <!-- Toggle button for mobile -->
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+      <button class="navbar-toggler" type="button" (click)="toggleMenu()">
         <span class="navbar-toggler-icon"></span>
       </button>
       
       <!-- Navigation items -->
-      <div class="collapse navbar-collapse" id="navbarNav">
-        <!-- Regular navigation -->
-        <ul class="navbar-nav me-auto mb-2 mb-lg-0" *ngIf="!isChefMode">
-          <li class="nav-item">
-            <a class="nav-link" routerLink="/home" routerLinkActive="active">Home</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" routerLink="/home/search" routerLinkActive="active">Browse</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="#">How It Works</a>
-          </li>
-        </ul>
-        
-        <!-- Chef mode navigation -->
-        <ul class="navbar-nav me-auto mb-2 mb-lg-0" *ngIf="isChefMode">
-          <li class="nav-item">
-            <a class="nav-link" routerLink="/chef/dashboard" routerLinkActive="active">Dashboard</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" routerLink="/chef/products" routerLinkActive="active">My Products</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" routerLink="/chef/products/new" routerLinkActive="active">Add Product</a>
-          </li>
-        </ul>
-        
-        <!-- Right navigation items -->
-        <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-          <!-- Chef mode toggle - Only show if user is a chef -->
-          <li class="nav-item" *ngIf="isLoggedIn() && isChef()">
-            <div class="chef-toggle-wrapper">
-              <app-chef-toggle 
-                [isChefMode]="isChefMode" 
-                (toggleMode)="toggleChefMode()"
-              ></app-chef-toggle>
-            </div>
-          </li>
-          
+      <div [ngClass]="{'collapse': isMenuCollapsed}" class="navbar-collapse" id="navbarNav">
+        <!-- Right side navigation -->
+        <div class="navbar-nav ms-auto">
           <!-- User not logged in -->
           <ng-container *ngIf="!isLoggedIn()">
-            <li class="nav-item">
-              <a class="nav-link" routerLink="/auth/login">Login</a>
-            </li>
-            <li class="nav-item">
-              <a class="btn btn-primary" routerLink="/auth/register">Sign Up</a>
-            </li>
+            <div class="d-flex">
+              <a class="btn btn-outline-primary rounded-pill login-btn" routerLink="/auth/login">Login</a>
+            </div>
           </ng-container>
           
           <!-- User logged in -->
-          <li class="nav-item dropdown" *ngIf="isLoggedIn() && currentUser">
-            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-              <img 
-                [src]="currentUser.profileImage || 'assets/images/default-user.jpg'" 
-                alt="Profile" 
-                class="profile-image me-2"
-              >
-              {{ currentUser.fullName }}
-            </a>
-            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-              <li><a class="dropdown-item" routerLink="/user/profile">My Profile</a></li>
-              <li><a class="dropdown-item" routerLink="/user/dashboard">Dashboard</a></li>
-              
-              <!-- Admin dashboard link -->
-              <li *ngIf="isAdmin()">
-                <a class="dropdown-item" routerLink="/admin/dashboard">Admin Dashboard</a>
-              </li>
-              
-              <!-- Chef application link for non-chefs -->
-              <li *ngIf="!isChef() && !isAdmin()">
-                <a class="dropdown-item" routerLink="/user/chef-application">Become a Chef</a>
-              </li>
-              
-              <li><hr class="dropdown-divider"></li>
-              <li><a class="dropdown-item text-danger" href="#" (click)="logout(); $event.preventDefault()">Logout</a></li>
-            </ul>
-          </li>
-          
-          <!-- Cart button -->
-          <li class="nav-item">
-            <a class="nav-link cart-icon" href="#">
-              <i class="bi bi-cart"></i>
-              <span class="cart-badge">0</span>
-            </a>
-          </li>
-        </ul>
+          <ng-container *ngIf="isLoggedIn() && currentUser">
+            <!-- Cart Icon -->
+            <li class="nav-item me-3">
+              <a class="nav-link cart-icon" routerLink="/cart">
+                <i class="bi bi-cart"></i>
+                <span class="cart-badge" *ngIf="cartItemCount > 0">{{cartItemCount}}</span>
+              </a>
+            </li>
+            
+            <!-- User dropdown -->
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" 
+                (click)="toggleDropdown($event)">
+                <!-- <img [src]="currentUser.profileImage || 'assets/images/default-user.jpg'" 
+                  alt="Profile" class="profile-image me-2"> -->
+                {{ currentUser.fullName }}
+              </a>
+              <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown" 
+                  [ngClass]="{'show': isDropdownOpen}">
+                <li><a class="dropdown-item" routerLink="/user/dashboard">My Profile</a></li>
+                
+                <!-- Admin dashboard link - Only show if user is an admin -->
+                <li *ngIf="isAdmin()">
+                  <a class="dropdown-item" routerLink="/admin/dashboard">
+                    <i class="bi bi-speedometer2 me-2"></i>Admin Dashboard
+                  </a>
+                </li>
+                
+                <!-- Chef mode toggle - Only show if user is a chef -->
+                <li *ngIf="isChef()">
+                  <a class="dropdown-item chef-mode-toggle" (click)="toggleChefMode()">
+                    <span>Switch to {{ isChefMode ? 'User' : 'Chef' }} Mode</span>
+                    <div class="form-check form-switch ms-2">
+                      <input class="form-check-input" type="checkbox" [checked]="isChefMode" 
+                        (change)="toggleChefMode()" id="chefModeSwitch">
+                    </div>
+                  </a>
+                </li>
+                
+                <!-- Become a chef link for non-chefs -->
+                <li *ngIf="!isChef() && !isAdmin()">
+                  <a class="dropdown-item" routerLink="/user/chef-application">Become a Chef</a>
+                </li>
+                
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item text-danger" href="#" (click)="logout(); $event.preventDefault()">Logout</a></li>
+              </ul>
+            </li>
+          </ng-container>
+        </div>
       </div>
     </div>
   </nav>
 </header>
-
-<!-- Empty space to prevent content from hiding behind the fixed header -->
-<div class="header-spacer"></div>

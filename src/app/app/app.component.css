@@ -1,4 +1,18 @@
 /* src/app/app.component.css */
 .main-content {
-    min-height: calc(100vh - 200px);
+  min-height: calc(100vh - 200px);
+  padding-top: 75px; /* Add padding to account for fixed header height */
+}
+
+/* When on admin routes (no header), remove the top padding */
+:host-context(html:has(router-outlet[name="admin"])) .main-content,
+:host(.admin-view) .main-content {
+  padding-top: 0;
+}
+
+/* On smaller screens, adjust the top padding */
+@media (max-width: 992px) {
+  .main-content {
+    padding-top: 80px;
   }
+}

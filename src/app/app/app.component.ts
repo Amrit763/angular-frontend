@@ -1,8 +1,8 @@
-
 import { Component, OnInit } from '@angular/core';
 import { Router, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
 import { AuthService } from '../core/auth/auth.service';
+import { TokenService } from '../core/auth/token.service';
 import { RouterModule } from '@angular/router';
 import { HeaderComponent } from '../shared/components/header/header.component';
 import { FooterComponent } from '../shared/components/footer/footer.component';
@@ -18,12 +18,23 @@ import { NgIf } from '@angular/common';
 export class AppComponent implements OnInit {
   constructor(
     private router: Router,
-    private authService: AuthService
+    private authService: AuthService,
+    private tokenService: TokenService
   ) {}
 
   isResetPasswordRoute(): boolean {
     // Check if the current URL contains the reset-password path
     return this.router.url.includes('/auth/reset-password/');
+  }
+
+  isAdminRoute(): boolean {
+    // Check if the current URL is in the admin section
+    return this.router.url.includes('/admin/');
+  }
+
+  shouldShowHeaderFooter(): boolean {
+    // Don't show header/footer on reset password route or admin routes
+    return !this.isResetPasswordRoute() && !this.isAdminRoute();
   }
 
   ngOnInit(): void {

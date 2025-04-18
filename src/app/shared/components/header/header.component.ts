@@ -1,105 +1,11 @@
-// import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
-// import { Subscription } from 'rxjs';
-// import { AuthService } from '../../../core/auth/auth.service';
-// import { TokenService } from '../../../core/auth/token.service';
-// import { User } from '../../../core/auth/user.model';
-// import { CommonModule } from '@angular/common';
-// import { RouterModule } from '@angular/router';
-
-// @Component({
-//   selector: 'app-header',
-//   templateUrl: './header.component.html',
-//   styleUrls: ['./header.component.css'],
-//   standalone: true,
-//   imports: [CommonModule, RouterModule]
-// })
-// export class HeaderComponent implements OnInit, OnDestroy {
-//   isLoggedIn = false;
-//   isAdmin = false;
-//   isChef = false;
-//   userName = '';
-//   isDropdownOpen = false;
-//   private userSubscription?: Subscription;
-
-//   constructor(
-//     private authService: AuthService,
-//     private tokenService: TokenService
-//   ) { }
-
-//   ngOnInit(): void {
-//     // Check initial login status
-//     this.updateUserStatus();
-    
-//     // Subscribe to user changes
-//     this.userSubscription = this.authService.currentUser$.subscribe(
-//       (user: User | null) => {
-//         if (user) {
-//           this.isLoggedIn = true;
-//           this.isAdmin = user.role === 'admin';
-//           this.isChef = user.role === 'chef';
-//           this.userName = user.fullName;
-//         } else {
-//           this.isLoggedIn = false;
-//           this.isAdmin = false;
-//           this.isChef = false;
-//           this.userName = '';
-//         }
-//       }
-//     );
-//   }
-
-//   ngOnDestroy(): void {
-//     if (this.userSubscription) {
-//       this.userSubscription.unsubscribe();
-//     }
-//   }
-
-//   toggleDropdown(event: Event): void {
-//     event.preventDefault();
-//     event.stopPropagation();
-//     this.isDropdownOpen = !this.isDropdownOpen;
-//   }
-
-//   @HostListener('document:click', ['$event'])
-//   onDocumentClick(event: MouseEvent): void {
-//     // Close dropdown when clicking outside
-//     if (this.isDropdownOpen) {
-//       const dropdownElement = (event.target as HTMLElement).closest('.dropdown');
-//       if (!dropdownElement) {
-//         this.isDropdownOpen = false;
-//       }
-//     }
-//   }
-
-//   logout(): void {
-//     this.authService.logout();
-//     this.isDropdownOpen = false; // Close dropdown after logout
-//   }
-
-//   private updateUserStatus(): void {
-//     this.isLoggedIn = this.tokenService.isLoggedIn();
-    
-//     if (this.isLoggedIn) {
-//       const user = this.tokenService.getUser();
-//       if (user) {
-//         this.isAdmin = user.role === 'admin';
-//         this.isChef = user.role === 'chef';
-//         this.userName = user.fullName;
-//       }
-//     }
-//   }
-// }
-
-
 // src/app/shared/components/header/header.component.ts
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { Router } from '@angular/router';
 import { AuthService } from '../../../core/auth/auth.service';
 import { TokenService } from '../../../core/auth/token.service';
 import { User } from '../../../core/auth/user.model';
-import { ChefToggleComponent } from '../chef-toggle/chef-toggle.component';
 
 @Component({
   selector: 'app-header',
@@ -108,13 +14,15 @@ import { ChefToggleComponent } from '../chef-toggle/chef-toggle.component';
   standalone: true,
   imports: [
     CommonModule,
-    RouterModule,
-    ChefToggleComponent
+    RouterModule
   ]
 })
-export class HeaderComponent implements OnInit {
+export class HeaderComponent implements OnInit, AfterViewInit {
   currentUser: User | null = null;
   isChefMode = false;
+  cartItemCount = 0;
+  isDropdownOpen = false; // Track dropdown state
+  isMenuCollapsed = true; // Track mobile menu collapsed state
 
   constructor(
     private authService: AuthService,
@@ -126,6 +34,11 @@ export class HeaderComponent implements OnInit {
     // Subscribe to user changes
     this.authService.currentUser$.subscribe(user => {
       this.currentUser = user;
+      
+      // Reset chef mode when user changes or logs out
+      if (!this.isChef()) {
+        this.isChefMode = false;
+      }
     });
 
     // Check if user is already logged in
@@ -133,6 +46,38 @@ export class HeaderComponent implements OnInit {
     if (user) {
       this.currentUser = user;
     }
+    
+    // For demonstration purposes
+    this.cartItemCount = 3;
+  }
+
+  ngAfterViewInit(): void {
+    // Initialize dropdown toggling
+    this.initializeDropdowns();
+  }
+
+  // Toggle mobile menu
+  toggleMenu(): void {
+    this.isMenuCollapsed = !this.isMenuCollapsed;
+  }
+
+  // Method to manually initialize dropdowns
+  private initializeDropdowns(): void {
+    // Close dropdowns when clicking outside
+    document.addEventListener('click', (event) => {
+      if (!(event.target as HTMLElement).closest('.dropdown')) {
+        const menus = document.querySelectorAll('.dropdown-menu.show');
+        menus.forEach(menu => menu.classList.remove('show'));
+        this.isDropdownOpen = false;
+      }
+    });
+  }
+
+  // Toggle dropdown manually
+  toggleDropdown(event: Event): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDropdownOpen = !this.isDropdownOpen;
   }
 
   isLoggedIn(): boolean {
@@ -160,5 +105,6 @@ export class HeaderComponent implements OnInit {
 
   logout(): void {
     this.authService.logout();
+    this.router.navigate(['/']);
   }
 }
