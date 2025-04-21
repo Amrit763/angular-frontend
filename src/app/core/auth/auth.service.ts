@@ -92,13 +92,27 @@ export class AuthService {
     .pipe(catchError(this.handleError));
   }
 
-  changePassword(currentPassword: string, newPassword: string): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.apiUrl}/change-password`, { 
-      currentPassword, 
-      newPassword 
-    })
-    .pipe(catchError(this.handleError));
-  }
+
+changePassword(currentPassword: string, newPassword: string): Observable<AuthResponse> {
+  // Create the correct request payload based on backend requirements
+  const requestBody = {
+    currentPassword,
+    newPassword,
+    // Some backends also require confirmPassword - add if your API needs it
+    confirmPassword: newPassword
+  };
+  
+  console.log('Sending password change request to:', `${this.apiUrl}/change-password`);
+  
+  return this.http.post<AuthResponse>(`${this.apiUrl}/change-password`, requestBody)
+    .pipe(
+      tap(response => console.log('Password change API response:', response)),
+      catchError(error => {
+        console.error('Password change API error:', error);
+        return this.handleError(error);
+      })
+    );
+}
 
   getCurrentUser(): Observable<any> {
     return this.http.get<any>(`${this.apiUrl}/me`)

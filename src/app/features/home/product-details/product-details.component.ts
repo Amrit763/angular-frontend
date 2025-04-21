@@ -2,8 +2,10 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { ProductService } from '../../../core/services/product.service';
+import { CartService } from '../../../core/services/cart.service';
+import { TokenService } from '../../../core/auth/token.service';
 import { Product, ChefInfo, ProductResponse } from '../../../core/models/product.model';
 
 @Component({
@@ -22,10 +24,14 @@ export class ProductDetailsComponent implements OnInit {
   error: string | null = null;
   activeImageIndex = 0;
   quantity = 1;
+  addingToCart = false;
 
   constructor(
     private route: ActivatedRoute,
-    public productService: ProductService
+    private router: Router,
+    public productService: ProductService,
+    private cartService: CartService,
+    private tokenService: TokenService
   ) { }
 
   ngOnInit(): void {
@@ -73,11 +79,29 @@ export class ProductDetailsComponent implements OnInit {
   addToCart(): void {
     if (!this.product) return;
     
-    // Here you would implement the cart functionality
-    console.log(`Added to cart: ${this.quantity} x ${this.product.name}`);
+    // Check if user is logged in
+    if (!this.tokenService.isLoggedIn()) {
+      // Redirect to login page with return URL
+      this.router.navigate(['/auth/login'], {
+        queryParams: { returnUrl: this.router.url }
+      });
+      return;
+    }
+
+    this.addingToCart = true;
     
-    // For simplicity, just show an alert
-    alert(`Added ${this.quantity} ${this.product.name} to cart!`);
+    // Add product to cart
+    this.cartService.addToCart(this.product._id, this.quantity).subscribe({
+      next: (response) => {
+        console.log(`Added to cart: ${this.quantity} x ${this.product?.name}`);
+        this.addingToCart = false;
+      },
+      error: (error) => {
+        console.error('Error adding to cart:', error);
+        this.error = typeof error === 'string' ? error : 'Failed to add to cart';
+        this.addingToCart = false;
+      }
+    });
   }
 
   isChefObject(chef: string | ChefInfo): chef is ChefInfo {

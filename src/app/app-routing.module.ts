@@ -20,13 +20,22 @@ const routes: Routes = [
     data: { role: 'admin' }
   },
   {
+    path: 'home',
+    loadChildren: () => import('./features/home/home.module').then(m => m.HomeModule)
+  },
+  {
+    path: 'cart',
+    loadChildren: () => import('./features/cart/cart.module').then(m => m.CartModule),
+    canActivate: [AuthGuard]
+  },
+  {
     path: '',
-    redirectTo: 'user/dashboard',
+    redirectTo: 'home',
     pathMatch: 'full'
   },
   {
     path: '**',
-    redirectTo: 'user/dashboard'
+    redirectTo: 'home'
   }
 ];
 

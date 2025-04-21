@@ -1,0 +1,180 @@
+/* src/app/features/cart/checkout/checkout.component.css */
+.checkout-container {
+    margin-top: 20px;
+  }
+  
+  .card {
+    border-radius: 10px;
+    border: none;
+    overflow: hidden;
+  }
+  
+  .card-header {
+    border-bottom: 1px solid #f1f1f1;
+    padding: 15px 20px;
+  }
+  
+  /* Checkout steps styling */
+  .checkout-steps {
+    position: relative;
+    padding: 10px 0;
+  }
+  
+  .step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    z-index: 2;
+  }
+  
+  .step-number {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background-color: #e9ecef;
+    color: #6c757d;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    margin-bottom: 5px;
+    transition: all 0.3s;
+  }
+  
+  .step-title {
+    font-size: 0.8rem;
+    color: #6c757d;
+    text-align: center;
+    transition: all 0.3s;
+  }
+  
+  .step-connector {
+    flex-grow: 1;
+    height: 2px;
+    background-color: #e9ecef;
+    position: relative;
+    z-index: 1;
+    transition: all 0.3s;
+  }
+  
+  /* Active and completed steps */
+  .step.active .step-number {
+    background-color: #155479;
+    color: white;
+  }
+  
+  .step.active .step-title {
+    color: #155479;
+    font-weight: 600;
+  }
+  
+  .step.completed .step-number {
+    background-color: #28a745;
+    color: white;
+  }
+  
+  .step-connector.active {
+    background-color: #28a745;
+  }
+  
+  /* Form styling */
+  .form-label {
+    font-weight: 500;
+    color: #555;
+    margin-bottom: 6px;
+  }
+  
+  .form-control:focus,
+  .form-select:focus {
+    border-color: #155479;
+    box-shadow: 0 0 0 0.25rem rgba(21, 84, 121, 0.15);
+  }
+  
+  /* Payment method cards */
+  .payment-method-card {
+    border: 2px solid #e9ecef;
+    border-radius: 10px;
+    padding: 15px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s;
+  }
+  
+  .payment-method-card:hover {
+    border-color: #155479;
+    background-color: rgba(21, 84, 121, 0.05);
+  }
+  
+  .payment-method-card.active {
+    border-color: #155479;
+    background-color: rgba(21, 84, 121, 0.1);
+  }
+  
+  .payment-method-icon {
+    font-size: 2rem;
+    margin-bottom: 8px;
+    color: #555;
+  }
+  
+  .payment-method-name {
+    font-weight: 500;
+    color: #333;
+  }
+  
+  /* Cart item in summary */
+  .cart-item {
+    padding: 10px 0;
+    border-bottom: 1px solid #f1f1f1;
+  }
+  
+  .cart-item:last-child {
+    border-bottom: none;
+  }
+  
+  .item-price {
+    font-weight: 600;
+    color: #155479;
+  }
+  
+  /* Buttons */
+  .btn-primary {
+    background-color: #155479;
+    border-color: #155479;
+  }
+  
+  .btn-primary:hover {
+    background-color: #0d3f5a;
+    border-color: #0d3f5a;
+  }
+  
+  .btn-outline-primary {
+    color: #155479;
+    border-color: #155479;
+  }
+  
+  .btn-outline-primary:hover {
+    background-color: #155479;
+    color: white;
+  }
+  
+  .btn-outline-secondary {
+    color: #6c757d;
+    border-color: #6c757d;
+  }
+  
+  .btn-outline-secondary:hover {
+    background-color: #6c757d;
+    color: white;
+  }
+  
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .step-title {
+      font-size: 0.7rem;
+    }
+    
+    .payment-method-card {
+      margin-bottom: 10px;
+    }
+  }

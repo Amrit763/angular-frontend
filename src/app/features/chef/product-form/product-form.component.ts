@@ -30,8 +30,7 @@ export class ProductFormComponent implements OnInit {
   productToEdit: Product | null = null;
 
   categories = [
-    'main course', 'appetizer', 'dessert', 'beverage', 
-    'breakfast', 'lunch', 'dinner', 'snack', 'soup', 'salad'
+    'appetizer', 'main course', 'dessert', 'beverage', 'snack'
   ];
 
   commonAllergens = [
@@ -66,7 +65,7 @@ export class ProductFormComponent implements OnInit {
       preparationTime: ['', [Validators.required, Validators.min(1)]],
       servingSize: ['', Validators.required],
       ingredients: this.fb.array([this.createIngredientControl()]),
-      allergens: this.fb.array([]),
+      // allergens: this.fb.array([]),
       isVegetarian: [false],
       isVegan: [false],
       isGlutenFree: [false],

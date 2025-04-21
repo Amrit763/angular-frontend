@@ -1,0 +1,167 @@
+<!-- src/app/features/cart/cart/cart.component.html -->
+<div class="container my-5 py-4">
+    <div class="row">
+        <div class="col-12">
+            <h2 class="mb-4">Your Cart</h2>
+
+            <!-- Loading state -->
+            <div *ngIf="isLoading" class="text-center my-5">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <p class="mt-3">Loading your cart...</p>
+            </div>
+
+            <!-- Error message -->
+            <div *ngIf="error && !isLoading" class="alert alert-danger">
+                {{ error }}
+            </div>
+
+            <!-- Empty cart message -->
+            <div *ngIf="!isLoading && (!cartData || cartData.count === 0) && !error" class="text-center my-5">
+                <div class="empty-cart-icon mb-4">
+                    <i class="bi bi-cart-x" style="font-size: 5rem; color: #ccc;"></i>
+                </div>
+                <h3 class="mb-3">Your cart is empty</h3>
+                <p class="text-muted mb-4">Looks like you haven't added any items to your cart yet.</p>
+                <button class="btn btn-primary btn-lg" (click)="continueShopping()">
+                    Continue Shopping
+                </button>
+            </div>
+
+            <!-- Cart items -->
+            <div *ngIf="!isLoading && cartData && cartData.count > 0" class="cart-container">
+                <div class="row">
+                    <!-- Cart items list -->
+                    <div class="col-lg-8">
+                        <div class="card shadow-sm mb-4">
+                            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0">Items ({{ cartData.count }})</h5>
+                                <button class="btn btn-sm btn-outline-danger" (click)="clearCart()">
+                                    <i class="bi bi-trash me-1"></i>Clear Cart
+                                </button>
+                            </div>
+                            <div class="card-body p-0">
+                                <div class="table-responsive">
+                                    <table class="table table-hover table-borderless mb-0">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th scope="col">Product</th>
+                                                <th scope="col" class="text-center">Price</th>
+                                                <th scope="col" class="text-center">Quantity</th>
+                                                <th scope="col" class="text-end">Subtotal</th>
+                                                <th scope="col" class="text-end">Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr *ngFor="let item of cartData.items">
+                                                <!-- Product info -->
+                                                <td style="min-width: 280px;">
+                                                    <div class="d-flex align-items-center">
+                                                        <div class="cart-item-image me-3">
+                                                            <img [src]="productService.getImageUrl(item.product.images && item.product.images.length > 0 ? item.product.images[0] : '')"
+                                                                alt="{{ item.product.name }}" class="img-thumbnail"
+                                                                style="width: 70px; height: 70px; object-fit: cover;">
+                                                        </div>
+                                                        <div>
+                                                            <h6 class="mb-1">{{ item.product.name }}</h6>
+                                                            <small class="text-muted d-block">{{ item.product.category
+                                                                }}</small>
+                                                            <small
+                                                                *ngIf="item.product.chef && item.product.chef.fullName"
+                                                                class="text-muted">
+                                                                By {{ item.product.chef.fullName }}
+                                                            </small>
+                                                        </div>
+                                                    </div>
+                                                </td>
+
+                                                <!-- Price -->
+                                                <td class="text-center align-middle">
+                                                    ${{ item.product.price.toFixed(2) }}
+                                                </td>
+
+                                                <!-- Quantity -->
+                                                <td class="text-center align-middle" style="min-width: 120px;">
+                                                    <div
+                                                        class="d-flex align-items-center justify-content-center quantity-control">
+                                                        <button class="btn btn-sm btn-outline-secondary"
+                                                            (click)="updateQuantity(item, item.quantity - 1)"
+                                                            [disabled]="item.quantity <= 1 || isUpdatingQuantity">
+                                                            <i class="bi bi-dash"></i>
+                                                        </button>
+                                                        <span class="mx-2">{{ item.quantity }}</span>
+                                                        <button class="btn btn-sm btn-outline-secondary"
+                                                            (click)="updateQuantity(item, item.quantity + 1)"
+                                                            [disabled]="isUpdatingQuantity">
+                                                            <i class="bi bi-plus"></i>
+                                                        </button>
+                                                    </div>
+                                                </td>
+
+                                                <!-- Subtotal -->
+                                                <td class="text-end align-middle">
+                                                    <strong>${{ (item.product.price * item.quantity).toFixed(2)
+                                                        }}</strong>
+                                                </td>
+
+                                                <!-- Actions -->
+                                                <td class="text-end align-middle">
+                                                    <button class="btn btn-sm btn-outline-danger"
+                                                        (click)="removeItem(item._id)"
+                                                        [disabled]="itemsBeingRemoved[item._id]">
+                                                        <i *ngIf="!itemsBeingRemoved[item._id]" class="bi bi-trash"></i>
+                                                        <span *ngIf="itemsBeingRemoved[item._id]"
+                                                            class="spinner-border spinner-border-sm" role="status"
+                                                            aria-hidden="true"></span>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="card-footer bg-white">
+                                <button class="btn btn-outline-primary" (click)="continueShopping()">
+                                    <i class="bi bi-arrow-left me-2"></i>Continue Shopping
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Order summary -->
+                    <div class="col-lg-4">
+                        <div class="card shadow-sm">
+                            <div class="card-header bg-white">
+                                <h5 class="mb-0">Order Summary</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between mb-3">
+                                    <span>Subtotal</span>
+                                    <span>${{ cartData.subtotal.toFixed(2) }}</span>
+                                </div>
+                                <div class="d-flex justify-content-between mb-3">
+                                    <span>Service Fee (10%)</span>
+                                    <span>${{ cartData.serviceFee.toFixed(2) }}</span>
+                                </div>
+                                <hr>
+                                <div class="d-flex justify-content-between mb-3">
+                                    <strong>Total</strong>
+                                    <strong>${{ cartData.total.toFixed(2) }}</strong>
+                                </div>
+                                <div class="d-grid gap-2 mt-4">
+                                    <button class="btn btn-primary btn-lg" (click)="proceedToCheckout()">
+                                        Proceed to Checkout
+                                    </button>
+                                </div>
+                                <p class="text-muted small mt-3 mb-0">
+                                    By proceeding to checkout, you agree to our Terms of Service and Privacy Policy.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

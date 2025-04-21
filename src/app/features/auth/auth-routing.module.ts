@@ -15,5 +15,5 @@ export const AUTH_ROUTES: Routes = [
   { path: 'reset-password/:token', component: ResetPasswordComponent },
   { path: 'verify-email/:token', component: VerifyEmailComponent },
   { path: 'google-callback', component: GoogleCallbackComponent },
-  { path: '2fa', component: TwoFactorComponent }
+  // { path: '2fa', component: TwoFactorComponent }
 ];

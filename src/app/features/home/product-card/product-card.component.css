@@ -1,110 +1,134 @@
 /* src/app/features/home/product-card/product-card.component.css */
 .product-card {
-    border: none;
-    border-radius: 12px;
-    overflow: hidden;
-    transition: transform 0.3s, box-shadow 0.3s;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  }
-  
-  .product-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-  }
-  
-  .product-image {
-    height: 180px;
-    object-fit: cover;
-    transition: transform 0.5s;
-  }
-  
-  .featured-image {
-    height: 220px;
-  }
-  
-  .product-card:hover .product-image {
-    transform: scale(1.05);
-  }
-  
-  .category-badge {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    z-index: 2;
-  }
-  
-  .dietary-badges {
-    position: absolute;
-    bottom: 10px;
-    left: 10px;
-    z-index: 2;
-  }
-  
-  .card-title {
-    font-weight: 600;
-    color: #333;
-    margin-right: 10px;
-    font-size: 1.1rem;
-  }
-  
-  .description {
-    color: #666;
-    font-size: 0.9rem;
-    line-height: 1.5;
-    height: 2.7rem;
-    overflow: hidden;
-  }
-  
-  .price {
-    font-weight: 700;
-    color: #ff6b6b;
-    font-size: 1.2rem;
-  }
-  
-  .rating {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-  }
-  
-  .rating i {
-    color: #ffb100;
-  }
-  
-  .product-meta {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 0.5rem;
-    color: #777;
-    font-size: 0.85rem;
-  }
-  
-  .btn-primary {
-    background-color: #ff6b6b;
-    border-color: #ff6b6b;
-  }
-  
-  .btn-primary:hover {
-    background-color: #ff5252;
-    border-color: #ff5252;
-  }
-  
-  .bg-primary {
-    background-color: #ff6b6b !important;
-  }
-  
-  .bg-success {
-    background-color: #66bb6a !important;
-  }
-  
-  .prep-time, .serving-size {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    font-size: 0.8rem;
-    color: #777;
-  }
-  
-  .chef-info small {
-    font-size: 0.85rem;
-  }
+  border: none;
+  border-radius: 12px;
+  overflow: hidden;
+  transition: transform 0.3s, box-shadow 0.3s;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.product-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+.product-image {
+  height: 180px;
+  object-fit: cover;
+  transition: transform 0.5s;
+}
+
+.featured-image {
+  height: 220px;
+}
+
+.product-card:hover .product-image {
+  transform: scale(1.05);
+}
+
+.category-badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 2;
+}
+
+.dietary-badges {
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+  z-index: 2;
+}
+
+.card-title {
+  font-weight: 600;
+  color: #333;
+  margin-right: 10px;
+  font-size: 1.1rem;
+}
+
+.description {
+  color: #666;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  height: 2.7rem;
+  overflow: hidden;
+}
+
+.price {
+  font-weight: 700;
+  color: #155479;
+  font-size: 1.2rem;
+}
+
+.rating {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.rating i {
+  color: #ffb100;
+}
+
+.product-meta {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 0.5rem;
+  color: #777;
+  font-size: 0.85rem;
+}
+
+.btn-primary {
+  background-color: #155479;
+  border-color: #155479;
+}
+
+.btn-outline-primary {
+  color: #155479;
+  border-color: #155479;
+}
+
+.btn-primary:hover, .btn-outline-primary:hover {
+  background-color: #ff5252;
+  border-color: #ff5252;
+}
+
+.bg-primary {
+  background-color: #155479 !important;
+}
+
+.bg-success {
+  background-color: #66bb6a !important;
+}
+
+.prep-time, .serving-size {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.8rem;
+  color: #777;
+}
+
+.chef-info small {
+  font-size: 0.85rem;
+}
+
+/* Add to cart button styling */
+.add-to-cart-btn {
+  width: 45px;
+  height: 38px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s;
+}
+
+.add-to-cart-btn i {
+  font-size: 1.2rem;
+}
+
+.add-to-cart-btn:hover {
+  transform: scale(1.05);
+}

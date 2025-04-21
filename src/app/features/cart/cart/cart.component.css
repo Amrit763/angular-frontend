@@ -1,0 +1,107 @@
+/* src/app/features/cart/cart/cart.component.css */
+.cart-container {
+    margin-top: 20px;
+  }
+  
+  .card {
+    border-radius: 10px;
+    border: none;
+    overflow: hidden;
+  }
+  
+  .card-header {
+    border-bottom: 1px solid #f1f1f1;
+    padding: 15px 20px;
+  }
+  
+  .table th, .table td {
+    padding: 15px 20px;
+    vertical-align: middle;
+  }
+  
+  .table thead th {
+    font-weight: 600;
+    color: #555;
+    font-size: 0.95rem;
+  }
+  
+  .table tbody tr {
+    border-bottom: 1px solid #f1f1f1;
+  }
+  
+  .table tbody tr:last-child {
+    border-bottom: none;
+  }
+  
+  .quantity-control {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 20px;
+    padding: 0 5px;
+  }
+  
+  .quantity-control button {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+  }
+  
+  .quantity-control span {
+    width: 30px;
+    text-align: center;
+  }
+  
+  .btn-primary {
+    background-color: #155479;
+    border-color: #155479;
+  }
+  
+  .btn-primary:hover {
+    background-color: #0d3f5a;
+    border-color: #0d3f5a;
+  }
+  
+  .btn-outline-primary {
+    color: #155479;
+    border-color: #155479;
+  }
+  
+  .btn-outline-primary:hover {
+    background-color: #155479;
+    color: white;
+  }
+  
+  .btn-outline-danger {
+    color: #dc3545;
+    border-color: #dc3545;
+  }
+  
+  .btn-outline-danger:hover {
+    background-color: #dc3545;
+    color: white;
+  }
+  
+  .empty-cart-icon {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 120px;
+    height: 120px;
+    margin: 0 auto;
+    border-radius: 50%;
+    background-color: #f8f9fa;
+  }
+  
+  @media (max-width: 768px) {
+    .table {
+      min-width: 650px;
+    }
+    
+    .table-responsive {
+      overflow-x: auto;
+    }
+  }

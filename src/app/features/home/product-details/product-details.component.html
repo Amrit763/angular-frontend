@@ -132,8 +132,18 @@
             <!-- Order button -->
             <div class="order-buttons">
               <div class="d-grid gap-2">
-                <button class="btn btn-primary btn-lg" (click)="addToCart()">
-                  <i class="bi bi-cart-plus me-2"></i>Add to Cart - ${{ getTotal().toFixed(2) }}
+                <button 
+                  class="btn btn-primary btn-lg" 
+                  (click)="addToCart()" 
+                  [disabled]="addingToCart"
+                >
+                  <span *ngIf="!addingToCart">
+                    <i class="bi bi-cart-plus me-2"></i>Add to Cart - ${{ getTotal().toFixed(2) }}
+                  </span>
+                  <span *ngIf="addingToCart">
+                    <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                    Adding to cart...
+                  </span>
                 </button>
               </div>
             </div>

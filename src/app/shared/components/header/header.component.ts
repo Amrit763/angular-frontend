@@ -1,11 +1,13 @@
 // src/app/shared/components/header/header.component.ts
-import { Component, OnInit, AfterViewInit } from '@angular/core';
+import { Component, OnInit, AfterViewInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { Router } from '@angular/router';
 import { AuthService } from '../../../core/auth/auth.service';
 import { TokenService } from '../../../core/auth/token.service';
+import { CartService } from '../../../core/services/cart.service';
 import { User } from '../../../core/auth/user.model';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-header',
@@ -17,29 +19,39 @@ import { User } from '../../../core/auth/user.model';
     RouterModule
   ]
 })
-export class HeaderComponent implements OnInit, AfterViewInit {
+export class HeaderComponent implements OnInit, AfterViewInit, OnDestroy {
   currentUser: User | null = null;
   isChefMode = false;
   cartItemCount = 0;
   isDropdownOpen = false; // Track dropdown state
   isMenuCollapsed = true; // Track mobile menu collapsed state
+  
+  private subscriptions: Subscription[] = [];
 
   constructor(
     private authService: AuthService,
     private tokenService: TokenService,
+    private cartService: CartService,
     private router: Router
   ) { }
 
   ngOnInit(): void {
     // Subscribe to user changes
-    this.authService.currentUser$.subscribe(user => {
-      this.currentUser = user;
-      
-      // Reset chef mode when user changes or logs out
-      if (!this.isChef()) {
-        this.isChefMode = false;
-      }
-    });
+    this.subscriptions.push(
+      this.authService.currentUser$.subscribe(user => {
+        this.currentUser = user;
+        
+        // Reset chef mode when user changes or logs out
+        if (!this.isChef()) {
+          this.isChefMode = false;
+        }
+        
+        // If user is logged in, get cart count
+        if (user) {
+          this.cartService.getCart().subscribe();
+        }
+      })
+    );
 
     // Check if user is already logged in
     const user = this.tokenService.getUser();
@@ -47,13 +59,22 @@ export class HeaderComponent implements OnInit, AfterViewInit {
       this.currentUser = user;
     }
     
-    // For demonstration purposes
-    this.cartItemCount = 3;
+    // Subscribe to cart count changes
+    this.subscriptions.push(
+      this.cartService.cartCount$.subscribe(count => {
+        this.cartItemCount = count;
+      })
+    );
   }
 
   ngAfterViewInit(): void {
     // Initialize dropdown toggling
     this.initializeDropdowns();
+  }
+  
+  ngOnDestroy(): void {
+    // Unsubscribe to prevent memory leaks
+    this.subscriptions.forEach(sub => sub.unsubscribe());
   }
 
   // Toggle mobile menu
@@ -107,4 +128,5 @@ export class HeaderComponent implements OnInit, AfterViewInit {
     this.authService.logout();
     this.router.navigate(['/']);
   }
+
 }

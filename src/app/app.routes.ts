@@ -29,6 +29,11 @@ export const routes: Routes = [
     data: { role: 'chef' }
   },
   {
+    path: 'cart',
+    loadChildren: () => import('./features/cart/cart.module').then(m => m.CartModule),
+    canActivate: [AuthGuard]
+  },
+  {
     path: 'home',
     loadChildren: () => import('./features/home/home.module').then(m => m.HomeModule)
   },

@@ -1,133 +1,157 @@
 <!-- src/app/features/home/product-search/product-search.component.html -->
 <div class="container py-5">
-    <div class="row mb-4">
-      <div class="col-12">
-        <h1 class="section-title">Browse Products</h1>
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold">Browse Products</h2>
+    <button class="btn btn-outline-primary" (click)="clearFilters()">Clear Filters</button>
+  </div>
+  
+  <!-- Search box -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card border-0 shadow-sm">
+        <div class="card-body">
+          <div class="input-group">
+            <span class="input-group-text bg-white border-end-0">
+              <i class="bi bi-search"></i>
+            </span>
+            <input 
+              type="text" 
+              class="form-control border-start-0" 
+              placeholder="Search for dishes, ingredients, or chefs..." 
+              [value]="searchQuery"
+              (input)="onSearchInput($event)"
+            >
+          </div>
+        </div>
       </div>
     </div>
-    
-    <!-- Search box -->
-    <div class="row mb-4">
-      <div class="col-12">
-        <div class="card shadow-sm">
-          <div class="card-body">
-            <div class="input-group">
-              <span class="input-group-text bg-white border-end-0">
-                <i class="bi bi-search"></i>
-              </span>
+  </div>
+
+  <div class="row">
+    <!-- Filters sidebar -->
+    <div class="col-lg-3 mb-4">
+      <div class="card border-0 shadow-sm">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="mb-0 fw-bold">Filters</h5>
+            <button class="btn btn-sm btn-link p-0" (click)="clearFilters()">
+              Reset
+            </button>
+          </div>
+          
+          <!-- Categories -->
+          <div class="filter-section">
+            <h6 class="fw-bold">Categories</h6>
+            <div class="category-list">
+              <div 
+                class="category-item" 
+                [ngClass]="{'active': selectedCategory === ''}"
+                (click)="selectCategory('')"
+              >
+                All Categories
+              </div>
+              <div 
+                *ngFor="let category of categories" 
+                class="category-item" 
+                [ngClass]="{'active': selectedCategory === category}"
+                (click)="selectCategory(category)"
+              >
+                {{ category | titlecase }}
+              </div>
+            </div>
+          </div>
+          
+          <!-- Price Range -->
+          <div class="filter-section">
+            <h6 class="fw-bold">Price Range</h6>
+            <div class="price-range">
+              <div class="d-flex justify-content-between mb-2">
+                <span>${{ priceRange[0] }}</span>
+                <span>${{ priceRange[1] }}</span>
+              </div>
               <input 
-                type="text" 
-                class="form-control border-start-0" 
-                placeholder="Search for dishes, ingredients, or chefs..." 
-                [value]="searchQuery"
-                (input)="onSearchInput($event)"
+                type="range" 
+                class="form-range" 
+                min="0" 
+                [max]="maxPrice()" 
+                [(ngModel)]="priceRange[1]" 
+                (change)="applyFilters()"
               >
             </div>
           </div>
-        </div>
-      </div>
-    </div>
-  
-    <div class="row">
-      <!-- Filters sidebar -->
-      <div class="col-md-3 mb-4">
-        <div class="card shadow-sm">
-          <div class="card-body">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-              <h5 class="mb-0">Filters</h5>
-              <button class="btn btn-sm btn-link text-reset p-0" (click)="clearFilters()">
-                Clear All
-              </button>
+          
+          <!-- Dietary Preferences -->
+          <div class="filter-section">
+            <h6 class="fw-bold">Dietary Preferences</h6>
+            <div class="form-check mb-2">
+              <input 
+                class="form-check-input" 
+                type="checkbox" 
+                id="vegetarian" 
+                [(ngModel)]="isVegetarian" 
+                (change)="applyFilters()"
+              >
+              <label class="form-check-label" for="vegetarian">
+                Vegetarian
+              </label>
             </div>
-            
-            <!-- Categories -->
-            <div class="filter-section">
-              <h6>Categories</h6>
-              <div class="category-list">
-                <div 
-                  class="category-item" 
-                  [ngClass]="{'active': selectedCategory === ''}"
-                  (click)="selectCategory('')"
-                >
-                  All Categories
-                </div>
-                <div 
-                  *ngFor="let category of categories" 
-                  class="category-item" 
-                  [ngClass]="{'active': selectedCategory === category}"
-                  (click)="selectCategory(category)"
-                >
-                  {{ category | titlecase }}
-                </div>
-              </div>
+            <div class="form-check mb-2">
+              <input 
+                class="form-check-input" 
+                type="checkbox" 
+                id="vegan" 
+                [(ngModel)]="isVegan" 
+                (change)="applyFilters()"
+              >
+              <label class="form-check-label" for="vegan">
+                Vegan
+              </label>
             </div>
-            
-            <!-- Price Range -->
-            <div class="filter-section">
-              <h6>Price Range</h6>
-              <div class="price-range">
-                <div class="d-flex justify-content-between mb-2">
-                  <span>${{ priceRange[0] }}</span>
-                  <span>${{ priceRange[1] }}</span>
-                </div>
-                <input 
-                  type="range" 
-                  class="form-range" 
-                  min="0" 
-                  [max]="maxPrice()" 
-                  [(ngModel)]="priceRange[1]" 
-                  (change)="applyFilters()"
-                >
-              </div>
+            <div class="form-check">
+              <input 
+                class="form-check-input" 
+                type="checkbox" 
+                id="glutenFree" 
+                [(ngModel)]="isGlutenFree" 
+                (change)="applyFilters()"
+              >
+              <label class="form-check-label" for="glutenFree">
+                Gluten-Free
+              </label>
             </div>
-            
-            <!-- Dietary Preferences -->
-            <div class="filter-section">
-              <h6>Dietary Preferences</h6>
-              <div class="form-check mb-2">
-                <input 
-                  class="form-check-input" 
-                  type="checkbox" 
-                  id="vegetarian" 
-                  [(ngModel)]="isVegetarian" 
-                  (change)="applyFilters()"
-                >
-                <label class="form-check-label" for="vegetarian">
-                  Vegetarian
-                </label>
-              </div>
-              <div class="form-check mb-2">
-                <input 
-                  class="form-check-input" 
-                  type="checkbox" 
-                  id="vegan" 
-                  [(ngModel)]="isVegan" 
-                  (change)="applyFilters()"
-                >
-                <label class="form-check-label" for="vegan">
-                  Vegan
-                </label>
-              </div>
-              <div class="form-check">
-                <input 
-                  class="form-check-input" 
-                  type="checkbox" 
-                  id="glutenFree" 
-                  [(ngModel)]="isGlutenFree" 
-                  (change)="applyFilters()"
-                >
-                <label class="form-check-label" for="glutenFree">
-                  Gluten-Free
-                </label>
-              </div>
-            </div>
+          </div>
+
+          <!-- Sort Options -->
+          <div class="filter-section">
+            <h6 class="fw-bold">Sort By</h6>
+            <select class="form-select" [(ngModel)]="sortOption" (change)="applyFilters()">
+              <option value="rating">Highest Rated</option>
+              <option value="price-low">Price: Low to High</option>
+              <option value="price-high">Price: High to Low</option>
+              <option value="newest">Newest First</option>
+            </select>
           </div>
         </div>
       </div>
-      
-      <!-- Products Grid -->
-      <div *ngIf="!isLoading && !error" class="row">
-        <div class="col-md-6 col-lg-4 mb-4" *ngFor="let product of filteredProducts">
+    </div>
+    
+    <!-- Products Grid -->
+    <div class="col-lg-9">
+      <!-- Loading indicator -->
+      <div *ngIf="isLoading" class="text-center py-5">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+      </div>
+
+      <!-- Error message -->
+      <div *ngIf="error" class="alert alert-danger">
+        {{ error }}
+      </div>
+
+      <!-- Products grid -->
+      <div *ngIf="!isLoading && !error" class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+        <div class="col" *ngFor="let product of filteredProducts">
           <app-product-card [product]="product"></app-product-card>
         </div>
         
@@ -143,5 +167,25 @@
           </div>
         </div>
       </div>
+
+      <!-- Pagination -->
+      <nav *ngIf="filteredProducts.length > itemsPerPage" class="mt-5">
+        <ul class="pagination justify-content-center">
+          <li class="page-item" [ngClass]="{'disabled': currentPage === 1}">
+            <a class="page-link" href="javascript:void(0)" (click)="prevPage()" aria-label="Previous">
+              <span aria-hidden="true">&laquo;</span>
+            </a>
+          </li>
+          <li class="page-item" *ngFor="let page of getPaginationArray()" [ngClass]="{'active': currentPage === page}">
+            <a class="page-link" href="javascript:void(0)" (click)="goToPage(page)">{{ page }}</a>
+          </li>
+          <li class="page-item" [ngClass]="{'disabled': currentPage === totalPages()}">
+            <a class="page-link" href="javascript:void(0)" (click)="nextPage()" aria-label="Next">
+              <span aria-hidden="true">&raquo;</span>
+            </a>
+          </li>
+        </ul>
+      </nav>
     </div>
   </div>
+</div>

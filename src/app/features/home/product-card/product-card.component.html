@@ -7,7 +7,6 @@
     alt="{{ product.name }}"
     [ngClass]="{'featured-image': featured}"
   >
-    <!-- Remove the "herer" text that was here -->
     <div class="category-badge">
       <span class="badge bg-primary">{{ product.category | titlecase }}</span>
     </div>
@@ -43,9 +42,15 @@
       </div>
     </div>
   </div>
-  <div class="card-footer bg-white border-top-0">
-    <a [routerLink]="['/home/products', product._id]" class="btn btn-primary w-100">
-      {{ featured ? 'View Details' : 'Order Now' }}
+  <div class="card-footer bg-white border-top-0 d-flex">
+    <!-- View Details Button -->
+    <a [routerLink]="['/home/products', product._id]" class="btn btn-outline-primary flex-grow-1 me-2">
+      View Details
     </a>
+    
+    <!-- Add to Cart Button -->
+    <button class="btn btn-primary add-to-cart-btn" (click)="addToCart($event)">
+      <i class="bi bi-cart-plus"></i>
+    </button>
   </div>
 </div>

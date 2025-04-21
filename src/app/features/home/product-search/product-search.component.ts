@@ -38,6 +38,10 @@ export class ProductSearchComponent implements OnInit {
   isGlutenFree = false;
   sortOption = 'rating';
 
+  // Pagination variables
+  currentPage = 1;
+  itemsPerPage = 12;
+
   constructor(
     private productService: ProductService,
     private route: ActivatedRoute,
@@ -62,6 +66,9 @@ export class ProductSearchComponent implements OnInit {
       if (params['category']) {
         this.selectedCategory = params['category'];
       }
+      if (params['page']) {
+        this.currentPage = parseInt(params['page'], 10);
+      }
       
       // Load products
       this.loadProducts();
@@ -79,7 +86,7 @@ export class ProductSearchComponent implements OnInit {
           this.isLoading = false;
         },
         error: (err) => {
-          this.error = err;
+          this.error = err.message || 'An error occurred while searching products';
           this.isLoading = false;
         }
       });
@@ -93,7 +100,7 @@ export class ProductSearchComponent implements OnInit {
           this.isLoading = false;
         },
         error: (err) => {
-          this.error = err;
+          this.error = err.message || 'An error occurred while loading products';
           this.isLoading = false;
         }
       });
@@ -109,17 +116,24 @@ export class ProductSearchComponent implements OnInit {
     const query = event.target.value;
     this.searchChanged.next(query);
     
-    // Update URL query parameter
-    this.router.navigate([], {
-      relativeTo: this.route,
-      queryParams: { q: query },
-      queryParamsHandling: 'merge'
-    });
+    // Update URL query parameter and reset to page 1
+    this.currentPage = 1;
+    this.updateUrlParams({ q: query, page: 1 });
   }
 
   applyFilters(): void {
     // Start with all products
     let result = [...this.products];
+    
+    // Apply search filter if query exists
+    if (this.searchQuery) {
+      const query = this.searchQuery.toLowerCase();
+      result = result.filter(p => 
+        p.name.toLowerCase().includes(query) || 
+        p.description.toLowerCase().includes(query) ||
+        (this.isChefObject(p.chef) && p.chef.fullName.toLowerCase().includes(query))
+      );
+    }
     
     // Apply category filter
     if (this.selectedCategory) {
@@ -158,34 +172,38 @@ export class ProductSearchComponent implements OnInit {
     
     // Update filtered products
     this.filteredProducts = result;
+    
+    // If current page is now invalid due to filter, reset to page 1
+    if (this.currentPage > this.totalPages() && this.totalPages() > 0) {
+      this.currentPage = 1;
+      this.updateUrlParams({ page: 1 });
+    }
   }
 
   selectCategory(category: string): void {
     this.selectedCategory = category;
+    this.currentPage = 1; // Reset to page 1 when changing category
     this.applyFilters();
     
-    // Update URL query parameter
-    this.router.navigate([], {
-      relativeTo: this.route,
-      queryParams: { category: category },
-      queryParamsHandling: 'merge'
-    });
+    // Update URL query parameters
+    this.updateUrlParams({ category, page: 1 });
   }
 
   clearFilters(): void {
     this.selectedCategory = '';
-    this.priceRange = [0, 100];
+    this.priceRange = [0, this.maxPrice()];
     this.isVegetarian = false;
     this.isVegan = false;
     this.isGlutenFree = false;
     this.sortOption = 'rating';
+    this.currentPage = 1;
     this.applyFilters();
     
     // Update URL query parameters
-    this.router.navigate([], {
-      relativeTo: this.route,
-      queryParams: { category: null },
-      queryParamsHandling: 'merge'
+    this.updateUrlParams({ 
+      category: null, 
+      page: 1,
+      q: this.searchQuery.length > 0 ? this.searchQuery : null
     });
   }
 
@@ -194,12 +212,70 @@ export class ProductSearchComponent implements OnInit {
     return Math.ceil(Math.max(...this.products.map(p => p.price)));
   }
 
-  onSortChange(event: any): void {
-    this.sortOption = event.target.value;
-    this.applyFilters();
-  }
-
   isChefObject(chef: any): chef is ChefInfo {
     return chef && typeof chef !== 'string' && '_id' in chef;
   }
+
+  // Pagination methods
+  nextPage(): void {
+    if (this.currentPage < this.totalPages()) {
+      this.currentPage++;
+      this.updateUrlParams({ page: this.currentPage });
+      window.scrollTo(0, 0);
+    }
+  }
+
+  prevPage(): void {
+    if (this.currentPage > 1) {
+      this.currentPage--;
+      this.updateUrlParams({ page: this.currentPage });
+      window.scrollTo(0, 0);
+    }
+  }
+
+  goToPage(page: number): void {
+    if (page >= 1 && page <= this.totalPages()) {
+      this.currentPage = page;
+      this.updateUrlParams({ page });
+      window.scrollTo(0, 0);
+    }
+  }
+
+  totalPages(): number {
+    return Math.ceil(this.filteredProducts.length / this.itemsPerPage);
+  }
+
+  getCurrentPageItems(): Product[] {
+    const startIndex = (this.currentPage - 1) * this.itemsPerPage;
+    return this.filteredProducts.slice(startIndex, startIndex + this.itemsPerPage);
+  }
+
+  getPaginationArray(): number[] {
+    const totalPages = this.totalPages();
+    const current = this.currentPage;
+    
+    // Show limited pagination links if many pages
+    if (totalPages <= 7) {
+      return Array.from({ length: totalPages }, (_, i) => i + 1);
+    } else {
+      // Complex pagination with ellipsis
+      if (current <= 3) {
+        return [1, 2, 3, 4, 0, totalPages - 1, totalPages];
+      } else if (current >= totalPages - 2) {
+        return [1, 2, 0, totalPages - 3, totalPages - 2, totalPages - 1, totalPages];
+      } else {
+        return [1, 0, current - 1, current, current + 1, 0, totalPages];
+      }
+    }
+  }
+
+  // Helper to update URL parameters
+  private updateUrlParams(params: any): void {
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: params,
+      queryParamsHandling: 'merge'
+    });
+  }
+
 }
