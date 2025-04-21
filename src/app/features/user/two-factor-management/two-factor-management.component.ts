@@ -5,6 +5,7 @@ import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } 
 import { AuthService } from '../../../core/auth/auth.service';
 import { TokenService } from '../../../core/auth/token.service';
 import { ToastrService } from 'ngx-toastr';
+import { RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-two-factor-management',
@@ -12,7 +13,7 @@ import { ToastrService } from 'ngx-toastr';
   styleUrls: ['./two-factor-management.component.css'],
   // Add standalone: true and imports to make the component work with the directives
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule]
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, RouterModule]
 })
 export class TwoFactorManagementComponent implements OnInit {
   // Forms

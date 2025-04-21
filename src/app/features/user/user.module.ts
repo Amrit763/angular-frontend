@@ -6,10 +6,10 @@ import { SharedModule } from '../../shared/shared.module';
 
 // Import standalone components
 import { DashboardComponent } from './dashboard/dashboard.component';
-import { ProfileComponent } from './profile/profile.component';
 import { TwoFactorManagementComponent } from './two-factor-management/two-factor-management.component';
 import { ChangePasswordComponent } from './change-password/change-password.component';
 import { ChefApplicationComponent } from './chef-application/chef-application.component';
+import { UserProfileComponent } from './user-profile/user-profile.component';
 
 @NgModule({
   declarations: [],
@@ -19,7 +19,7 @@ import { ChefApplicationComponent } from './chef-application/chef-application.co
     SharedModule,
     // Import standalone components
     DashboardComponent,
-    ProfileComponent,
+    UserProfileComponent,
     TwoFactorManagementComponent,
     ChangePasswordComponent,
     ChefApplicationComponent

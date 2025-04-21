@@ -1,0 +1,38 @@
+/* src/app/features/user/profile/user-profile.component.css */
+.profile-image-container {
+    position: relative;
+    display: inline-block;
+}
+
+.profile-image-container img {
+    border: 3px solid #f8f9fa;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+}
+
+.profile-image-container img:hover {
+    transform: scale(1.03);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+}
+
+/* Style form controls */
+.form-control:disabled, .form-control[readonly] {
+    background-color: #f8f9fa;
+    cursor: not-allowed;
+}
+
+/* Better feedback for validation states */
+.form-control.is-invalid {
+    background-image: none; /* Remove default browser validation icon */
+    padding-right: 0.75rem; /* Reset padding */
+}
+
+/* Alert animations */
+.alert {
+    animation: fadeIn 0.5s;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}

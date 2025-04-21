@@ -1,0 +1,143 @@
+<!-- src/app/features/user/profile/user-profile.component.html -->
+<div class="container py-5">
+    <div class="row">
+      <div class="col-lg-4">
+        <div class="card mb-4">
+          <div class="card-body text-center">
+            <!-- Profile Image with Loading Spinner -->
+            <div *ngIf="isLoading" class="my-3 text-center">
+              <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+              </div>
+            </div>
+            
+            <div *ngIf="!isLoading" class="profile-image-container">
+              <img [src]="previewImage" 
+                   alt="Profile Image" 
+                   class="rounded-circle img-fluid mb-3"
+                   style="width: 150px; height: 150px; object-fit: cover;">
+              
+              <h5 class="my-3">{{ user?.fullName }}</h5>
+              <p class="text-muted mb-1">{{ user?.email }}</p>
+              <p class="text-muted mb-4">
+                <span class="badge bg-primary text-white">{{ user?.role | titlecase }}</span>
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-lg-8">
+        <div class="card mb-4">
+          <div class="card-body">
+            <h5 class="card-title mb-4">Profile Information</h5>
+            
+            <!-- Loading Spinner -->
+            <div *ngIf="isLoading" class="text-center py-5">
+              <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+              </div>
+            </div>
+            
+            <!-- Error Alert -->
+            <div *ngIf="error" class="alert alert-danger alert-dismissible fade show" role="alert">
+              {{ error }}
+              <button type="button" class="btn-close" (click)="error = null"></button>
+            </div>
+            
+            <!-- Success Alert -->
+            <div *ngIf="successMessage" class="alert alert-success alert-dismissible fade show" role="alert">
+              {{ successMessage }}
+              <button type="button" class="btn-close" (click)="successMessage = null"></button>
+            </div>
+            
+            <!-- Profile Form -->
+            <form *ngIf="!isLoading" [formGroup]="profileForm" (ngSubmit)="onSubmit()">
+              <div class="mb-3 row">
+                <label for="fullName" class="col-sm-3 col-form-label">Full Name</label>
+                <div class="col-sm-9">
+                  <input type="text" 
+                         class="form-control" 
+                         id="fullName" 
+                         formControlName="fullName"
+                         [ngClass]="{'is-invalid': profileForm.get('fullName')?.invalid && profileForm.get('fullName')?.touched}">
+                  <div class="invalid-feedback" *ngIf="profileForm.get('fullName')?.invalid && profileForm.get('fullName')?.touched">
+                    Full name is required
+                  </div>
+                </div>
+              </div>
+              
+              <div class="mb-3 row">
+                <label for="email" class="col-sm-3 col-form-label">Email</label>
+                <div class="col-sm-9">
+                  <input type="email" class="form-control" id="email" [value]="user?.email" disabled>
+                </div>
+              </div>
+              
+              <div class="mb-3 row">
+                <label for="phoneNumber" class="col-sm-3 col-form-label">Phone Number</label>
+                <div class="col-sm-9">
+                  <input type="tel" 
+                         class="form-control" 
+                         id="phoneNumber" 
+                         formControlName="phoneNumber"
+                         placeholder="10-digit number (e.g., 0712345678)"
+                         [ngClass]="{'is-invalid': profileForm.get('phoneNumber')?.invalid && profileForm.get('phoneNumber')?.touched}">
+                  <div class="invalid-feedback" *ngIf="profileForm.get('phoneNumber')?.invalid && profileForm.get('phoneNumber')?.touched">
+                    Please enter a valid 10-digit phone number
+                  </div>
+                </div>
+              </div>
+              
+              <div class="mb-3 row">
+                <label for="role" class="col-sm-3 col-form-label">Role</label>
+                <div class="col-sm-9">
+                  <input type="text" class="form-control" id="role" [value]="user?.role | titlecase" disabled>
+                </div>
+              </div>
+              
+              <div class="mb-3 row">
+                <label for="profileImage" class="col-sm-3 col-form-label">Profile Image</label>
+                <div class="col-sm-9">
+                  <input type="file" 
+                         class="form-control" 
+                         id="profileImage" 
+                         (change)="onFileChange($event)"
+                         accept="image/jpeg,image/png,image/gif,image/webp">
+                  <div class="form-text">Maximum file size: 5MB. Supported formats: JPEG, PNG, GIF, WebP</div>
+                </div>
+              </div>
+              
+              <div class="mb-3 row">
+                <label class="col-sm-3 col-form-label">Member Since</label>
+                <div class="col-sm-9">
+                  <input type="text" class="form-control" [value]="user?.createdAt | date:'mediumDate'" disabled>
+                </div>
+              </div>
+              
+              <div class="mb-3 row">
+                <label class="col-sm-3 col-form-label">Email Verified</label>
+                <div class="col-sm-9">
+                  <div class="form-control bg-light">
+                    <span [ngClass]="user?.isEmailVerified ? 'text-success' : 'text-danger'">
+                      <i class="bi" [ngClass]="user?.isEmailVerified ? 'bi-check-circle-fill' : 'bi-x-circle-fill'"></i>
+                      {{ user?.isEmailVerified ? 'Verified' : 'Not Verified' }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="text-end">
+                <button type="submit" 
+                        class="btn btn-primary" 
+                        [disabled]="profileForm.invalid || isSubmitting">
+                  <span *ngIf="isSubmitting" class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                  Update Profile
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
