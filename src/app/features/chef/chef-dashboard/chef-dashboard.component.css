@@ -1,66 +1,235 @@
 /* src/app/features/chef/chef-dashboard/chef-dashboard.component.css */
+/* General card styling */
 .card {
-    border-radius: 10px;
-    border: none;
-    transition: transform 0.3s, box-shadow 0.3s;
+  border-radius: 12px;
+  border: none;
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08) !important;
+}
+
+.card-title {
+  color: #333;
+  font-weight: 600;
+}
+
+.card-header {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  padding: 1.25rem;
+}
+
+/* Stats cards styling */
+.dashboard-stat-card {
+  text-align: center;
+  padding: 0.5rem;
+}
+
+.stat-icon {
+  font-size: 2.5rem;
+  color: #155475;
+  height: 60px;
+  width: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background-color: rgba(21, 84, 117, 0.1);
+  margin: 0 auto;
+}
+
+.stat-title {
+  font-size: 1rem;
+  color: #6c757d;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+}
+
+.stat-value {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #155475;
+}
+
+/* Order card specific styling */
+.order-card {
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.order-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, #155475, #1e88e5);
+  opacity: 0;
+  transition: opacity 0.3s;
+  z-index: 0;
+  border-radius: 12px;
+}
+
+.order-card:hover::before {
+  opacity: 1;
+}
+
+.order-card:hover .stat-title, 
+.order-card:hover .stat-icon, 
+.order-card:hover p {
+  color: white !important;
+  position: relative;
+  z-index: 1;
+}
+
+.order-card:hover .stat-icon {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.order-card .card-body {
+  z-index: 1;
+  position: relative;
+}
+
+/* Table styling */
+.table th {
+  font-weight: 600;
+  color: #555;
+  padding: 1rem;
+}
+
+.table td {
+  padding: 1rem;
+  vertical-align: middle;
+}
+
+.img-thumbnail {
+  border-radius: 8px;
+  border: none;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Status badge colors */
+.badge.bg-warning {
+  background-color: #ffc107 !important;
+  color: #212529;
+}
+
+.badge.bg-info {
+  background-color: #0dcaf0 !important;
+}
+
+.badge.bg-primary {
+  background-color: #155475 !important;
+}
+
+.badge.bg-success {
+  background-color: #29cc97 !important;
+}
+
+.badge.bg-danger {
+  background-color: #fe5461 !important;
+}
+
+.badge.bg-light {
+  background-color: #f8f9fa !important;
+  color: #212529;
+  border: 1px solid #e9ecef;
+}
+
+/* Button styling */
+.btn-primary {
+  background-color: #155475;
+  border-color: #155475;
+}
+
+.btn-primary:hover {
+  background-color: #0f3c54;
+  border-color: #0f3c54;
+}
+
+.btn-outline-primary {
+  color: #155475;
+  border-color: #155475;
+}
+
+.btn-outline-primary:hover {
+  background-color: #155475;
+  border-color: #155475;
+}
+
+.btn-success {
+  background-color: #29cc97;
+  border-color: #29cc97;
+}
+
+.btn-success:hover {
+  background-color: #22a67c;
+  border-color: #22a67c;
+}
+
+.rounded-pill {
+  border-radius: 50rem !important;
+}
+
+/* Product card styling */
+.product-card {
+  overflow: hidden;
+  border-radius: 12px;
+}
+
+.product-card img {
+  transition: transform 0.3s;
+}
+
+.product-card:hover img {
+  transform: scale(1.05);
+}
+
+/* Form switch styling */
+.form-check-input {
+  width: 3rem;
+  height: 1.5rem;
+  margin-left: 0;
+  cursor: pointer;
+}
+
+.form-check-input:checked {
+  background-color: #155475;
+  border-color: #155475;
+}
+
+.form-switch .form-check-input {
+  border-radius: 2rem;
+}
+
+.form-check-label {
+  padding-left: 0.5rem;
+  cursor: pointer;
+}
+
+/* Background gradient for header card */
+.bg-gradient {
+  background: linear-gradient(to right, #f8f9fa, #e9ecef);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .stat-icon {
+    font-size: 2rem;
+    height: 50px;
+    width: 50px;
   }
   
-  .card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1) !important;
+  .stat-value {
+    font-size: 1.5rem;
   }
   
   .card-title {
-    color: #333;
+    font-size: 1.25rem;
   }
-  
-  .table th {
-    font-weight: 600;
-    color: #555;
-  }
-  
-  .form-check-input {
-    width: 50px;
-    height: 24px;
-  }
-  
-  .form-switch .form-check-input {
-    cursor: pointer;
-  }
-  
-  .btn-primary {
-    background-color: #ff6b6b;
-    border-color: #ff6b6b;
-  }
-  
-  .btn-primary:hover {
-    background-color: #ff5252;
-    border-color: #ff5252;
-  }
-  
-  .btn-outline-primary {
-    color: #ff6b6b;
-    border-color: #ff6b6b;
-  }
-  
-  .btn-outline-primary:hover {
-    background-color: #ff6b6b;
-    border-color: #ff6b6b;
-  }
-  
-  .bg-success {
-    background-color: #66bb6a !important;
-  }
-  
-  .bg-danger {
-    background-color: #ff5252 !important;
-  }
-  
-  .table-responsive {
-    border-radius: 10px;
-    overflow: hidden;
-  }
-  
-  .img-thumbnail {
-    border-radius: 8px;
-  }
+}

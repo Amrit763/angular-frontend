@@ -7,16 +7,18 @@ import { ChangePasswordComponent } from './change-password/change-password.compo
 import { AuthGuard } from '../../core/auth/auth.guard';
 import { ChefApplicationComponent } from './chef-application/chef-application.component';
 import { UserProfileComponent } from './user-profile/user-profile.component';
+import { OrderHistoryComponent } from './order-history/order-history.component';
+import { OrderDetailComponent } from './order-detail/order-detail.component';
 
 export const USER_ROUTES: Routes = [
   { path: 'dashboard', component: DashboardComponent, canActivate: [AuthGuard] },
   { path: 'profile', component: UserProfileComponent, canActivate: [AuthGuard] },
   { path: 'security/two-factor', component: TwoFactorManagementComponent, canActivate: [AuthGuard] },
   { path: 'security/change-password', component: ChangePasswordComponent, canActivate: [AuthGuard] },
-  { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
-  {
-    path: 'chef-application', component: ChefApplicationComponent, canActivate: [AuthGuard]
-  }
+  { path: 'orders', component: OrderHistoryComponent, canActivate: [AuthGuard] },
+  { path: 'orders/:id', component: OrderDetailComponent, canActivate: [AuthGuard] },
+  { path: 'chef-application', component: ChefApplicationComponent, canActivate: [AuthGuard] },
+  { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
 ];
 
 @NgModule({

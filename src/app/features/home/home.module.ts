@@ -9,6 +9,7 @@ import { HomeComponent } from './home/home.component';
 import { ProductCardComponent } from './product-card/product-card.component';
 import { ProductDetailsComponent } from './product-details/product-details.component';
 import { ProductSearchComponent } from './product-search/product-search.component';
+import { ChefProductsComponent } from './chef-products/chef-products.component';
 
 @NgModule({
   imports: [
@@ -20,7 +21,8 @@ import { ProductSearchComponent } from './product-search/product-search.componen
     HomeComponent,
     ProductCardComponent,
     ProductDetailsComponent,
-    ProductSearchComponent
+    ProductSearchComponent,
+    ChefProductsComponent
   ]
 })
 export class HomeModule { }

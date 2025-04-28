@@ -6,7 +6,9 @@ import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angula
 import { Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { CartService, CartResponse } from '../../../core/services/cart.service';
+import { ProductService } from '../../../core/services/product.service';
 import { TokenService } from '../../../core/auth/token.service';
+import { OrderService } from '../../../core/services/order.service';
 
 interface PaymentMethod {
   id: string;
@@ -24,27 +26,29 @@ export class CheckoutComponent implements OnInit, OnDestroy {
   cartData: CartResponse | null = null;
   isLoading = true;
   error: string | null = null;
-  
+
   // Form
   checkoutForm!: FormGroup;
   submitted = false;
   processing = false;
-  
+
   // Payment methods
   paymentMethods: PaymentMethod[] = [
     { id: 'credit_card', name: 'Credit Card', icon: 'bi-credit-card' },
     { id: 'paypal', name: 'PayPal', icon: 'bi-paypal' },
     { id: 'bank_transfer', name: 'Bank Transfer', icon: 'bi-bank' }
   ];
-  
+
   // Step tracking
   currentStep = 1;
-  
+
   private subscriptions: Subscription[] = [];
 
   constructor(
     private cartService: CartService,
     private tokenService: TokenService,
+    private orderService: OrderService,
+    public productService: ProductService, // Added productService to access in template
     private fb: FormBuilder,
     private router: Router
   ) { }
@@ -52,20 +56,20 @@ export class CheckoutComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     // Load cart data
     this.loadCart();
-    
+
     // Subscribe to cart changes
     this.subscriptions.push(
       this.cartService.cart$.subscribe(cart => {
         this.cartData = cart;
         this.isLoading = false;
-        
+
         // Redirect if cart is empty
         if (!cart || cart.count === 0) {
           this.router.navigate(['/cart']);
         }
       })
     );
-    
+
     // Initialize form
     this.initForm();
   }
@@ -86,7 +90,7 @@ export class CheckoutComponent implements OnInit, OnDestroy {
   initForm(): void {
     // Get user data
     const user = this.tokenService.getUser();
-    
+
     this.checkoutForm = this.fb.group({
       // Delivery information
       fullName: [user?.fullName || '', [Validators.required]],
@@ -95,12 +99,12 @@ export class CheckoutComponent implements OnInit, OnDestroy {
       address: ['', [Validators.required]],
       city: ['', [Validators.required]],
       zipCode: ['', [Validators.required, Validators.pattern(/^[0-9]{5,10}$/)]],
-      
+
       // Delivery options
       deliveryDate: ['', [Validators.required]],
       deliveryTime: ['', [Validators.required]],
       deliveryNotes: [''],
-      
+
       // Payment information
       paymentMethod: ['credit_card', [Validators.required]],
       cardNumber: ['', [Validators.pattern(/^[0-9]{16}$/)]],
@@ -116,7 +120,7 @@ export class CheckoutComponent implements OnInit, OnDestroy {
   // Handle payment method change
   onPaymentMethodChange(method: string): void {
     this.checkoutForm.patchValue({ paymentMethod: method });
-    
+
     // Clear card fields if not credit card
     if (method !== 'credit_card') {
       this.checkoutForm.patchValue({
@@ -131,15 +135,15 @@ export class CheckoutComponent implements OnInit, OnDestroy {
   nextStep(): void {
     if (this.currentStep === 1) {
       // Validate delivery information
-      if (this.f['fullName'].invalid || this.f['email'].invalid || 
-          this.f['phoneNumber'].invalid || this.f['address'].invalid || 
-          this.f['city'].invalid || this.f['zipCode'].invalid) {
-        
+      if (this.f['fullName'].invalid || this.f['email'].invalid ||
+        this.f['phoneNumber'].invalid || this.f['address'].invalid ||
+        this.f['city'].invalid || this.f['zipCode'].invalid) {
+
         this.markFormGroupTouched(this.checkoutForm);
         return;
       }
     }
-    
+
     if (this.currentStep === 2) {
       // Validate delivery options
       if (this.f['deliveryDate'].invalid || this.f['deliveryTime'].invalid) {
@@ -147,7 +151,7 @@ export class CheckoutComponent implements OnInit, OnDestroy {
         return;
       }
     }
-    
+
     this.currentStep++;
   }
 
@@ -169,34 +173,37 @@ export class CheckoutComponent implements OnInit, OnDestroy {
   // Submit the order
   submitOrder(): void {
     this.submitted = true;
-    
+
     // Validate payment information
     if (this.checkoutForm.invalid) {
       this.markFormGroupTouched(this.checkoutForm);
       return;
     }
-    
+
     this.processing = true;
-    
-    // In a real application, you would submit to an order API
-    // For now, we'll simulate a successful order and clear the cart
-    
-    setTimeout(() => {
-      // Clear the cart
-      this.cartService.clearCart().subscribe({
-        next: () => {
-          this.processing = false;
-          
-          // Show success message or redirect to order confirmation
-          alert('Order placed successfully! Thank you for your purchase.');
-          this.router.navigate(['/user/orders']);
-        },
-        error: (err) => {
-          this.processing = false;
-          this.error = err;
-        }
-      });
-    }, 2000); // Simulate processing time
+
+    // Prepare order data
+    const orderData = {
+      deliveryAddress: `${this.f['address'].value}, ${this.f['city'].value}, ${this.f['zipCode'].value}`,
+      deliveryDate: this.f['deliveryDate'].value,
+      deliveryTime: this.f['deliveryTime'].value,
+      deliveryNotes: this.f['deliveryNotes'].value,
+      paymentMethod: this.f['paymentMethod'].value
+    };
+
+    // Create order
+    this.orderService.createOrder(orderData).subscribe({
+      next: (response) => {
+        this.processing = false;
+
+        // Navigate to order confirmation
+        this.router.navigate(['/user/orders', response.order._id]);
+      },
+      error: (err) => {
+        this.processing = false;
+        this.error = err;
+      }
+    });
   }
 
   // Helper method to check if field is invalid
@@ -217,11 +224,11 @@ export class CheckoutComponent implements OnInit, OnDestroy {
   // Format card expiry date (MM/YY)
   formatCardExpiry(event: any): void {
     let input = event.target.value.replace(/\D/g, '');
-    
+
     if (input.length > 2) {
       input = input.substring(0, 2) + '/' + input.substring(2, 4);
     }
-    
+
     this.checkoutForm.patchValue({ cardExpiry: input });
   }
 

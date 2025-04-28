@@ -1,4 +1,4 @@
-// src/app/features/user/profile/user-profile.component.ts
+// src/app/features/user/user-profile/user-profile.component.ts
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -7,7 +7,7 @@ import { AuthService } from '../../../core/auth/auth.service';
 import { TokenService } from '../../../core/auth/token.service';
 import { User } from '../../../core/auth/user.model';
 import { environment } from '../../../../environments/environment';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-user-profile',
@@ -16,7 +16,8 @@ import { Router } from '@angular/router';
   standalone: true,
   imports: [
     CommonModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    RouterModule
   ]
 })
 export class UserProfileComponent implements OnInit {
@@ -31,7 +32,11 @@ export class UserProfileComponent implements OnInit {
   previewImage: string | ArrayBuffer | null = null;
   selectedFile: File | null = null;
   defaultImagePath = 'assets/images/default-profile.jpg'; // Default image path
+// In src/app/features/user/user-profile/user-profile.component.ts
 
+// Find this line:
+
+// Change it to:
   constructor(
     private fb: FormBuilder,
     private authService: AuthService,
@@ -174,5 +179,11 @@ export class UserProfileComponent implements OnInit {
         }
       });
     }
+  }
+
+  // Helper method to handle image errors
+  handleImageError(): void {
+    console.log('Image failed to load, using default');
+    this.previewImage = this.defaultImagePath;
   }
 }

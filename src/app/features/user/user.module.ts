@@ -10,6 +10,8 @@ import { TwoFactorManagementComponent } from './two-factor-management/two-factor
 import { ChangePasswordComponent } from './change-password/change-password.component';
 import { ChefApplicationComponent } from './chef-application/chef-application.component';
 import { UserProfileComponent } from './user-profile/user-profile.component';
+import { OrderDetailComponent } from './order-detail/order-detail.component';
+import { OrderHistoryComponent } from './order-history/order-history.component';
 
 @NgModule({
   declarations: [],
@@ -22,6 +24,8 @@ import { UserProfileComponent } from './user-profile/user-profile.component';
     UserProfileComponent,
     TwoFactorManagementComponent,
     ChangePasswordComponent,
+    OrderDetailComponent,
+    OrderHistoryComponent,
     ChefApplicationComponent
   ]
 })

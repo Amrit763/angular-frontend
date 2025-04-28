@@ -9,6 +9,8 @@ import { ChefDashboardComponent } from './chef-dashboard/chef-dashboard.componen
 import { ProductFormComponent } from './product-form/product-form.component';
 import { ProductListComponent } from './product-list/product-list.component';
 import { ProductDetailsComponent } from './product-details/product-details.component';
+import { ChefOrderManagementComponent } from './chef-order-management/chef-order-management.component';
+import { ChefOrderDetailComponent } from './chef-order-detail/chef-order-detail.component';
 
 @NgModule({
   imports: [
@@ -21,7 +23,9 @@ import { ProductDetailsComponent } from './product-details/product-details.compo
     ChefDashboardComponent,
     ProductFormComponent,
     ProductListComponent,
-    ProductDetailsComponent
+    ProductDetailsComponent,
+    ChefOrderManagementComponent,
+    ChefOrderDetailComponent
   ]
 })
 export class ChefModule { }

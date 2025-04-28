@@ -1,0 +1,254 @@
+<!-- src/app/features/user/order-detail/order-detail.component.html -->
+<div class="container py-5">
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="d-flex align-items-center mb-4">
+        <button class="btn btn-sm btn-outline-secondary me-3" (click)="backToOrders()">
+          <i class="bi bi-arrow-left"></i>
+        </button>
+        <h2 class="mb-0">Order Details</h2>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading indicator -->
+  <div *ngIf="isLoading" class="text-center py-5">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+    <p class="mt-3">Loading order details...</p>
+  </div>
+
+  <!-- Error message -->
+  <div *ngIf="error && !isLoading" class="alert alert-danger">
+    {{ error }}
+  </div>
+
+  <!-- Order details -->
+  <ng-container *ngIf="!isLoading && order">
+    <div class="row">
+      <div class="col-12">
+        <div class="card shadow-sm mb-4">
+          <div class="card-body">
+            <div class="row">
+              <div class="col-md-8">
+                <h3 class="card-title mb-3">Order #{{ order._id.slice(-8) }}</h3>
+                <p class="text-muted mb-1">Placed on {{ formatDate(order.createdAt) }}</p>
+              </div>
+              <div class="col-md-4 text-md-end">
+                <div class="status-badge mb-3">
+                  <span class="badge p-2 px-3 fs-6" [ngClass]="orderService.getStatusClass(order.status)">
+                    {{ orderService.getStatusLabel(order.status) }}
+                  </span>
+                </div>
+                <div class="action-buttons">
+                  <button *ngIf="order.status === 'pending'" class="btn btn-outline-danger" (click)="cancelOrder()">
+                    Cancel Order
+                  </button>
+                  <button *ngIf="orderService.canDeleteOrder(order)" class="btn btn-danger" (click)="deleteOrder()">
+                    Delete Order
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Timeline + Items + Summary -->
+    <div class="row">
+      <div class="col-lg-8">
+        <!-- Timeline -->
+        <div class="card shadow-sm mb-4">
+          <div class="card-body">
+            <h4 class="mb-4">Order Status Timeline</h4>
+            <div class="order-timeline">
+              <div class="timeline-item completed">
+                <div class="timeline-badge"><i class="bi bi-check-circle-fill"></i></div>
+                <div class="timeline-content">
+                  <h5>Order Placed</h5>
+                  <p class="text-muted">{{ formatDate(order.createdAt) }}</p>
+                </div>
+              </div>
+
+              <div class="timeline-item" [ngClass]="{'completed': order.status !== 'pending'}">
+                <div class="timeline-badge">
+                  <i class="bi" [ngClass]="order.status !== 'pending' ? 'bi-check-circle-fill' : 'bi-circle'"></i>
+                </div>
+                <div class="timeline-content">
+                  <h5>Order Received</h5>
+                  <p class="text-muted">
+                    {{ order.status !== 'pending' ? 'Chefs have received your order' : 'Waiting for chef confirmation' }}
+                  </p>
+                </div>
+              </div>
+
+              <div class="timeline-item" [ngClass]="{'completed': ['in_progress','ready','delivered'].includes(order.status)}">
+                <div class="timeline-badge">
+                  <i class="bi" [ngClass]="['in_progress','ready','delivered'].includes(order.status) ? 'bi-check-circle-fill' : 'bi-circle'"></i>
+                </div>
+                <div class="timeline-content">
+                  <h5>In Preparation</h5>
+                  <p class="text-muted">
+                    {{ ['in_progress','ready','delivered'].includes(order.status) ? 'Your order is being prepared' : 'Coming up next' }}
+                  </p>
+                </div>
+              </div>
+
+              <div class="timeline-item" [ngClass]="{'completed': ['ready','delivered'].includes(order.status)}">
+                <div class="timeline-badge">
+                  <i class="bi" [ngClass]="['ready','delivered'].includes(order.status) ? 'bi-check-circle-fill' : 'bi-circle'"></i>
+                </div>
+                <div class="timeline-content">
+                  <h5>Ready for Delivery</h5>
+                  <p class="text-muted">
+                    {{ ['ready','delivered'].includes(order.status) ? 'Your order is ready and awaiting delivery' : 'Coming up next' }}
+                  </p>
+                </div>
+              </div>
+
+              <div class="timeline-item" [ngClass]="{'completed': order.status === 'delivered'}">
+                <div class="timeline-badge">
+                  <i class="bi" [ngClass]="order.status === 'delivered' ? 'bi-check-circle-fill' : 'bi-circle'"></i>
+                </div>
+                <div class="timeline-content">
+                  <h5>Delivered</h5>
+                  <p class="text-muted">
+                    {{ order.status === 'delivered' ? 'Order has been delivered successfully' : 'Coming up next' }}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Items by chef -->
+        <div *ngFor="let chefGroup of getChefGroups()" class="card shadow-sm mb-4">
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+              <h4 class="mb-0">Items by {{ chefGroup.chef?.fullName || 'Chef' }}</h4>
+              <span class="badge" [ngClass]="getStatusClass(chefGroup)">
+                {{ getStatusLabel(chefGroup) }}
+              </span>
+            </div>
+            
+            <div class="table-responsive">
+              <table class="table table-hover border">
+                <thead class="table-light">
+                  <tr>
+                    <th>Item</th>
+                    <th class="text-center">Price</th>
+                    <th class="text-center">Quantity</th>
+                    <th class="text-end">Subtotal</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let item of chefGroup.items">
+                    <td>
+                      <div class="d-flex align-items-center">
+                        <img [src]="productService.getImageUrl(item.product?.images?.[0])"
+                             [alt]="item.product?.name || 'Product'" class="img-thumbnail me-3"
+                             style="width: 60px; height: 60px; object-fit: cover;">
+                        <div>
+                          <h6 class="mb-0">{{ item.product?.name || 'Product' }}</h6>
+                          <small class="text-muted">{{ item.product?.category || 'Category' }}</small>
+                        </div>
+                      </div>
+                    </td>
+                    <td class="text-center align-middle">${{ item.price.toFixed(2) }}</td>
+                    <td class="text-center align-middle">{{ item.quantity }}</td>
+                    <td class="text-end align-middle">${{ (item.price * item.quantity).toFixed(2) }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            
+            <!-- Chef-specific timeline for this chef group -->
+            <div class="mt-4 ps-2">
+              <h5 class="mb-3">Status from {{ chefGroup.chef?.fullName || 'Chef' }}</h5>
+              <ul class="list-group">
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                  Order Received
+                  <span *ngIf="chefGroup.status !== 'pending'" class="badge bg-success rounded-pill">
+                    <i class="bi bi-check-circle-fill"></i>
+                  </span>
+                  <span *ngIf="chefGroup.status === 'pending'" class="badge bg-secondary rounded-pill">
+                    Pending
+                  </span>
+                </li>
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                  In Preparation
+                  <span *ngIf="['in_progress', 'ready', 'delivered'].includes(chefGroup.status)" class="badge bg-success rounded-pill">
+                    <i class="bi bi-check-circle-fill"></i>
+                  </span>
+                  <span *ngIf="!['in_progress', 'ready', 'delivered'].includes(chefGroup.status)" class="badge bg-secondary rounded-pill">
+                    Pending
+                  </span>
+                </li>
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                  Ready for Delivery
+                  <span *ngIf="['ready', 'delivered'].includes(chefGroup.status)" class="badge bg-success rounded-pill">
+                    <i class="bi bi-check-circle-fill"></i>
+                  </span>
+                  <span *ngIf="!['ready', 'delivered'].includes(chefGroup.status)" class="badge bg-secondary rounded-pill">
+                    Pending
+                  </span>
+                </li>
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                  Delivered
+                  <span *ngIf="chefGroup.status === 'delivered'" class="badge bg-success rounded-pill">
+                    <i class="bi bi-check-circle-fill"></i>
+                  </span>
+                  <span *ngIf="chefGroup.status !== 'delivered'" class="badge bg-secondary rounded-pill">
+                    Pending
+                  </span>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Order Summary -->
+      <div class="col-lg-4">
+        <div class="card shadow-sm mb-4">
+          <div class="card-body">
+            <h4 class="mb-4">Order Summary</h4>
+            <div class="d-flex justify-content-between mb-2">
+              <span>Subtotal</span>
+              <span>${{ order.subtotal.toFixed(2) }}</span>
+            </div>
+            <div class="d-flex justify-content-between mb-2">
+              <span>Service Fee (10%)</span>
+              <span>${{ order.serviceFee.toFixed(2) }}</span>
+            </div>
+            <hr>
+            <div class="d-flex justify-content-between mb-4">
+              <span class="fw-bold">Total</span>
+              <span class="fw-bold fs-5">${{ order.totalAmount.toFixed(2) }}</span>
+            </div>
+
+            <h5 class="mb-3">Delivery Information</h5>
+            <div class="mb-4">
+              <p class="mb-1"><strong>Delivery Date:</strong> {{ order.deliveryDate }}</p>
+              <p class="mb-1"><strong>Delivery Time:</strong> {{ order.deliveryTime }}</p>
+              <p class="mb-1"><strong>Address:</strong> {{ order.deliveryAddress }}</p>
+              <p class="mb-0" *ngIf="order.deliveryNotes"><strong>Notes:</strong> {{ order.deliveryNotes }}</p>
+            </div>
+
+            <h5 class="mb-3">Payment Information</h5>
+            <div>
+              <p class="mb-1"><strong>Payment Method:</strong> {{ order.paymentMethod }}</p>
+              <p class="mb-0"><strong>Payment Status:</strong>
+                <span class="badge" [ngClass]="order.paymentStatus === 'paid' ? 'bg-success' : 'bg-warning'">
+                  {{ order.paymentStatus | titlecase }}
+                </span>
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+</div>

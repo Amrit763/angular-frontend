@@ -1,0 +1,87 @@
+/* src/app/features/chef/chef-order-management/chef-order-management.component.css */
+.status-filter-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+}
+
+.status-filter-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 15px;
+  border-radius: 10px;
+  border: 1px solid #e0e0e0;
+  background-color: #f8f9fa;
+  cursor: pointer;
+  min-width: 120px;
+  transition: all 0.3s ease;
+}
+
+.status-filter-btn:hover {
+  background-color: #e9ecef;
+  border-color: #ced4da;
+  transform: translateY(-2px);
+}
+
+.status-filter-btn.active {
+  background-color: #155479;
+  color: white;
+  border-color: #155479;
+}
+
+.status-count {
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.status-label {
+  font-size: 0.85rem;
+}
+
+.avatar-img {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid #ddd;
+}
+
+.delivery-info {
+  font-size: 0.9rem;
+}
+
+.table-warning {
+  background-color: rgba(255, 243, 205, 0.5);
+}
+
+.empty-state {
+  padding: 40px 20px;
+}
+
+.empty-state i {
+  color: #dee2e6;
+}
+
+/* Responsive adjustments for mobile */
+@media (max-width: 768px) {
+  .status-filter-container {
+    gap: 5px;
+  }
+  
+  .status-filter-btn {
+    padding: 10px;
+    min-width: 100px;
+  }
+  
+  .status-count {
+    font-size: 1.2rem;
+  }
+  
+  .status-label {
+    font-size: 0.75rem;
+  }
+}

@@ -1,13 +1,14 @@
-/* src/app/features/user/profile/user-profile.component.css */
+/* src/app/features/user/user-profile/user-profile.component.css */
 .profile-image-container {
     position: relative;
     display: inline-block;
 }
 
 .profile-image-container img {
-    border: 3px solid #f8f9fa;
+    border: 3px solid #fff;
     box-shadow: 0 4px 8px rgba(0,0,0,0.1);
     transition: all 0.3s ease;
+    object-fit: cover;
 }
 
 .profile-image-container img:hover {
@@ -15,10 +16,56 @@
     box-shadow: 0 6px 12px rgba(0,0,0,0.15);
 }
 
-/* Style form controls */
+/* Dashboard nav styles */
+.dashboard-nav .list-group-item {
+    border-left: none;
+    border-right: none;
+    padding: 12px 15px;
+    transition: all 0.2s;
+}
+
+.dashboard-nav .list-group-item:first-child {
+    border-top: none;
+}
+
+.dashboard-nav .list-group-item:last-child {
+    border-bottom: none;
+}
+
+.dashboard-nav .list-group-item.active {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+}
+
+.dashboard-nav .list-group-item:hover:not(.active) {
+    background-color: #f5f5f5;
+}
+
+/* Card styles */
+.card {
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+    margin-bottom: 20px;
+}
+
+.card-header {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    font-weight: 600;
+    padding: 15px 20px;
+}
+
+/* Form control styling */
 .form-control:disabled, .form-control[readonly] {
     background-color: #f8f9fa;
     cursor: not-allowed;
+}
+
+.form-control:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
 }
 
 /* Better feedback for validation states */
@@ -35,4 +82,37 @@
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(-10px); }
     to { opacity: 1; transform: translateY(0); }
+}
+
+/* Button hover effects */
+.btn-primary {
+    transition: all 0.2s;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(13, 110, 253, 0.2);
+}
+
+.btn-outline-secondary:hover {
+    transform: translateY(-2px);
+}
+
+/* Responsive adjustments */
+@media (max-width: 992px) {
+    .profile-image-container img {
+        width: 120px !important;
+        height: 120px !important;
+    }
+}
+
+@media (max-width: 768px) {
+    .profile-image-container img {
+        width: 100px !important;
+        height: 100px !important;
+    }
+    
+    .col-sm-3 {
+        margin-bottom: 0.5rem;
+    }
 }

@@ -21,22 +21,46 @@ import { Router } from '@angular/router';
 export class ProductCardComponent {
   @Input() product!: Product;
   @Input() featured: boolean = false;
-  
+
   constructor(
     public productService: ProductService,
     private cartService: CartService,
     private tokenService: TokenService,
     private router: Router
-  ) {}
-  
+  ) { }
+
   isChefObject(chef: string | ChefInfo): chef is ChefInfo {
     return chef !== null && typeof chef === 'object' && '_id' in chef;
+  }
+
+  // Method to get chef name from product
+  getChefName(): string {
+    if (this.product.chef) {
+      if (typeof this.product.chef === 'object' && this.product.chef.fullName) {
+        return this.product.chef.fullName;
+      } else if (typeof this.product.chef === 'string') {
+        return 'Chef'; // Fallback if only ID is available
+      }
+    }
+    return 'Unknown Chef';
+  }
+
+  // Method to get chef ID from product
+  getChefId(): string {
+    if (this.product.chef) {
+      if (typeof this.product.chef === 'object' && this.product.chef._id) {
+        return this.product.chef._id;
+      } else if (typeof this.product.chef === 'string') {
+        return this.product.chef;
+      }
+    }
+    return '';
   }
 
   addToCart(event: Event): void {
     event.preventDefault();
     event.stopPropagation();
-    
+
     // Check if user is logged in
     if (!this.tokenService.isLoggedIn()) {
       // Redirect to login page
@@ -54,6 +78,6 @@ export class ProductCardComponent {
       error: (error) => {
         console.error('Error adding to cart:', error);
       }
-    });
+    })
   }
 }

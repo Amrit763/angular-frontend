@@ -1,0 +1,83 @@
+/* src/app/features/user/order-history/order-history.component.css */
+.accordion {
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  
+  .accordion-button {
+    padding: 1.25rem;
+  }
+  
+  .accordion-button:not(.collapsed) {
+    background-color: #f8f9fa;
+    color: #155475;
+  }
+  
+  .accordion-button:focus {
+    box-shadow: none;
+    border-color: rgba(0, 0, 0, 0.125);
+  }
+  
+  .order-total {
+    font-weight: 600;
+    color: #155475;
+  }
+  
+  .nav-pills .nav-link {
+    color: #495057;
+    border-radius: 20px;
+    padding: 0.5rem 1.5rem;
+    margin-right: 0.5rem;
+    font-weight: 500;
+  }
+  
+  .nav-pills .nav-link.active {
+    background-color: #155475;
+    color: white;
+  }
+  
+  .empty-state {
+    padding: 40px 0;
+  }
+  
+  .empty-state i {
+    opacity: 0.3;
+  }
+  
+  .img-thumbnail {
+    border-radius: 8px;
+  }
+  
+  .bg-light {
+    background-color: #f8f9fa !important;
+  }
+  
+  .table th {
+    font-weight: 600;
+  }
+  
+  .table td {
+    vertical-align: middle;
+  }
+  
+  /* Status badge colors */
+  .badge.bg-warning {
+    background-color: #ffc107 !important;
+    color: #212529;
+  }
+  
+  .badge.bg-info {
+    background-color: #0dcaf0 !important;
+  }
+  
+  .badge.bg-primary {
+    background-color: #155475 !important;
+  }
+  
+  .badge.bg-success {
+    background-color: #198754 !important;
+  }
+  
+  .badge.bg-danger {
+    background-color: #dc3545 !important;
+  }

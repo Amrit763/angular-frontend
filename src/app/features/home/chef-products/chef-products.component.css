@@ -1,0 +1,135 @@
+/* src/app/features/home/chef-products/chef-products.component.css */
+.chef-profile-image {
+    width: 120px;
+    height: 120px;
+    object-fit: cover;
+    border: 3px solid #fff;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+  
+  .chef-bio {
+    color: #555;
+    font-style: italic;
+    line-height: 1.5;
+  }
+  
+  .empty-state {
+    padding: 40px 0;
+  }
+  
+  .empty-state i {
+    opacity: 0.3;
+  }
+  
+  /* Filter styling */
+  .filter-section {
+    margin-bottom: 25px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #f0f0f0;
+  }
+  
+  .filter-section:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+    margin-bottom: 0;
+  }
+  
+  .filter-section h6 {
+    color: #155475;
+    font-weight: 600;
+    margin-bottom: 15px;
+  }
+  
+  .category-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .category-item {
+    cursor: pointer;
+    padding: 5px 0;
+    color: #555;
+    transition: all 0.2s;
+    border-radius: 4px;
+  }
+  
+  .category-item:hover {
+    color: #155475;
+  }
+  
+  .category-item.active {
+    color: #155475;
+    font-weight: 600;
+  }
+  
+  .form-check-input:checked {
+    background-color: #155475;
+    border-color: #155475;
+  }
+  
+  .form-range::-webkit-slider-thumb {
+    background: #155475;
+  }
+  
+  .form-range::-moz-range-thumb {
+    background: #155475;
+  }
+  
+  .form-range::-ms-thumb {
+    background: #155475;
+  }
+  
+  .btn-link {
+    color: #155475;
+    text-decoration: none;
+  }
+  
+  .btn-link:hover {
+    color: #0e3e55;
+    text-decoration: underline;
+  }
+  
+  .form-select:focus {
+    border-color: #155475;
+    box-shadow: 0 0 0 0.25rem rgba(21, 84, 117, 0.25);
+  }
+  
+  /* Pagination styling */
+  .pagination .page-link {
+    color: #155475;
+    border-color: #dee2e6;
+  }
+  
+  .pagination .page-item.active .page-link {
+    background-color: #155475;
+    border-color: #155475;
+    color: white;
+  }
+  
+  .pagination .page-item.disabled .page-link {
+    color: #6c757d;
+  }
+  
+  /* Shadow effect for cards */
+  .card {
+    transition: all 0.3s ease;
+    border-radius: 12px;
+  }
+  
+  .card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1) !important;
+  }
+  
+  /* Media Queries */
+  @media (max-width: 768px) {
+    .chef-profile-image {
+      width: 100px;
+      height: 100px;
+    }
+    
+    .price-range {
+      margin-bottom: 10px;
+    }
+  }

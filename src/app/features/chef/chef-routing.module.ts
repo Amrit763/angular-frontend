@@ -7,6 +7,8 @@ import { ChefDashboardComponent } from './chef-dashboard/chef-dashboard.componen
 import { ProductFormComponent } from './product-form/product-form.component';
 import { ProductListComponent } from './product-list/product-list.component';
 import { ProductDetailsComponent } from './product-details/product-details.component';
+import { ChefOrderManagementComponent } from './chef-order-management/chef-order-management.component';
+import { ChefOrderDetailComponent } from './chef-order-detail/chef-order-detail.component';
 
 export const CHEF_ROUTES: Routes = [
   { 
@@ -36,6 +38,18 @@ export const CHEF_ROUTES: Routes = [
   { 
     path: 'products/:id', 
     component: ProductDetailsComponent,
+    canActivate: [AuthGuard],
+    data: { role: 'chef' }
+  },
+  {
+    path: 'orders',
+    component: ChefOrderManagementComponent,
+    canActivate: [AuthGuard],
+    data: { role: 'chef' }
+  },
+  {
+    path: 'orders/:id',
+    component: ChefOrderDetailComponent,
     canActivate: [AuthGuard],
     data: { role: 'chef' }
   },

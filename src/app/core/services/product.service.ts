@@ -19,17 +19,27 @@ export class ProductService {
 
   constructor(private http: HttpClient) { }
 
-// In product.service.ts
-getImageUrl(path: string): string {
-  if (!path) return 'assets/placeholder-image.jpg'; // Default image
-  
-  // Use absolute URL with port 3000
-  if (!path.startsWith('http')) {
-    return `http://localhost:3000/${path}`;
+  // Improved image URL handling function
+  getImageUrl(path: string | undefined | null): string {
+    // If path is empty, null, or undefined, return default image
+    if (!path) return 'assets/images/placeholder-image.jpg';
+    
+    // If path is already a full URL, return it as is
+    if (path.startsWith('http://') || path.startsWith('https://')) {
+      return path;
+    }
+    
+    // If path starts with assets, it's a local asset - just return it
+    if (path.startsWith('assets/')) {
+      return path;
+    }
+    
+    // Otherwise, it's a server path that needs the server URL prefixed
+    // Remove any leading slashes to avoid double slashes
+    const cleanPath = path.startsWith('/') ? path.substring(1) : path;
+    return `${this.baseUrl}/${cleanPath}`;
   }
-  
-  return path;
-}
+
   // Get all products with optional filters
   getAllProducts(
     page: number = 1, 

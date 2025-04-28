@@ -1,0 +1,231 @@
+<!-- src/app/features/chef/chef-order-management/chef-order-management.component.html -->
+<div class="container-fluid py-4">
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h2 class="card-title">Order Management</h2>
+              <a routerLink="/chef/dashboard" class="btn btn-outline-secondary mt-2">
+                <i class="bi bi-grid me-2"></i>Back to Dashboard
+              </a>
+            </div>
+            <button class="btn btn-outline-primary" (click)="loadOrders()">
+              <i class="bi bi-arrow-clockwise me-2"></i>Refresh
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Status filter cards -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <div class="status-filter-container">
+            <button *ngFor="let option of statusOptions" 
+                    class="status-filter-btn" 
+                    [ngClass]="{'active': statusFilter === option.value}"
+                    (click)="setStatusFilter(option.value)">
+              <div class="status-count">
+                {{ getOrderCountByStatus(option.value) }}
+              </div>
+              <div class="status-label">{{ option.label }}</div>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading indicator -->
+  <div *ngIf="isLoading" class="text-center py-5">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+    <p class="mt-3">Loading orders...</p>
+  </div>
+
+  <!-- Error message -->
+  <div *ngIf="error && !isLoading" class="alert alert-danger">
+    {{ error }}
+  </div>
+
+  <!-- Empty state -->
+  <div *ngIf="!isLoading && filteredOrders.length === 0 && !error" class="text-center py-5">
+    <div class="empty-state">
+      <i class="bi bi-inbox display-1 text-muted"></i>
+      <h3 class="mt-3">No orders found</h3>
+      <p class="text-muted">
+        {{ statusFilter === 'all' ? 'You don\'t have any orders yet.' : 'No orders with this status.' }}
+      </p>
+      <button *ngIf="statusFilter !== 'all'" class="btn btn-outline-primary mt-3" (click)="setStatusFilter('all')">
+        View All Orders
+      </button>
+    </div>
+  </div>
+
+  <!-- Orders list -->
+  <div *ngIf="!isLoading && filteredOrders.length > 0" class="row">
+    <div class="col-12">
+      <div class="card shadow-sm">
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th>Order #</th>
+                  <th>Customer</th>
+                  <th>Delivery</th>
+                  <th>Items</th>
+                  <th>Amount</th>
+                  <th>Status</th>
+                  <th class="text-end">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let order of filteredOrders" [ngClass]="{'table-warning': orderService.getChefStatus(order) === 'pending'}">
+                  <td>
+                    <strong>{{ order._id.substr(-8) }}</strong>
+                  </td>
+                  <td>
+                    <div class="d-flex align-items-center">
+                      <div class="avatar me-2">
+                        <img [src]="productService.getImageUrl(order.user?.profileImage)" 
+                             class="avatar-img" alt="{{ order.user?.fullName || 'Customer' }}">
+                      </div>
+                      <div>
+                        {{ order.user?.fullName || 'Customer' }}
+                        <small class="d-block text-muted">{{ order.deliveryTime }}</small>
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="delivery-info">
+                      <strong>{{ order.deliveryDate }}</strong>
+                      <small class="d-block text-muted">{{ formatDate(order.createdAt) }}</small>
+                    </div>
+                  </td>
+                  <td>
+                    <span class="badge bg-light text-dark">
+                      {{ calculateOrderTotals(order).items }} items
+                    </span>
+                  </td>
+                  <td>
+                    <strong>${{ calculateOrderTotals(order).amount.toFixed(2) }}</strong>
+                  </td>
+                  <td>
+                    <span class="badge" [ngClass]="orderService.getStatusClass(orderService.getChefStatus(order))">
+                      {{ orderService.getStatusLabel(orderService.getChefStatus(order)) }}
+                    </span>
+                  </td>
+                  <td class="text-end">
+                    <button *ngIf="hasNextStatus(order)" 
+                            class="btn btn-sm btn-success me-2" 
+                            [disabled]="updatingOrderStatus[order._id]"
+                            (click)="updateOrderStatus(order._id, getNextStatus(order)!)">
+                      <span *ngIf="!updatingOrderStatus[order._id]">
+                        {{ getNextStatus(order) === 'received' ? 'Accept' : 
+                           getNextStatus(order) === 'in_progress' ? 'Start' :
+                           getNextStatus(order) === 'ready' ? 'Ready' :
+                           getNextStatus(order) === 'delivered' ? 'Delivered' : 'Update' }}
+                      </span>
+                      <span *ngIf="updatingOrderStatus[order._id]" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                    </button>
+                    <button *ngIf="orderService.canDeleteChefOrder(order)" 
+                            class="btn btn-sm btn-danger me-2"
+                            [disabled]="deletingOrder[order._id]"
+                            (click)="deleteOrder(order._id)">
+                      <span *ngIf="!deletingOrder[order._id]">
+                        <i class="bi bi-trash"></i>
+                      </span>
+                      <span *ngIf="deletingOrder[order._id]" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                    </button>
+                    <a [routerLink]="['/chef/orders', order._id]" class="btn btn-sm btn-outline-primary">
+                      <i class="bi bi-eye"></i>
+                    </a>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Orders grid view for mobile -->
+  <div *ngIf="!isLoading && filteredOrders.length > 0" class="row mt-4 d-md-none">
+    <div class="col-12">
+      <div *ngFor="let order of filteredOrders" class="card shadow-sm mb-3" 
+           [ngClass]="{'border-warning': orderService.getChefStatus(order) === 'pending'}">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-start mb-3">
+            <div>
+              <strong>Order #{{ order._id.substr(-8) }}</strong>
+              <div class="text-muted small">{{ formatDate(order.createdAt) }}</div>
+            </div>
+            <span class="badge" [ngClass]="orderService.getStatusClass(orderService.getChefStatus(order))">
+              {{ orderService.getStatusLabel(orderService.getChefStatus(order)) }}
+            </span>
+          </div>
+          
+          <div class="d-flex align-items-center mb-3">
+            <div class="avatar me-2">
+              <img [src]="productService.getImageUrl(order.user?.profileImage)" 
+                   class="avatar-img" alt="{{ order.user?.fullName || 'Customer' }}">
+            </div>
+            <div>
+              {{ order.user?.fullName || 'Customer' }}
+              <div class="delivery-info">
+                <strong>{{ order.deliveryDate }}</strong>
+                <small class="d-block text-muted">{{ order.deliveryTime }}</small>
+              </div>
+            </div>
+          </div>
+          
+          <div class="d-flex justify-content-between mb-3">
+            <div>
+              <span class="badge bg-light text-dark">
+                {{ calculateOrderTotals(order).items }} items
+              </span>
+            </div>
+            <div>
+              <strong>${{ calculateOrderTotals(order).amount.toFixed(2) }}</strong>
+            </div>
+          </div>
+          
+          <div class="d-flex justify-content-end">
+            <button *ngIf="hasNextStatus(order)" 
+                    class="btn btn-sm btn-success me-2" 
+                    [disabled]="updatingOrderStatus[order._id]"
+                    (click)="updateOrderStatus(order._id, getNextStatus(order)!)">
+              <span *ngIf="!updatingOrderStatus[order._id]">
+                {{ getNextStatus(order) === 'received' ? 'Accept' : 
+                   getNextStatus(order) === 'in_progress' ? 'Start Preparing' :
+                   getNextStatus(order) === 'ready' ? 'Mark Ready' :
+                   getNextStatus(order) === 'delivered' ? 'Mark Delivered' : 'Update' }}
+              </span>
+              <span *ngIf="updatingOrderStatus[order._id]" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+            </button>
+            <button *ngIf="orderService.canDeleteChefOrder(order)" 
+                    class="btn btn-sm btn-danger me-2"
+                    [disabled]="deletingOrder[order._id]"
+                    (click)="deleteOrder(order._id)">
+              <span *ngIf="!deletingOrder[order._id]">
+                <i class="bi bi-trash"></i>
+              </span>
+              <span *ngIf="deletingOrder[order._id]" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+            </button>
+            <a [routerLink]="['/chef/orders', order._id]" class="btn btn-sm btn-outline-primary">
+              <i class="bi bi-eye"></i>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,194 +1,229 @@
 <!-- src/app/features/chef/chef-dashboard/chef-dashboard.component.html -->
 <div class="container-fluid py-4">
-    <div class="row mb-4">
-      <div class="col-12">
-        <div class="card shadow-sm">
-          <div class="card-body">
-            <div class="d-flex justify-content-between align-items-center">
-              <h2 class="card-title">Chef Dashboard</h2>
-              <div class="form-check form-switch">
-                <input class="form-check-input" type="checkbox" id="viewModeSwitch" 
-                       [checked]="viewMode === 'customer'" (change)="toggleViewMode()">
-                <label class="form-check-label" for="viewModeSwitch">
-                  {{ viewMode === 'chef' ? 'Switch to Customer View' : 'Switch to Chef View' }}
-                </label>
+  <!-- Dashboard Header -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card bg-primary text-white shadow-sm">
+        <div class="card-body p-4">
+          <div class="d-flex align-items-center">
+            <div *ngIf="chef?.profileImage" class="profile-image me-4">
+              <img [src]="productService.getImageUrl(chef?.profileImage)" alt="Chef Profile" class="rounded-circle" style="width: 80px; height: 80px; object-fit: cover;">
+            </div>
+            <div *ngIf="!chef?.profileImage" class="profile-image me-4">
+              <div class="rounded-circle bg-light d-flex align-items-center justify-content-center text-primary" style="width: 80px; height: 80px; font-size: 2rem;">
+                <i class="bi bi-person"></i>
               </div>
             </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  
-    <div *ngIf="viewMode === 'chef'">
-      <!-- Chef Mode Content -->
-      <div class="row mb-4">
-        <!-- Statistics Cards -->
-        <div class="col-md-4">
-          <div class="card shadow-sm text-center mb-3">
-            <div class="card-body">
-              <h5 class="card-title text-muted">Total Products</h5>
-              <h2 class="card-text fw-bold">{{ totalProducts }}</h2>
-            </div>
-          </div>
-        </div>
-        <div class="col-md-4">
-          <div class="card shadow-sm text-center mb-3">
-            <div class="card-body">
-              <h5 class="card-title text-muted">Active Products</h5>
-              <h2 class="card-text fw-bold">{{ activeProducts }}</h2>
-            </div>
-          </div>
-        </div>
-        <div class="col-md-4">
-          <div class="card shadow-sm text-center mb-3">
-            <div class="card-body">
-              <h5 class="card-title text-muted">Average Rating</h5>
-              <h2 class="card-text fw-bold">{{ averageRating | number:'1.1-1' }}<small>/5</small></h2>
-            </div>
-          </div>
-        </div>
-      </div>
-  
-      <div class="row mb-4">
-        <div class="col-12">
-          <div class="card shadow-sm">
-            <div class="card-body">
-              <div class="d-flex justify-content-between align-items-center mb-3">
-                <h3 class="card-title">Your Products</h3>
-                <a routerLink="/chef/products/new" class="btn btn-primary">
-                  <i class="bi bi-plus-circle me-2"></i>Add New Product
-                </a>
-              </div>
-              
-              <!-- Loading indicator -->
-              <div *ngIf="isLoading" class="text-center py-5">
-                <div class="spinner-border text-primary" role="status">
-                  <span class="visually-hidden">Loading...</span>
-                </div>
-              </div>
-              
-              <!-- Error message -->
-              <div *ngIf="error" class="alert alert-danger">
-                {{ error }}
-              </div>
-              
-              <!-- Products table -->
-              <div *ngIf="!isLoading && !error" class="table-responsive">
-                <table class="table table-hover">
-                  <thead>
-                    <tr>
-                      <th>Image</th>
-                      <th>Name</th>
-                      <th>Category</th>
-                      <th>Price</th>
-                      <th>Status</th>
-                      <th>Rating</th>
-                      <th>Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr *ngIf="products.length === 0">
-                      <td colspan="7" class="text-center py-3">
-                        No products found. <a routerLink="/chef/products/new">Create your first product</a>
-                      </td>
-                    </tr>
-                    <tr *ngFor="let product of products">
-                      <td>
-                        <img [src]="product.images && product.images.length > 0 ? product.images[0] : 'assets/images/placeholder-food.jpg'" 
-                             alt="{{ product.name }}" class="img-thumbnail" style="width: 50px; height: 50px; object-fit: cover;">
-                      </td>
-                      <td>{{ product.name }}</td>
-                      <td>{{ product.category }}</td>
-                      <td>${{ product.price.toFixed(2) }}</td>
-                      <td>
-                        <span class="badge rounded-pill" [ngClass]="product.isAvailable ? 'bg-success' : 'bg-danger'">
-                          {{ product.isAvailable ? 'Available' : 'Unavailable' }}
-                        </span>
-                      </td>
-                      <td>
-                        <span *ngIf="product.reviewCount > 0">
-                          {{ product.rating.toFixed(1) }} ({{ product.reviewCount }})
-                        </span>
-                        <span *ngIf="product.reviewCount === 0">No reviews</span>
-                      </td>
-                      <td>
-                        <div class="btn-group" role="group">
-                          <a [routerLink]="['/chef/products', product._id]" class="btn btn-sm btn-outline-info">
-                            <i class="bi bi-eye"></i>
-                          </a>
-                          <a [routerLink]="['/chef/products/edit', product._id]" class="btn btn-sm btn-outline-primary">
-                            <i class="bi bi-pencil"></i>
-                          </a>
-                        </div>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-              
-              <div class="mt-3 text-center">
-                <a routerLink="/chef/products" class="btn btn-outline-primary">View All Products</a>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  
-    <div *ngIf="viewMode === 'customer'">
-      <!-- Customer View Mode -->
-      <div class="row mb-4">
-        <div class="col-12">
-          <div class="card shadow-sm">
-            <div class="card-body">
-              <h3 class="card-title">Customer View</h3>
-              <p class="card-text text-muted">
-                This is how customers see your products on the platform.
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-  
-      <div class="row">
-        <div *ngFor="let product of products" class="col-md-4 mb-4">
-          <div class="card h-100 shadow-sm">
-            <div class="position-relative">
-              <img [src]="product.images && product.images.length > 0 ? product.images[0] : 'assets/images/placeholder-food.jpg'" 
-                   class="card-img-top" alt="{{ product.name }}" style="height: 200px; object-fit: cover;">
-              <span *ngIf="!product.isAvailable" class="position-absolute top-0 end-0 badge bg-danger m-2">
-                Unavailable
-              </span>
-            </div>
-            <div class="card-body">
-              <div class="d-flex justify-content-between align-items-center mb-2">
-                <h5 class="card-title mb-0">{{ product.name }}</h5>
-                <span class="badge bg-secondary">{{ product.category }}</span>
-              </div>
-              <p class="card-text text-muted small mb-2">{{ product.description | slice:0:100 }}{{ product.description.length > 100 ? '...' : '' }}</p>
-              <div class="d-flex justify-content-between align-items-center">
-                <div>
-                  <p class="card-text fw-bold mb-0">${{ product.price.toFixed(2) }}</p>
-                </div>
-                <div>
-                  <span *ngIf="product.reviewCount > 0" class="text-warning">
-                    <i class="bi bi-star-fill"></i> {{ product.rating.toFixed(1) }}
-                  </span>
-                </div>
-              </div>
-            </div>
-            <div class="card-footer bg-white border-top-0">
-              <div class="d-flex justify-content-between">
-                <small class="text-muted">
-                  <i class="bi bi-clock me-1"></i> {{ product.preparationTime }} mins
-                </small>
-                <small class="text-muted">
-                  <i class="bi bi-people me-1"></i> {{ product.servingSize }}
-                </small>
-              </div>
+            <div>
+              <h2 class="mb-1">Welcome, {{ chef?.fullName || 'Chef' }}!</h2>
+              <p class="mb-0 text-white-50">{{ today | date:'EEEE, MMMM d, y' }}</p>
             </div>
           </div>
         </div>
       </div>
     </div>
   </div>
+
+  <!-- Dashboard Stats -->
+  <div class="row mb-4">
+    <div class="col-md-3 mb-3">
+      <div class="card shadow-sm h-100">
+        <div class="card-body">
+          <div class="d-flex align-items-center">
+            <div class="stat-icon bg-primary-light me-3">
+              <i class="bi bi-bag-check text-primary"></i>
+            </div>
+            <div>
+              <h6 class="stat-label mb-1">Active Orders</h6>
+              <h3 class="stat-value mb-0">{{ getActiveOrdersCount() }}</h3>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3 mb-3">
+      <div class="card shadow-sm h-100">
+        <div class="card-body">
+          <div class="d-flex align-items-center">
+            <div class="stat-icon bg-success-light me-3">
+              <i class="bi bi-check2-circle text-success"></i>
+            </div>
+            <div>
+              <h6 class="stat-label mb-1">Completed Orders</h6>
+              <h3 class="stat-value mb-0">{{ getCompletedOrdersCount() }}</h3>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3 mb-3">
+      <div class="card shadow-sm h-100">
+        <div class="card-body">
+          <div class="d-flex align-items-center">
+            <div class="stat-icon bg-info-light me-3">
+              <i class="bi bi-egg-fried text-info"></i>
+            </div>
+            <div>
+              <h6 class="stat-label mb-1">Active Dishes</h6>
+              <h3 class="stat-value mb-0">{{ getActiveProductsCount() }}</h3>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3 mb-3">
+      <div class="card shadow-sm h-100">
+        <div class="card-body">
+          <div class="d-flex align-items-center">
+            <div class="stat-icon bg-warning-light me-3">
+              <i class="bi bi-star text-warning"></i>
+            </div>
+            <div>
+              <h6 class="stat-label mb-1">Rating</h6>
+              <h3 class="stat-value mb-0">{{ getChefRating() }}</h3>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Actions -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <h4 class="card-title mb-4">Quick Actions</h4>
+          <div class="row">
+            <div class="col-md-3 mb-3">
+              <a routerLink="/chef/orders" class="btn btn-outline-primary w-100 p-3">
+                <i class="bi bi-list-check fs-4 d-block mb-2"></i>
+                Manage Orders
+              </a>
+            </div>
+            <div class="col-md-3 mb-3">
+              <a routerLink="/chef/products" class="btn btn-outline-success w-100 p-3">
+                <i class="bi bi-grid fs-4 d-block mb-2"></i>
+                My Dishes
+              </a>
+            </div>
+            <div class="col-md-3 mb-3">
+              <a routerLink="/chef/products/new" class="btn btn-outline-info w-100 p-3">
+                <i class="bi bi-plus-circle fs-4 d-block mb-2"></i>
+                Add New Dish
+              </a>
+            </div>
+            <div class="col-md-3 mb-3">
+              <a routerLink="/chef/profile" class="btn btn-outline-secondary w-100 p-3">
+                <i class="bi bi-person-gear fs-4 d-block mb-2"></i>
+                Edit Profile
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Orders Section -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center mb-4">
+            <h4 class="card-title">Recent Orders</h4>
+            <a routerLink="/chef/orders" class="btn btn-sm btn-outline-primary">View All</a>
+          </div>
+          
+          <div class="table-responsive">
+            <table class="table table-hover">
+              <thead class="table-light">
+                <tr>
+                  <th>Order ID</th>
+                  <th>Customer</th>
+                  <th>Items</th>
+                  <th>Total</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let order of recentOrders">
+                  <td><strong>#{{ order._id.substr(-8) }}</strong></td>
+                  <td>{{ order.user?.fullName || 'Customer' }}</td>
+                  <td>{{ getOrderItemCount(order) }}</td>
+                  <td>${{ getOrderTotal(order).toFixed(2) }}</td>
+                  <td>
+                    <span class="badge" [ngClass]="getStatusBadgeClass(order)">
+                      {{ getStatusLabel(order) }}
+                    </span>
+                  </td>
+                  <td>
+                    <a [routerLink]="['/chef/orders', order._id]" class="btn btn-sm btn-outline-primary me-2">
+                      <i class="bi bi-eye"></i>
+                    </a>
+                    <button *ngIf="canUpdateOrderStatus(order)" 
+                            class="btn btn-sm btn-success"
+                            (click)="updateOrderStatus(order)">
+                      {{ getNextActionLabel(order) }}
+                    </button>
+                  </td>
+                </tr>
+                <tr *ngIf="recentOrders.length === 0">
+                  <td colspan="6" class="text-center py-3">No recent orders found</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Products Section -->
+  <div class="row">
+    <div class="col-12">
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center mb-4">
+            <h4 class="card-title">My Dishes</h4>
+            <a routerLink="/chef/products" class="btn btn-sm btn-outline-primary">View All</a>
+          </div>
+          
+          <div class="row">
+            <div *ngFor="let product of products.slice(0, 4)" class="col-md-3 mb-3">
+              <div class="card h-100 product-card">
+                <img [src]="productService.getImageUrl(getProductFirstImage(product))" 
+                     class="card-img-top" alt="{{ product.name }}" 
+                     style="height: 180px; object-fit: cover;">
+                <div class="card-body">
+                  <h5 class="card-title">{{ product.name }}</h5>
+                  <p class="card-text text-muted">{{ product.category }}</p>
+                  <div class="d-flex justify-content-between align-items-center">
+                    <span class="product-price">${{ product.price.toFixed(2) }}</span>
+                    <div class="form-check form-switch">
+                      <input class="form-check-input" type="checkbox" 
+                             [checked]="product.isAvailable" 
+                             (change)="toggleProductAvailability(product._id, $event)">
+                      <label class="form-check-label">
+                        {{ product.isAvailable ? 'Available' : 'Unavailable' }}
+                      </label>
+                    </div>
+                  </div>
+                </div>
+                <div class="card-footer bg-white">
+                  <a [routerLink]="['/chef/products/edit', product._id]" class="btn btn-sm btn-outline-primary w-100">
+                    <i class="bi bi-pencil-square me-2"></i>Edit Product
+                  </a>
+                </div>
+              </div>
+            </div>
+            <div *ngIf="products.length === 0" class="col-12 text-center py-4">
+              <p class="text-muted">No products found. Click 'Add New Dish' to create your first dish.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

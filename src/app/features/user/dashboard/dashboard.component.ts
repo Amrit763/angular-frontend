@@ -7,6 +7,7 @@ import { TokenService } from '../../../core/auth/token.service';
 import { AuthService } from '../../../core/auth/auth.service';
 import { Router } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
+import { environment } from '../../../../environments/environment';
 
 // Custom validator to check if passwords match
 function matchingPasswords(controlName: string, matchingControlName: string) {
@@ -40,6 +41,8 @@ export class DashboardComponent implements OnInit {
   passwordChanging = false;
   changePasswordError = '';
   changePasswordSuccess = '';
+  baseUrl = environment.apiUrl.replace('/api', ''); // Base URL without /api
+  defaultImagePath = 'assets/images/default-profile.jpg';
   
   constructor(
     private tokenService: TokenService,
@@ -51,6 +54,7 @@ export class DashboardComponent implements OnInit {
 
   ngOnInit(): void {
     this.user = this.tokenService.getUser();
+    console.log('User data:', this.user);
     
     // Initialize the change password form
     this.changePasswordForm = this.formBuilder.group({
@@ -67,6 +71,43 @@ export class DashboardComponent implements OnInit {
     
     // Load Bootstrap scripts for modal functionality
     this.loadBootstrapScripts();
+
+    // Refresh user data to ensure we have the latest
+    this.refreshUserData();
+  }
+
+  // Reload user data from the server
+  refreshUserData(): void {
+    this.authService.getCurrentUser().subscribe({
+      next: (response) => {
+        if (response.success && response.user) {
+          this.user = response.user;
+          this.tokenService.saveUser(response.user);
+          console.log('Refreshed user data:', this.user);
+        }
+      },
+      error: (error) => {
+        console.error('Error refreshing user data:', error);
+      }
+    });
+  }
+
+  // Helper function to get correct profile image URL
+  getProfileImageUrl(): string {
+    if (this.user && this.user.profileImage) {
+      return `${this.baseUrl}/${this.user.profileImage}`;
+    }
+    return this.defaultImagePath;
+  }
+
+  // Handle image loading errors
+  handleImageError(): void {
+    console.log('Image failed to load, using default');
+    // Find the image element and set the src to the default
+    const imgElements = document.getElementsByClassName('profile-img');
+    if (imgElements && imgElements.length > 0) {
+      (imgElements[0] as HTMLImageElement).src = this.defaultImagePath;
+    }
   }
 
   // Convenience getter for easy access to form fields

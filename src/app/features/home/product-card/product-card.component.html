@@ -37,8 +37,12 @@
     </div>
     <div class="d-flex justify-content-between align-items-center mt-3">
       <span class="price">${{ product.price.toFixed(2) }}</span>
-      <div class="chef-info" *ngIf="isChefObject(product.chef)">
-        <small class="text-muted">By {{ product.chef.fullName }}</small>
+      <div class="chef-info">
+        <small class="text-muted">By 
+          <a [routerLink]="['/home/chef', getChefId()]" class="chef-link">
+            {{ getChefName() }}
+          </a>
+        </small>
       </div>
     </div>
   </div>

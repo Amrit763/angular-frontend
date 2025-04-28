@@ -20,7 +20,8 @@
         <nav aria-label="breadcrumb">
           <ol class="breadcrumb">
             <li class="breadcrumb-item"><a routerLink="/home">Home</a></li>
-            <li class="breadcrumb-item"><a [routerLink]="['/home']" [queryParams]="{category: product.category}">{{ product.category | titlecase }}</a></li>
+            <li class="breadcrumb-item"><a [routerLink]="['/home']" [queryParams]="{category: product.category}">{{
+                product.category | titlecase }}</a></li>
             <li class="breadcrumb-item active" aria-current="page">{{ product.name }}</li>
           </ol>
         </nav>
@@ -33,26 +34,20 @@
             <div class="product-gallery">
               <!-- Main image display -->
               <div class="main-image-container">
-                <img 
-                  [src]="productService.getImageUrl(product.images && product.images.length > 0 ? product.images[activeImageIndex] : '')" 
-                  alt="{{ product.name }}" 
-                  class="main-image"
-                >
+                <img
+                  [src]="productService.getImageUrl(product.images && product.images.length > 0 ? product.images[activeImageIndex] : '')"
+                  alt="{{ product.name }}" class="main-image">
                 <div *ngIf="product.isVegetarian || product.isVegan || product.isGlutenFree" class="dietary-badges">
                   <span *ngIf="product.isVegetarian" class="badge bg-success me-1">Vegetarian</span>
                   <span *ngIf="product.isVegan" class="badge bg-success me-1">Vegan</span>
                   <span *ngIf="product.isGlutenFree" class="badge bg-success">Gluten-Free</span>
                 </div>
               </div>
-              
+
               <!-- Thumbnails if there are multiple images -->
               <div *ngIf="product.images && product.images.length > 1" class="thumbnails-container">
-                <div 
-                  *ngFor="let image of product.images; let i = index" 
-                  class="thumbnail" 
-                  [ngClass]="{'active': activeImageIndex === i}"
-                  (click)="setActiveImage(i)"
-                >
+                <div *ngFor="let image of product.images; let i = index" class="thumbnail"
+                  [ngClass]="{'active': activeImageIndex === i}" (click)="setActiveImage(i)">
                   <img [src]="productService.getImageUrl(image)" alt="{{ product.name }} thumbnail {{ i + 1 }}">
                 </div>
               </div>
@@ -60,7 +55,7 @@
           </div>
         </div>
       </div>
-      
+
       <!-- Right column - Details -->
       <div class="col-md-6 mb-4">
         <div class="card shadow-sm h-100">
@@ -74,31 +69,31 @@
                 <small class="text-muted">({{ product.reviewCount }} reviews)</small>
               </div>
             </div>
-            
+
             <!-- Chef Info -->
             <div class="chef-info mb-3" *ngIf="isChefObject(product.chef)">
               <div class="d-flex align-items-center">
-                <img 
-                  [src]="productService.getImageUrl(product.chef.profileImage || '')" 
-                  alt="{{ product.chef.fullName }}" 
-                  class="chef-image me-2"
-                >
+                <img [src]="productService.getImageUrl(product.chef.profileImage || '')"
+                  alt="{{ product.chef.fullName }}" class="chef-image me-2">
                 <div>
                   <p class="mb-0">Made by <strong>{{ product.chef.fullName }}</strong></p>
-                  <a [routerLink]="['/chefs', product.chef._id]" class="small">View Chef Profile</a>
+                  <a [routerLink]="['/home/chef', product.chef._id]" class="small chef-link">View All Products by this
+                    Chef</a>
+
+                  <!-- <a [routerLink]="['/chefs', product.chef._id]" class="small">View Chef Profile</a> -->
                 </div>
               </div>
             </div>
-            
+
             <!-- Price -->
             <h3 class="price mb-3">${{ product.price.toFixed(2) }}</h3>
-            
+
             <!-- Description -->
             <div class="mb-4">
               <h5>Description</h5>
               <p class="description">{{ product.description }}</p>
             </div>
-            
+
             <!-- Preparation and Serving -->
             <div class="row mb-4">
               <div class="col-6">
@@ -114,7 +109,7 @@
                 </div>
               </div>
             </div>
-            
+
             <!-- Quantity selector -->
             <div class="quantity-selector mb-4">
               <h5>Quantity</h5>
@@ -128,15 +123,11 @@
                 </button>
               </div>
             </div>
-            
+
             <!-- Order button -->
             <div class="order-buttons">
               <div class="d-grid gap-2">
-                <button 
-                  class="btn btn-primary btn-lg" 
-                  (click)="addToCart()" 
-                  [disabled]="addingToCart"
-                >
+                <button class="btn btn-primary btn-lg" (click)="addToCart()" [disabled]="addingToCart">
                   <span *ngIf="!addingToCart">
                     <i class="bi bi-cart-plus me-2"></i>Add to Cart - ${{ getTotal().toFixed(2) }}
                   </span>
@@ -151,7 +142,7 @@
         </div>
       </div>
     </div>
-    
+
     <!-- Bottom section - Additional details -->
     <div class="row mt-4">
       <div class="col-12">
@@ -159,12 +150,14 @@
           <div class="card-body">
             <ul class="nav nav-tabs" id="productTabs" role="tablist">
               <li class="nav-item" role="presentation">
-                <button class="nav-link active" id="ingredients-tab" data-bs-toggle="tab" data-bs-target="#ingredients" type="button" role="tab" aria-controls="ingredients" aria-selected="true">
+                <button class="nav-link active" id="ingredients-tab" data-bs-toggle="tab" data-bs-target="#ingredients"
+                  type="button" role="tab" aria-controls="ingredients" aria-selected="true">
                   Ingredients
                 </button>
               </li>
               <li class="nav-item" role="presentation">
-                <button class="nav-link" id="allergens-tab" data-bs-toggle="tab" data-bs-target="#allergens" type="button" role="tab" aria-controls="allergens" aria-selected="false">
+                <button class="nav-link" id="allergens-tab" data-bs-toggle="tab" data-bs-target="#allergens"
+                  type="button" role="tab" aria-controls="allergens" aria-selected="false">
                   Allergens
                 </button>
               </li>
