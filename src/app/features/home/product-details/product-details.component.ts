@@ -6,7 +6,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { ProductService } from '../../../core/services/product.service';
 import { CartService } from '../../../core/services/cart.service';
 import { TokenService } from '../../../core/auth/token.service';
-import { Product, ChefInfo, ProductResponse } from '../../../core/models/product.model';
+import { Product, ChefInfo, ProductResponse, Condiment, SelectedCondiment } from '../../../core/models/product.model';
 
 @Component({
   selector: 'app-product-details',
@@ -25,6 +25,9 @@ export class ProductDetailsComponent implements OnInit {
   activeImageIndex = 0;
   quantity = 1;
   addingToCart = false;
+  
+  // New properties for condiments
+  selectedCondiments: SelectedCondiment[] = [];
 
   constructor(
     private route: ActivatedRoute,
@@ -48,6 +51,18 @@ export class ProductDetailsComponent implements OnInit {
     this.productService.getProductById(id).subscribe({
       next: (response: ProductResponse) => {
         this.product = response.product;
+        
+        // Initialize selectedCondiments with default condiments
+        if (this.product && this.product.condiments) {
+          this.selectedCondiments = this.product.condiments
+            .filter(condiment => condiment.isDefault)
+            .map(condiment => ({
+              condimentId: condiment._id,
+              name: condiment.name,
+              price: condiment.price
+            }));
+        }
+        
         this.isLoading = false;
       },
       error: (err) => {
@@ -71,9 +86,51 @@ export class ProductDetailsComponent implements OnInit {
     this.quantity++;
   }
 
-  getTotal(): number {
+  // Method to check if a condiment is selected
+  isCondimentSelected(condimentId: string): boolean {
+    return this.selectedCondiments.some(c => c.condimentId === condimentId);
+  }
+
+  // Method to toggle a condiment selection
+  toggleCondiment(condiment: Condiment): void {
+    const index = this.selectedCondiments.findIndex(c => c.condimentId === condiment._id);
+    
+    if (index === -1) {
+      // Add the condiment
+      this.selectedCondiments.push({
+        condimentId: condiment._id,
+        name: condiment.name,
+        price: condiment.price
+      });
+    } else {
+      // Remove the condiment
+      this.selectedCondiments.splice(index, 1);
+    }
+  }
+
+  // Get the base price of the product
+  getBasePrice(): number {
     if (!this.product) return 0;
-    return this.product.price * this.quantity;
+    return this.product.price;
+  }
+
+  // Get the total price for a single item with condiments
+  getItemTotalPrice(): number {
+    if (!this.product) return 0;
+    
+    let total = this.product.price;
+    
+    // Add prices of selected condiments
+    for (const condiment of this.selectedCondiments) {
+      total += condiment.price;
+    }
+    
+    return total;
+  }
+
+  // Get the total price (item price × quantity)
+  getTotal(): number {
+    return this.getItemTotalPrice() * this.quantity;
   }
 
   addToCart(): void {
@@ -90,8 +147,25 @@ export class ProductDetailsComponent implements OnInit {
 
     this.addingToCart = true;
     
-    // Add product to cart
-    this.cartService.addToCart(this.product._id, this.quantity).subscribe({
+    // Make sure selectedCondiments is properly formatted
+    const cleanedCondiments = this.selectedCondiments.map(condiment => {
+      // Ensure price is a valid number
+      const price = Number(condiment.price);
+      return {
+        condimentId: condiment.condimentId,
+        name: condiment.name,
+        price: isNaN(price) ? 0 : price // Default to 0
+      };
+    });
+    
+    console.log('Adding to cart with condiments:', cleanedCondiments);
+    
+    // Add product to cart with selected condiments
+    this.cartService.addToCart(
+      this.product._id, 
+      this.quantity, 
+      cleanedCondiments
+    ).subscribe({
       next: (response) => {
         console.log(`Added to cart: ${this.quantity} x ${this.product?.name}`);
         this.addingToCart = false;

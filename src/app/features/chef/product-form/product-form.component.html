@@ -1,304 +1,367 @@
 <!-- src/app/features/chef/product-form/product-form.component.html -->
 <div class="container py-4">
-    <div class="row mb-4">
-      <div class="col-12">
-        <div class="card shadow-sm">
-          <div class="card-body">
-            <div class="d-flex justify-content-between align-items-center">
-              <h2 class="card-title">{{ isEditMode ? 'Edit Product' : 'Create New Product' }}</h2>
-              <a routerLink="/chef/products" class="btn btn-outline-secondary">
-                <i class="bi bi-arrow-left me-2"></i>Back to Products
-              </a>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  
-    <!-- Loading indicator -->
-    <div *ngIf="isLoading" class="row">
-      <div class="col-12 text-center py-5">
-        <div class="spinner-border text-primary" role="status">
-          <span class="visually-hidden">Loading...</span>
-        </div>
-        <p class="mt-3">Loading product details...</p>
-      </div>
-    </div>
-  
-    <!-- Error message -->
-    <div *ngIf="error" class="row mb-4">
-      <div class="col-12">
-        <div class="alert alert-danger">
-          {{ error }}
-        </div>
-      </div>
-    </div>
-  
-    <!-- Product Form -->
-    <div *ngIf="!isLoading" class="row">
-      <div class="col-12">
-        <div class="card shadow-sm">
-          <div class="card-body">
-            <form [formGroup]="productForm" (ngSubmit)="onSubmit()">
-              
-              <!-- Basic Information -->
-              <div class="row mb-4">
-                <div class="col-12">
-                  <h4 class="form-section-title">Basic Information</h4>
-                </div>
-                
-                <div class="col-md-6 mb-3">
-                  <label for="name" class="form-label">Product Name*</label>
-                  <input 
-                    type="text" 
-                    class="form-control" 
-                    id="name" 
-                    formControlName="name"
-                    [ngClass]="{'is-invalid': nameControl?.invalid && nameControl?.touched}"
-                  >
-                  <div *ngIf="nameControl?.invalid && nameControl?.touched" class="invalid-feedback">
-                    <div *ngIf="nameControl?.errors?.['required']">Name is required</div>
-                    <div *ngIf="nameControl?.errors?.['minlength']">Name must be at least 3 characters</div>
-                    <div *ngIf="nameControl?.errors?.['maxlength']">Name cannot exceed 100 characters</div>
-                  </div>
-                </div>
-                
-                <div class="col-md-6 mb-3">
-                  <label for="category" class="form-label">Category*</label>
-                  <select 
-                    class="form-select" 
-                    id="category" 
-                    formControlName="category"
-                    [ngClass]="{'is-invalid': categoryControl?.invalid && categoryControl?.touched}"
-                  >
-                    <option value="" disabled>Select a category</option>
-                    <option *ngFor="let category of categories" [value]="category">
-                      {{ category | titlecase }}
-                    </option>
-                  </select>
-                  <div *ngIf="categoryControl?.invalid && categoryControl?.touched" class="invalid-feedback">
-                    Category is required
-                  </div>
-                </div>
-                
-                <div class="col-12 mb-3">
-                  <label for="description" class="form-label">Description*</label>
-                  <textarea 
-                    class="form-control" 
-                    id="description" 
-                    formControlName="description" 
-                    rows="3"
-                    [ngClass]="{'is-invalid': descriptionControl?.invalid && descriptionControl?.touched}"
-                  ></textarea>
-                  <div *ngIf="descriptionControl?.invalid && descriptionControl?.touched" class="invalid-feedback">
-                    <div *ngIf="descriptionControl?.errors?.['required']">Description is required</div>
-                    <div *ngIf="descriptionControl?.errors?.['minlength']">Description must be at least 10 characters</div>
-                    <div *ngIf="descriptionControl?.errors?.['maxlength']">Description cannot exceed 500 characters</div>
-                  </div>
-                </div>
-              </div>
-              
-              <!-- Pricing and Serving Information -->
-              <div class="row mb-4">
-                <div class="col-12">
-                  <h4 class="form-section-title">Pricing and Serving Information</h4>
-                </div>
-                
-                <div class="col-md-4 mb-3">
-                  <label for="price" class="form-label">Price ($)*</label>
-                  <input 
-                    type="number" 
-                    class="form-control" 
-                    id="price" 
-                    formControlName="price" 
-                    min="0.01" 
-                    step="0.01"
-                    [ngClass]="{'is-invalid': priceControl?.invalid && priceControl?.touched}"
-                  >
-                  <div *ngIf="priceControl?.invalid && priceControl?.touched" class="invalid-feedback">
-                    <div *ngIf="priceControl?.errors?.['required']">Price is required</div>
-                    <div *ngIf="priceControl?.errors?.['min']">Price must be at least $0.01</div>
-                  </div>
-                </div>
-                
-                <div class="col-md-4 mb-3">
-                  <label for="preparationTime" class="form-label">Preparation Time (minutes)*</label>
-                  <input 
-                    type="number" 
-                    class="form-control" 
-                    id="preparationTime" 
-                    formControlName="preparationTime" 
-                    min="1"
-                    [ngClass]="{'is-invalid': preparationTimeControl?.invalid && preparationTimeControl?.touched}"
-                  >
-                  <div *ngIf="preparationTimeControl?.invalid && preparationTimeControl?.touched" class="invalid-feedback">
-                    <div *ngIf="preparationTimeControl?.errors?.['required']">Preparation time is required</div>
-                    <div *ngIf="preparationTimeControl?.errors?.['min']">Preparation time must be at least 1 minute</div>
-                  </div>
-                </div>
-                
-                <div class="col-md-4 mb-3">
-                  <label for="servingSize" class="form-label">Serving Size*</label>
-                  <input 
-                    type="text" 
-                    class="form-control" 
-                    id="servingSize" 
-                    formControlName="servingSize"
-                    [ngClass]="{'is-invalid': servingSizeControl?.invalid && servingSizeControl?.touched}"
-                    placeholder="e.g., 1 person, 2-3 people"
-                  >
-                  <div *ngIf="servingSizeControl?.invalid && servingSizeControl?.touched" class="invalid-feedback">
-                    Serving size is required
-                  </div>
-                </div>
-              </div>
-              
-              <!-- Ingredients and Allergens -->
-              <div class="row mb-4">
-                <div class="col-12">
-                  <h4 class="form-section-title">Ingredients and Allergens</h4>
-                </div>
-                
-                <div class="col-md-6 mb-3">
-                  <label class="form-label">Ingredients*</label>
-                  
-                  <div formArrayName="ingredients">
-                    <div class="input-group mb-2" *ngFor="let ingredient of ingredients.controls; let i = index">
-                      <input 
-                        type="text" 
-                        class="form-control" 
-                        [formControlName]="i" 
-                        placeholder="Enter ingredient"
-                        [ngClass]="{'is-invalid': ingredient.invalid && ingredient.touched}"
-                      >
-                      <button 
-                        type="button" 
-                        class="btn btn-outline-danger" 
-                        (click)="removeIngredient(i)"
-                        [disabled]="ingredients.length === 1"
-                      >
-                        <i class="bi bi-trash"></i>
-                      </button>
-                      <div *ngIf="ingredient.invalid && ingredient.touched" class="invalid-feedback">
-                        Ingredient name is required
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <button type="button" class="btn btn-outline-primary" (click)="addIngredient()">
-                    <i class="bi bi-plus-circle me-2"></i>Add Ingredient
-                  </button>
-                </div>
-                
-                <!-- <div class="col-md-6 mb-3">
-                  <label class="form-label">Allergens</label>
-                  <div class="allergens-container">
-                    <div class="form-check" *ngFor="let allergen of commonAllergens">
-                      <input 
-                        class="form-check-input" 
-                        type="checkbox"
-                        [id]="'allergen-' + allergen"
-                        [checked]="isAllergenSelected(allergen)"
-                        (change)="toggleAllergen(allergen)"
-                      >
-                      <label class="form-check-label" [for]="'allergen-' + allergen">
-                        {{ allergen }}
-                      </label>
-                    </div>
-                  </div>
-                </div> -->
-              </div>
-              
-              <!-- Dietary Options -->
-              <div class="row mb-4">
-                <div class="col-12">
-                  <h4 class="form-section-title">Dietary Options</h4>
-                </div>
-                
-                <div class="col-md-4 mb-3">
-                  <div class="form-check form-switch">
-                    <input class="form-check-input" type="checkbox" id="isVegetarian" formControlName="isVegetarian">
-                    <label class="form-check-label" for="isVegetarian">Vegetarian</label>
-                  </div>
-                </div>
-                
-                <div class="col-md-4 mb-3">
-                  <div class="form-check form-switch">
-                    <input class="form-check-input" type="checkbox" id="isVegan" formControlName="isVegan">
-                    <label class="form-check-label" for="isVegan">Vegan</label>
-                  </div>
-                </div>
-                
-                <div class="col-md-4 mb-3">
-                  <div class="form-check form-switch">
-                    <input class="form-check-input" type="checkbox" id="isGlutenFree" formControlName="isGlutenFree">
-                    <label class="form-check-label" for="isGlutenFree">Gluten-Free</label>
-                  </div>
-                </div>
-              </div>
-              
-              <!-- Images -->
-              <div class="row mb-4">
-                <div class="col-12">
-                  <h4 class="form-section-title">Product Images</h4>
-                </div>
-                
-                <div class="col-12 mb-3">
-                  <div class="custom-file-input">
-                    <input 
-                      type="file" 
-                      class="form-control" 
-                      id="productImages" 
-                      accept="image/*" 
-                      multiple
-                      (change)="onImageChange($event)"
-                    >
-                  </div>
-                </div>
-                
-                <!-- Image previews -->
-                <div class="col-12 mb-3" *ngIf="imagePreviewUrls.length > 0">
-                  <div class="image-preview-container">
-                    <div class="image-preview" *ngFor="let imageUrl of imagePreviewUrls">
-                      <img [src]="imageUrl" alt="Product image preview" class="img-thumbnail">
-                    </div>
-                  </div>
-                </div>
-              </div>
-              
-              <!-- Availability -->
-              <div class="row mb-4">
-                <div class="col-12">
-                  <h4 class="form-section-title">Availability</h4>
-                </div>
-                
-                <div class="col-12 mb-3">
-                  <div class="form-check form-switch">
-                    <input class="form-check-input" type="checkbox" id="isAvailable" formControlName="isAvailable">
-                    <label class="form-check-label" for="isAvailable">
-                      Product is available for ordering
-                    </label>
-                  </div>
-                </div>
-              </div>
-              
-              <!-- Submit Button -->
-              <div class="row">
-                <div class="col-12 text-center">
-                  <button 
-                    type="submit" 
-                    class="btn btn-primary btn-lg px-5"
-                    [disabled]="isSubmitting"
-                  >
-                    <span *ngIf="isSubmitting" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                    {{ isEditMode ? 'Update Product' : 'Create Product' }}
-                  </button>
-                </div>
-              </div>
-              
-            </form>
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center">
+            <h2 class="card-title">{{ isEditMode ? 'Edit Product' : 'Create New Product' }}</h2>
+            <a routerLink="/chef/products" class="btn btn-outline-secondary">
+              <i class="bi bi-arrow-left me-2"></i>Back to Products
+            </a>
           </div>
         </div>
       </div>
     </div>
   </div>
+
+  <!-- Loading indicator -->
+  <div *ngIf="isLoading" class="row">
+    <div class="col-12 text-center py-5">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+      <p class="mt-3">Loading product details...</p>
+    </div>
+  </div>
+
+  <!-- Error message -->
+  <div *ngIf="error" class="row mb-4">
+    <div class="col-12">
+      <div class="alert alert-danger">
+        {{ error }}
+      </div>
+    </div>
+  </div>
+
+  <!-- Product Form -->
+  <div *ngIf="!isLoading" class="row">
+    <div class="col-12">
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <form [formGroup]="productForm" (ngSubmit)="onSubmit()">
+            
+            <!-- Basic Information -->
+            <div class="row mb-4">
+              <div class="col-12">
+                <h4 class="form-section-title">Basic Information</h4>
+              </div>
+              
+              <div class="col-md-6 mb-3">
+                <label for="name" class="form-label">Product Name*</label>
+                <input 
+                  type="text" 
+                  class="form-control" 
+                  id="name" 
+                  formControlName="name"
+                  [ngClass]="{'is-invalid': nameControl?.invalid && nameControl?.touched}"
+                >
+                <div *ngIf="nameControl?.invalid && nameControl?.touched" class="invalid-feedback">
+                  <div *ngIf="nameControl?.errors?.['required']">Name is required</div>
+                  <div *ngIf="nameControl?.errors?.['minlength']">Name must be at least 3 characters</div>
+                  <div *ngIf="nameControl?.errors?.['maxlength']">Name cannot exceed 100 characters</div>
+                </div>
+              </div>
+              
+              <div class="col-md-6 mb-3">
+                <label for="category" class="form-label">Category*</label>
+                <select 
+                  class="form-select" 
+                  id="category" 
+                  formControlName="category"
+                  [ngClass]="{'is-invalid': categoryControl?.invalid && categoryControl?.touched}"
+                >
+                  <option value="" disabled>Select a category</option>
+                  <option *ngFor="let category of categories" [value]="category">
+                    {{ category | titlecase }}
+                  </option>
+                </select>
+                <div *ngIf="categoryControl?.invalid && categoryControl?.touched" class="invalid-feedback">
+                  Category is required
+                </div>
+              </div>
+              
+              <div class="col-12 mb-3">
+                <label for="description" class="form-label">Description*</label>
+                <textarea 
+                  class="form-control" 
+                  id="description" 
+                  formControlName="description" 
+                  rows="3"
+                  [ngClass]="{'is-invalid': descriptionControl?.invalid && descriptionControl?.touched}"
+                ></textarea>
+                <div *ngIf="descriptionControl?.invalid && descriptionControl?.touched" class="invalid-feedback">
+                  <div *ngIf="descriptionControl?.errors?.['required']">Description is required</div>
+                  <div *ngIf="descriptionControl?.errors?.['minlength']">Description must be at least 10 characters</div>
+                  <div *ngIf="descriptionControl?.errors?.['maxlength']">Description cannot exceed 500 characters</div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Pricing and Serving Information -->
+            <div class="row mb-4">
+              <div class="col-12">
+                <h4 class="form-section-title">Pricing and Serving Information</h4>
+              </div>
+              
+              <div class="col-md-4 mb-3">
+                <label for="price" class="form-label">Price ($)*</label>
+                <input 
+                  type="number" 
+                  class="form-control" 
+                  id="price" 
+                  formControlName="price" 
+                  min="0.01" 
+                  step="0.01"
+                  [ngClass]="{'is-invalid': priceControl?.invalid && priceControl?.touched}"
+                >
+                <div *ngIf="priceControl?.invalid && priceControl?.touched" class="invalid-feedback">
+                  <div *ngIf="priceControl?.errors?.['required']">Price is required</div>
+                  <div *ngIf="priceControl?.errors?.['min']">Price must be at least $0.01</div>
+                </div>
+              </div>
+              
+              <div class="col-md-4 mb-3">
+                <label for="preparationTime" class="form-label">Preparation Time (minutes)*</label>
+                <input 
+                  type="number" 
+                  class="form-control" 
+                  id="preparationTime" 
+                  formControlName="preparationTime" 
+                  min="1"
+                  [ngClass]="{'is-invalid': preparationTimeControl?.invalid && preparationTimeControl?.touched}"
+                >
+                <div *ngIf="preparationTimeControl?.invalid && preparationTimeControl?.touched" class="invalid-feedback">
+                  <div *ngIf="preparationTimeControl?.errors?.['required']">Preparation time is required</div>
+                  <div *ngIf="preparationTimeControl?.errors?.['min']">Preparation time must be at least 1 minute</div>
+                </div>
+              </div>
+              
+              <div class="col-md-4 mb-3">
+                <label for="servingSize" class="form-label">Serving Size*</label>
+                <input 
+                  type="text" 
+                  class="form-control" 
+                  id="servingSize" 
+                  formControlName="servingSize"
+                  [ngClass]="{'is-invalid': servingSizeControl?.invalid && servingSizeControl?.touched}"
+                  placeholder="e.g., 1 person, 2-3 people"
+                >
+                <div *ngIf="servingSizeControl?.invalid && servingSizeControl?.touched" class="invalid-feedback">
+                  Serving size is required
+                </div>
+              </div>
+            </div>
+            
+            <!-- Condiments Section - NEW -->
+            <div class="row mb-4">
+              <div class="col-12">
+                <h4 class="form-section-title">Condiments & Add-ons</h4>
+                <p class="text-muted">Add optional condiments or additions that customers can select for an additional price.</p>
+              </div>
+              
+              <div class="col-12">
+                <div formArrayName="condiments">
+                  <div *ngFor="let condiment of condiments.controls; let i = index" [formGroupName]="i" class="row mb-3">
+                    <div class="col-md-5">
+                      <label [for]="'condimentName' + i" class="form-label">Name</label>
+                      <input 
+                        type="text" 
+                        class="form-control" 
+                        [id]="'condimentName' + i" 
+                        formControlName="name"
+                        placeholder="e.g., Extra Cheese, Special Sauce"
+                      >
+                    </div>
+                    <div class="col-md-3">
+                      <label [for]="'condimentPrice' + i" class="form-label">Price ($)</label>
+                      <input 
+                        type="number" 
+                        class="form-control" 
+                        [id]="'condimentPrice' + i" 
+                        formControlName="price" 
+                        min="0" 
+                        step="0.01"
+                        placeholder="0.00"
+                      >
+                    </div>
+                    <div class="col-md-2">
+                      <div class="form-check mt-4">
+                        <input 
+                          class="form-check-input" 
+                          type="checkbox" 
+                          [id]="'condimentDefault' + i" 
+                          formControlName="isDefault"
+                        >
+                        <label class="form-check-label" [for]="'condimentDefault' + i">
+                          Default Option
+                        </label>
+                      </div>
+                    </div>
+                    <div class="col-md-2">
+                      <button 
+                        type="button" 
+                        class="btn btn-outline-danger mt-4" 
+                        (click)="removeCondiment(i)"
+                      >
+                        <i class="bi bi-trash"></i>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                
+                <button type="button" class="btn btn-outline-primary mt-2" (click)="addCondiment()">
+                  <i class="bi bi-plus-circle me-2"></i>Add Condiment Option
+                </button>
+              </div>
+            </div>
+            
+            <!-- Ingredients and Allergens -->
+            <div class="row mb-4">
+              <div class="col-12">
+                <h4 class="form-section-title">Ingredients and Allergens</h4>
+              </div>
+              
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Ingredients*</label>
+                
+                <div formArrayName="ingredients">
+                  <div class="input-group mb-2" *ngFor="let ingredient of ingredients.controls; let i = index">
+                    <input 
+                      type="text" 
+                      class="form-control" 
+                      [formControlName]="i" 
+                      placeholder="Enter ingredient"
+                      [ngClass]="{'is-invalid': ingredient.invalid && ingredient.touched}"
+                    >
+                    <button 
+                      type="button" 
+                      class="btn btn-outline-danger" 
+                      (click)="removeIngredient(i)"
+                      [disabled]="ingredients.length === 1"
+                    >
+                      <i class="bi bi-trash"></i>
+                    </button>
+                    <div *ngIf="ingredient.invalid && ingredient.touched" class="invalid-feedback">
+                      Ingredient name is required
+                    </div>
+                  </div>
+                </div>
+                
+                <button type="button" class="btn btn-outline-primary" (click)="addIngredient()">
+                  <i class="bi bi-plus-circle me-2"></i>Add Ingredient
+                </button>
+              </div>
+              
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Allergens</label>
+                <div class="allergens-container">
+                  <div class="form-check" *ngFor="let allergen of commonAllergens">
+                    <input 
+                      class="form-check-input" 
+                      type="checkbox"
+                      [id]="'allergen-' + allergen"
+                      [checked]="isAllergenSelected(allergen)"
+                      (change)="toggleAllergen(allergen)"
+                    >
+                    <label class="form-check-label" [for]="'allergen-' + allergen">
+                      {{ allergen }}
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Dietary Options -->
+            <div class="row mb-4">
+              <div class="col-12">
+                <h4 class="form-section-title">Dietary Options</h4>
+              </div>
+              
+              <div class="col-md-4 mb-3">
+                <div class="form-check form-switch">
+                  <input class="form-check-input" type="checkbox" id="isVegetarian" formControlName="isVegetarian">
+                  <label class="form-check-label" for="isVegetarian">Vegetarian</label>
+                </div>
+              </div>
+              
+              <div class="col-md-4 mb-3">
+                <div class="form-check form-switch">
+                  <input class="form-check-input" type="checkbox" id="isVegan" formControlName="isVegan">
+                  <label class="form-check-label" for="isVegan">Vegan</label>
+                </div>
+              </div>
+              
+              <div class="col-md-4 mb-3">
+                <div class="form-check form-switch">
+                  <input class="form-check-input" type="checkbox" id="isGlutenFree" formControlName="isGlutenFree">
+                  <label class="form-check-label" for="isGlutenFree">Gluten-Free</label>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Images -->
+            <div class="row mb-4">
+              <div class="col-12">
+                <h4 class="form-section-title">Product Images</h4>
+              </div>
+              
+              <div class="col-12 mb-3">
+                <div class="custom-file-input">
+                  <input 
+                    type="file" 
+                    class="form-control" 
+                    id="productImages" 
+                    accept="image/*" 
+                    multiple
+                    (change)="onImageChange($event)"
+                  >
+                </div>
+              </div>
+              
+              <!-- Image previews -->
+              <div class="col-12 mb-3" *ngIf="imagePreviewUrls.length > 0">
+                <div class="image-preview-container">
+                  <div class="image-preview" *ngFor="let imageUrl of imagePreviewUrls">
+                    <img [src]="imageUrl" alt="Product image preview" class="img-thumbnail">
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Availability -->
+            <div class="row mb-4">
+              <div class="col-12">
+                <h4 class="form-section-title">Availability</h4>
+              </div>
+              
+              <div class="col-12 mb-3">
+                <div class="form-check form-switch">
+                  <input class="form-check-input" type="checkbox" id="isAvailable" formControlName="isAvailable">
+                  <label class="form-check-label" for="isAvailable">
+                    Product is available for ordering
+                  </label>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Submit Button -->
+            <div class="row">
+              <div class="col-12 text-center">
+                <button 
+                  type="submit" 
+                  class="btn btn-primary btn-lg px-5"
+                  [disabled]="isSubmitting"
+                >
+                  <span *ngIf="isSubmitting" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                  {{ isEditMode ? 'Update Product' : 'Create Product' }}
+                </button>
+              </div>
+            </div>
+            
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

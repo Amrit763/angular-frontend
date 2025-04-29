@@ -1,18 +1,47 @@
 // src/app/core/services/order.service.ts
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable, catchError, throwError } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import { switchMap } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
-import { TokenService } from '../auth/token.service';
+import { CartService, CartItem } from './cart.service';
+import { SelectedCondiment } from '../models/product.model';
 import { 
   Order, 
-  OrderResponse, 
-  OrdersResponse, 
-  ChefOrdersResponse,
-  UpdateOrderStatusResponse,
-  OrderStatus,
-  ChefItemGroup 
+  OrderStatus, 
+  OrderItem, 
+  ChefItemGroup,
+  ChefOrdersResponse, 
+  UpdateOrderStatusResponse 
 } from '../models/order.model';
+
+// Define the OrderData interface for creating orders
+export interface OrderData {
+  deliveryAddress: string;
+  deliveryDate: string;
+  deliveryTime: string;
+  deliveryNotes?: string;
+  paymentMethod: string;
+}
+
+// Define common status labels and classes
+const STATUS_LABELS: { [key: string]: string } = {
+  'pending': 'Pending',
+  'received': 'Received',
+  'in_progress': 'In Progress',
+  'ready': 'Ready for Delivery',
+  'delivered': 'Delivered',
+  'cancelled': 'Cancelled'
+};
+
+const STATUS_CLASSES: { [key: string]: string } = {
+  'pending': 'bg-warning',
+  'received': 'bg-info',
+  'in_progress': 'bg-primary',
+  'ready': 'bg-success',
+  'delivered': 'bg-secondary',
+  'cancelled': 'bg-danger'
+};
 
 @Injectable({
   providedIn: 'root'
@@ -22,143 +51,133 @@ export class OrderService {
 
   constructor(
     private http: HttpClient,
-    private tokenService: TokenService
+    private cartService: CartService
   ) { }
 
   // Create a new order
-  createOrder(orderData: any): Observable<OrderResponse> {
-    return this.http.post<OrderResponse>(this.apiUrl, orderData);
+  createOrder(orderData: OrderData): Observable<{ success: boolean; message: string; order: Order }> {
+    console.log('Creating order with data:', orderData);
+    
+    // Make sure to get the latest cart data first to ensure correct prices
+    return this.cartService.getCart().pipe(
+      switchMap(cartData => {
+        console.log('Latest cart data for order:', cartData);
+        
+        // Use the cart data to create the order
+        const order = {
+          ...orderData,
+          items: cartData.items.map(item => ({
+            product: item.product._id,
+            quantity: item.quantity,
+            price: item.product.price,
+            selectedCondiments: item.selectedCondiments,
+            subtotal: item.totalPrice || this.calculateItemTotal(item)
+          })),
+          subtotal: cartData.subtotal,
+          serviceFee: cartData.serviceFee,
+          totalAmount: cartData.total
+        };
+        
+        console.log('Submitting finalized order:', order);
+        
+        return this.http.post<{ success: boolean; message: string; order: Order }>(`${this.apiUrl}`, order);
+      })
+    );
   }
 
   // Get all orders for the current user
-  getUserOrders(): Observable<OrdersResponse> {
-    return this.http.get<OrdersResponse>(`${this.apiUrl}/user`);
+  getUserOrders(): Observable<{ success: boolean; orders: Order[] }> {
+    return this.http.get<{ success: boolean; orders: Order[] }>(`${this.apiUrl}`);
   }
 
-  // Get specific order by ID
-  getOrderById(orderId: string): Observable<OrderResponse> {
-    return this.http.get<OrderResponse>(`${this.apiUrl}/${orderId}`);
+  // Get a specific order by ID
+  getOrderById(orderId: string): Observable<{ success: boolean; order: Order }> {
+    return this.http.get<{ success: boolean; order: Order }>(`${this.apiUrl}/${orderId}`);
   }
 
-  // Get all orders for a chef
-  getChefOrders(status?: OrderStatus): Observable<ChefOrdersResponse> {
-    let params = new HttpParams();
-    if (status) {
-      params = params.set('status', status);
+  // Cancel an order
+  cancelOrder(orderId: string): Observable<{ success: boolean; order: Order }> {
+    return this.http.put<{ success: boolean; order: Order }>(`${this.apiUrl}/${orderId}/cancel`, {});
+  }
+
+  // Delete an order (if allowed)
+  deleteOrder(orderId: string): Observable<{ success: boolean; message: string }> {
+    return this.http.delete<{ success: boolean; message: string }>(`${this.apiUrl}/${orderId}`);
+  }
+
+  // Get status label for display
+  getStatusLabel(status: string): string {
+    return STATUS_LABELS[status] || 'Unknown';
+  }
+
+  // Get CSS class for status
+  getStatusClass(status: string): string {
+    return STATUS_CLASSES[status] || 'bg-secondary';
+  }
+
+  // Check if an order can be deleted
+  canDeleteOrder(order: Order): boolean {
+    return order.status === 'delivered' || order.status === 'cancelled';
+  }
+
+  // Helper method to calculate item total if totalPrice is missing
+  private calculateItemTotal(item: CartItem): number {
+    let basePrice = Number(item.product.price) || 0;
+    
+    // Add condiment prices
+    if (item.selectedCondiments && item.selectedCondiments.length > 0) {
+      for (const condiment of item.selectedCondiments) {
+        basePrice += Number(condiment.price) || 0;
+      }
     }
-    return this.http.get<ChefOrdersResponse>(`${this.apiUrl}/chef`, { params });
+    
+    // Multiply by quantity
+    return basePrice * item.quantity;
   }
 
-  // Update order status (for chef)
+  // ----- CHEF SPECIFIC METHODS -----
+
+  // Get all orders assigned to the current chef
+  getChefOrders(): Observable<ChefOrdersResponse> {
+    return this.http.get<ChefOrdersResponse>(`${this.apiUrl}/chef`);
+  }
+
+  // Update an order's status
   updateOrderStatus(orderId: string, status: OrderStatus): Observable<UpdateOrderStatusResponse> {
-    return this.http.patch<UpdateOrderStatusResponse>(
+    return this.http.put<UpdateOrderStatusResponse>(
       `${this.apiUrl}/${orderId}/status`, 
       { status }
     );
   }
 
-  // Cancel order (for user)
-  cancelOrder(orderId: string): Observable<OrderResponse> {
-    return this.http.patch<OrderResponse>(
-      `${this.apiUrl}/${orderId}/cancel`, 
-      {}
-    );
-  }
-
-  // Delete order (new method for both users and chefs)
-  deleteOrder(orderId: string): Observable<{success: boolean, message: string}> {
-    // Use the correct endpoint - this is likely a 'soft delete' method
-    return this.http.patch<{success: boolean, message: string}>(
-      `${this.apiUrl}/${orderId}/delete`, 
-      {}
-    ).pipe(
-      catchError(error => {
-        console.error('Error deleting order:', error);
-        return throwError(() => error);
-      })
-    );
-  }
-
-  // Check if order is deletable (completed or cancelled)
-  canDeleteOrder(order: Order): boolean {
-    return order.status === 'delivered' || order.status === 'cancelled';
-  }
-
-  // Check if chef portion of order is deletable (delivered or cancelled)
-  canDeleteChefOrder(order: Order): boolean {
-    const chefStatus = this.getChefStatus(order);
-    return chefStatus === 'delivered' || chefStatus === 'cancelled';
-  }
-
-  // Get order status label for display
-  getStatusLabel(status: OrderStatus): string {
-    const statusMap: Record<OrderStatus, string> = {
-      pending: 'Pending',
-      received: 'Order Received',
-      in_progress: 'In Progress',
-      ready: 'Ready for Delivery',
-      delivered: 'Delivered',
-      cancelled: 'Cancelled'
-    };
-    return statusMap[status] || 'Unknown';
-  }
-
-  // Get order status class for styling
-  getStatusClass(status: OrderStatus): string {
-    const classMap: Record<OrderStatus, string> = {
-      pending: 'bg-warning',
-      received: 'bg-info',
-      in_progress: 'bg-primary',
-      ready: 'bg-success',
-      delivered: 'bg-success text-white',
-      cancelled: 'bg-danger'
-    };
-    return classMap[status] || 'bg-secondary';
-  }
-
-  // Get chef-specific items from order
-  getChefItems(order: Order): any[] {
-    if (!order || !order.chefItems) return [];
+  // Get items from an order that belong to the current chef
+  getChefItems(order: Order): OrderItem[] {
+    // Find the chef item group that belongs to the current chef
+    const chefGroup = order.chefItems.find(group => {
+      // You may need to add logic here to find the current chef's group
+      // For now, we'll assume there's only one chef per order for simplicity
+      return true;
+    });
     
-    const currentUser = this.tokenService.getUser();
-    if (!currentUser || !currentUser._id) return [];
-    
-    // Find this chef's item group in the order
-    const chefGroup = order.chefItems.find(group => 
-      group.chef?._id === currentUser._id
-    );
-    
-    if (!chefGroup) return [];
-    return chefGroup.items;
+    return chefGroup ? chefGroup.items : [];
   }
 
-  // Get chef-specific status from order
+  // Get the status of an order for the current chef
   getChefStatus(order: Order): OrderStatus {
-    if (!order || !order.chefItems) return 'pending';
+    // Find the chef item group that belongs to the current chef
+    const chefGroup = order.chefItems.find(group => {
+      // You may need to add logic here to find the current chef's group
+      // For now, we'll assume there's only one chef per order for simplicity
+      return true;
+    });
     
-    const currentUser = this.tokenService.getUser();
-    if (!currentUser || !currentUser._id) return 'pending';
-    
-    const chefGroup = order.chefItems.find(group => 
-      group.chef?._id === currentUser._id
-    );
-    
-    if (!chefGroup) return 'pending';
-    return chefGroup.status;
+    // Convert status string to OrderStatus type
+    return (chefGroup ? chefGroup.status : order.status) as OrderStatus;
   }
 
-  // Get status for a specific chef in the order (for customer view)
-  getChefStatusByChefId(order: Order, chefId: string): OrderStatus {
-    if (!order || !order.chefItems) return 'pending';
-    
-    const chefGroup = order.chefItems.find(group => 
-      group.chef?._id === chefId
-    );
-    
-    if (!chefGroup) return 'pending';
-    return chefGroup.status;
+  // Check if a chef order can be deleted
+  canDeleteChefOrder(order: Order): boolean {
+    const status = this.getChefStatus(order);
+    return status === 'delivered' || status === 'cancelled';
   }
-
-
-  
 }

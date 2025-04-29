@@ -86,7 +86,7 @@
             </div>
 
             <!-- Price -->
-            <h3 class="price mb-3">${{ product.price.toFixed(2) }}</h3>
+            <h3 class="price mb-3">${{ getBasePrice().toFixed(2) }}</h3>
 
             <!-- Description -->
             <div class="mb-4">
@@ -106,6 +106,38 @@
                 <div class="detail-item">
                   <i class="bi bi-people"></i>
                   <span>{{ product.servingSize }}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Condiments Section - NEW -->
+            <div class="mb-4" *ngIf="product.condiments && product.condiments.length > 0">
+              <h5>Condiments & Options</h5>
+              <div class="condiments-list">
+                <div class="form-check" *ngFor="let condiment of product.condiments">
+                  <input 
+                    class="form-check-input" 
+                    type="checkbox" 
+                    [id]="'condiment-'+condiment._id"
+                    [checked]="isCondimentSelected(condiment._id)"
+                    (change)="toggleCondiment(condiment)"
+                  >
+                  <label class="form-check-label d-flex justify-content-between" [for]="'condiment-'+condiment._id">
+                    <span>{{ condiment.name }}</span>
+                    <span *ngIf="condiment.price > 0" class="text-muted">+${{ condiment.price.toFixed(2) }}</span>
+                    <span *ngIf="condiment.price === 0" class="text-muted">Free</span>
+                  </label>
+                </div>
+              </div>
+
+              <!-- Show calculation if condiments are selected -->
+              <div class="mt-3 mb-2 small text-muted" *ngIf="selectedCondiments.length > 0">
+                <div>Base price: ${{ product.price.toFixed(2) }}</div>
+                <div *ngFor="let condiment of selectedCondiments">
+                  <span>{{ condiment.name }}: +${{ condiment.price.toFixed(2) }}</span>
+                </div>
+                <div class="fw-bold mt-1">
+                  Item total: ${{ getItemTotalPrice().toFixed(2) }} × {{ quantity }} = ${{ getTotal().toFixed(2) }}
                 </div>
               </div>
             </div>

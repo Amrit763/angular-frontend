@@ -366,7 +366,16 @@
                         <span class="text-muted">x{{ item.quantity }}</span>
                       </div>
                       <small class="text-muted">{{ item.product.category }}</small>
-                      <div class="item-price">${{ (item.product.price * item.quantity).toFixed(2) }}</div>
+                      
+                      <!-- Show condiments if any -->
+                      <div *ngIf="item.selectedCondiments && item.selectedCondiments.length > 0" class="selected-condiments mt-1">
+                        <small *ngFor="let condiment of item.selectedCondiments" class="d-block text-muted">
+                          + {{ condiment.name }} (${{ condiment.price.toFixed(2) }})
+                        </small>
+                      </div>
+                      
+                      <!-- Updated item price calculation to include condiments -->
+                      <div class="item-price">${{ getItemTotal(item).toFixed(2) }}</div>
                     </div>
                   </div>
                 </div>

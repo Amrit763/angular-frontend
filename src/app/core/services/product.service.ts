@@ -1,6 +1,6 @@
 // src/app/core/services/product.service.ts
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpParams, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { 
@@ -86,11 +86,25 @@ export class ProductService {
 
   // Create a new product
   createProduct(productData: FormData): Observable<ProductResponse> {
+    // Log the FormData entries for debugging
+    console.log('Creating product with data:');
+    for (const pair of productData.entries()) {
+      console.log(pair[0] + ': ' + pair[1]);
+    }
+    
     return this.http.post<ProductResponse>(this.apiUrl, productData);
   }
 
   // Update a product
   updateProduct(id: string, productData: FormData | any): Observable<ProductResponse> {
+    // Log the FormData entries for debugging
+    if (productData instanceof FormData) {
+      console.log('Updating product with data:');
+      for (const pair of productData.entries()) {
+        console.log(pair[0] + ': ' + pair[1]);
+      }
+    }
+    
     return this.http.put<ProductResponse>(`${this.apiUrl}/${id}`, productData);
   }
 
@@ -102,5 +116,10 @@ export class ProductService {
   // Toggle product availability
   toggleAvailability(id: string, isAvailable: boolean): Observable<ProductResponse> {
     return this.http.put<ProductResponse>(`${this.apiUrl}/${id}`, { isAvailable });
+  }
+  
+  // Add or update condiments for a product
+  updateProductCondiments(id: string, condiments: any[]): Observable<ProductResponse> {
+    return this.http.put<ProductResponse>(`${this.apiUrl}/${id}/condiments`, { condiments });
   }
 }

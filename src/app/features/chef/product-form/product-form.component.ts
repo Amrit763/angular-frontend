@@ -2,10 +2,11 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, FormArray, Validators } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, FormArray, Validators, FormControl } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ProductService } from '../../../core/services/product.service';
-import { Product, ProductResponse } from '../../../core/models/product.model';
+import { CondimentService } from '../../../core/services/condiment.service';
+import { Product, ProductResponse, Condiment } from '../../../core/models/product.model';
 
 @Component({
   selector: 'app-product-form',
@@ -41,6 +42,7 @@ export class ProductFormComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private productService: ProductService,
+    private condimentService: CondimentService,
     private route: ActivatedRoute,
     private router: Router
   ) {
@@ -65,7 +67,9 @@ export class ProductFormComponent implements OnInit {
       preparationTime: ['', [Validators.required, Validators.min(1)]],
       servingSize: ['', Validators.required],
       ingredients: this.fb.array([this.createIngredientControl()]),
-      // allergens: this.fb.array([]),
+      allergens: this.fb.array([]),
+      // Add condiments form array
+      condiments: this.fb.array([]),
       isVegetarian: [false],
       isVegan: [false],
       isGlutenFree: [false],
@@ -78,12 +82,25 @@ export class ProductFormComponent implements OnInit {
     return this.fb.control('', Validators.required);
   }
 
+  createCondimentGroup(): FormGroup {
+    return this.fb.group({
+      _id: [null], // Will be empty for new condiments, filled for existing ones
+      name: ['', Validators.required],
+      price: [0, [Validators.required, Validators.min(0)]],
+      isDefault: [false]
+    });
+  }
+
   get ingredients() {
     return this.productForm.get('ingredients') as FormArray;
   }
 
   get allergens() {
     return this.productForm.get('allergens') as FormArray;
+  }
+
+  get condiments() {
+    return this.productForm.get('condiments') as FormArray;
   }
 
   addIngredient() {
@@ -94,8 +111,17 @@ export class ProductFormComponent implements OnInit {
     this.ingredients.removeAt(index);
   }
 
+  // Methods for condiments
+  addCondiment() {
+    this.condiments.push(this.createCondimentGroup());
+  }
+
+  removeCondiment(index: number) {
+    this.condiments.removeAt(index);
+  }
+
   toggleAllergen(allergen: string) {
-    const allergenIndex = this.allergens.value.indexOf(allergen);
+    const allergenIndex = this.allergens.value.findIndex((item: string) => item === allergen);
     
     if (allergenIndex === -1) {
       this.allergens.push(this.fb.control(allergen));
@@ -168,9 +194,27 @@ export class ProductFormComponent implements OnInit {
       });
     }
     
+    // Clear existing condiments and add new ones
+    while (this.condiments.length) {
+      this.condiments.removeAt(0);
+    }
+    
+    if (product.condiments && product.condiments.length > 0) {
+      product.condiments.forEach(condiment => {
+        const condimentGroup = this.createCondimentGroup();
+        condimentGroup.patchValue({
+          _id: condiment._id, // Preserve the ID for existing condiments
+          name: condiment.name,
+          price: condiment.price,
+          isDefault: condiment.isDefault
+        });
+        this.condiments.push(condimentGroup);
+      });
+    }
+    
     // Set image previews if available
     if (product.images && product.images.length > 0) {
-      this.imagePreviewUrls = product.images;
+      this.imagePreviewUrls = product.images.map(image => this.productService.getImageUrl(image));
     }
     
     // Update form values
@@ -195,6 +239,15 @@ export class ProductFormComponent implements OnInit {
         const control = this.productForm.get(key);
         control?.markAsTouched();
       });
+      
+      // Also mark condiments fields as touched
+      for (let i = 0; i < this.condiments.length; i++) {
+        const condimentGroup = this.condiments.at(i) as FormGroup;
+        Object.keys(condimentGroup.controls).forEach(key => {
+          condimentGroup.get(key)?.markAsTouched();
+        });
+      }
+      
       return;
     }
     
@@ -215,34 +268,55 @@ export class ProductFormComponent implements OnInit {
       } else if (key === 'ingredients' || key === 'allergens') {
         const items = this.productForm.get(key)?.value || [];
         items.forEach((item: string, index: number) => {
-          formData.append(`${key}[]`, item);
+          formData.append(`${key}[${index}]`, item);
         });
+      } else if (key === 'condiments') {
+        // Use the condiment service to handle condiments properly
+        const condimentsArray = this.productForm.get(key)?.value || [];
+        this.condimentService.formatCondimentsForFormData(condimentsArray, formData);
+      } else if (key === 'isVegetarian' || key === 'isVegan' || key === 'isGlutenFree' || key === 'isAvailable') {
+        // Handle boolean values explicitly
+        formData.append(key, this.productForm.get(key)?.value ? 'true' : 'false');
       } else {
-        formData.append(key, this.productForm.get(key)?.value);
+        // Handle all other fields
+        const value = this.productForm.get(key)?.value;
+        if (value !== null && value !== undefined) {
+          formData.append(key, value);
+        }
       }
     });
+    
+    // Debug: Log form data
+    console.log('Form data being sent:');
+    for (const pair of formData.entries()) {
+      console.log(pair[0] + ': ' + pair[1]);
+    }
     
     if (this.isEditMode && this.productId) {
       // Update existing product
       this.productService.updateProduct(this.productId, formData).subscribe({
-        next: () => {
+        next: (response) => {
+          console.log('Product updated successfully:', response);
           this.isSubmitting = false;
           this.router.navigate(['/chef/products']);
         },
         error: (err) => {
-          this.error = `Error updating product: ${err}`;
+          console.error('Error updating product:', err);
+          this.error = typeof err === 'string' ? err : 'An error occurred while updating the product. Please try again.';
           this.isSubmitting = false;
         }
       });
     } else {
       // Create new product
       this.productService.createProduct(formData).subscribe({
-        next: () => {
+        next: (response) => {
+          console.log('Product created successfully:', response);
           this.isSubmitting = false;
           this.router.navigate(['/chef/products']);
         },
         error: (err) => {
-          this.error = `Error creating product: ${err}`;
+          console.error('Error creating product:', err);
+          this.error = typeof err === 'string' ? err : 'An error occurred while creating the product. Please try again.';
           this.isSubmitting = false;
         }
       });

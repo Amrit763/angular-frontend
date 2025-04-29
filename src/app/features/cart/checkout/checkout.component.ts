@@ -5,10 +5,11 @@ import { RouterModule } from '@angular/router';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Subscription } from 'rxjs';
-import { CartService, CartResponse } from '../../../core/services/cart.service';
+import { CartService, CartResponse, CartItem } from '../../../core/services/cart.service';
 import { ProductService } from '../../../core/services/product.service';
 import { TokenService } from '../../../core/auth/token.service';
 import { OrderService } from '../../../core/services/order.service';
+import { SelectedCondiment } from '../../../core/models/product.model';
 
 interface PaymentMethod {
   id: string;
@@ -48,7 +49,7 @@ export class CheckoutComponent implements OnInit, OnDestroy {
     private cartService: CartService,
     private tokenService: TokenService,
     private orderService: OrderService,
-    public productService: ProductService, // Added productService to access in template
+    public productService: ProductService, 
     private fb: FormBuilder,
     private router: Router
   ) { }
@@ -81,7 +82,7 @@ export class CheckoutComponent implements OnInit, OnDestroy {
   loadCart(): void {
     this.cartService.getCart().subscribe({
       error: (err) => {
-        this.error = err;
+        this.error = err.message || 'Failed to load cart data';
         this.isLoading = false;
       }
     });
@@ -201,7 +202,7 @@ export class CheckoutComponent implements OnInit, OnDestroy {
       },
       error: (err) => {
         this.processing = false;
-        this.error = err;
+        this.error = err.message || 'Failed to create order';
       }
     });
   }
@@ -239,5 +240,25 @@ export class CheckoutComponent implements OnInit, OnDestroy {
     const month = String(today.getMonth() + 1).padStart(2, '0');
     const day = String(today.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
+  }
+
+  // Calculate the total price for an item (including condiments and quantity)
+  getItemTotal(item: CartItem): number {
+    // Use the pre-calculated value if available
+    if (item.totalPrice !== undefined && item.totalPrice !== null) {
+      return item.totalPrice;
+    }
+    
+    // Otherwise calculate it
+    const basePrice = Number(item.product.price) || 0;
+    let condimentsPrice = 0;
+    
+    if (item.selectedCondiments && item.selectedCondiments.length > 0) {
+      for (const condiment of item.selectedCondiments) {
+        condimentsPrice += Number(condiment.price) || 0;
+      }
+    }
+    
+    return (basePrice + condimentsPrice) * item.quantity;
   }
 }
