@@ -9,7 +9,7 @@ import { ProductService } from '../../../core/services/product.service';
 import { Condiment, SelectedCondiment, ChefInfo } from '../../../core/models/product.model';
 import { HttpErrorResponse } from '@angular/common/http';
 
-declare var bootstrap: any; // For Bootstrap 5 Modal
+declare var bootstrap: any; // For Bootstrap 5 Modals
 
 @Component({
   selector: 'app-cart',
@@ -24,12 +24,9 @@ export class CartComponent implements OnInit, OnDestroy {
   itemsBeingRemoved: { [key: string]: boolean } = {}; // Track items being removed
   isUpdatingQuantity = false; // Track when quantity is being updated
 
-  // For condiments modal
-  selectedCartItem: CartItem | null = null;
-  tempSelectedCondiments: SelectedCondiment[] = [];
-  updatingCondiments = false;
-  condimentUpdateError: string | null = null; // Specific error for condiments update
-  private condimentsModal: any = null;
+  // For delete confirmation modal
+  private deleteConfirmModal: any = null;
+  itemToDelete: string = ''; // ID of the item to delete
 
   private subscriptions: Subscription[] = [];
 
@@ -50,19 +47,32 @@ export class CartComponent implements OnInit, OnDestroy {
         this.isLoading = false;
       })
     );
+
+    // Initialize the delete confirmation modal
+    this.initDeleteModal();
   }
 
   ngOnDestroy(): void {
     this.subscriptions.forEach(sub => sub.unsubscribe());
 
     // Clean up modal if it exists
-    if (this.condimentsModal) {
+    if (this.deleteConfirmModal) {
       try {
-        this.condimentsModal.dispose();
+        this.deleteConfirmModal.dispose();
       } catch (e) {
         console.log('Error disposing modal:', e);
       }
     }
+  }
+
+  // Initialize the delete confirmation modal
+  initDeleteModal(): void {
+    setTimeout(() => {
+      const modalElement = document.getElementById('deleteConfirmModal');
+      if (modalElement) {
+        this.deleteConfirmModal = new bootstrap.Modal(modalElement);
+      }
+    }, 500);
   }
 
   loadCart(): void {
@@ -102,16 +112,37 @@ export class CartComponent implements OnInit, OnDestroy {
     });
   }
 
-  removeItem(itemId: string): void {
-    this.itemsBeingRemoved[itemId] = true;
-    this.cartService.removeFromCart(itemId).subscribe({
+  // Show delete confirmation modal
+  confirmDeleteItem(itemId: string): void {
+    this.itemToDelete = itemId;
+    if (this.deleteConfirmModal) {
+      this.deleteConfirmModal.show();
+    } else {
+      // Fallback if modal isn't available
+      this.removeItem(itemId);
+    }
+  }
+
+  // Process the item deletion after confirmation
+  removeItem(itemId: string = ''): void {
+    // Use the stored item ID if none is provided
+    const id = itemId || this.itemToDelete;
+    if (!id) return;
+
+    // Hide the modal if it's open
+    if (this.deleteConfirmModal) {
+      this.deleteConfirmModal.hide();
+    }
+
+    this.itemsBeingRemoved[id] = true;
+    this.cartService.removeFromCart(id).subscribe({
       next: () => {
         // Item removal handled by cart subscription
       },
       error: (err: HttpErrorResponse) => {
         console.error('Remove item error:', err);
         this.error = this.getErrorMessage(err);
-        this.itemsBeingRemoved[itemId] = false;
+        this.itemsBeingRemoved[id] = false;
       }
     });
   }
@@ -178,121 +209,6 @@ export class CartComponent implements OnInit, OnDestroy {
     return this.getItemBasePrice(item) * item.quantity;
   }
 
-  // Open modal to change condiments
-  openCondimentsModal(item: CartItem): void {
-    this.condimentUpdateError = null; // Reset specific error
-
-    // Create a deep copy of the item to avoid direct modification
-    this.selectedCartItem = JSON.parse(JSON.stringify(item));
-    this.tempSelectedCondiments = item.selectedCondiments ?
-      JSON.parse(JSON.stringify(item.selectedCondiments)) : [];
-
-    // Initialize the modal if it doesn't exist
-    if (!this.condimentsModal) {
-      const modalElement = document.getElementById('condimentsModal');
-      if (modalElement) {
-        this.condimentsModal = new bootstrap.Modal(modalElement);
-      }
-    }
-
-    // Show the modal
-    if (this.condimentsModal) {
-      this.condimentsModal.show();
-    }
-  }
-
-  // Check if a condiment is selected in the modal
-  isCondimentSelectedInModal(condimentId: string): boolean {
-    return this.tempSelectedCondiments.some(c => c.condimentId === condimentId);
-  }
-
-  // Toggle a condiment in the modal
-  toggleCondimentInModal(condiment: Condiment): void {
-    const index = this.tempSelectedCondiments.findIndex(c => c.condimentId === condiment._id);
-
-    if (index === -1) {
-      // Add the condiment
-      this.tempSelectedCondiments.push({
-        condimentId: condiment._id,
-        name: condiment.name,
-        price: Number(condiment.price) || 0
-      });
-    } else {
-      // Remove the condiment
-      this.tempSelectedCondiments.splice(index, 1);
-    }
-  }
-
-  // Calculate item total price in the modal
-  getModalItemTotal(): number {
-    if (!this.selectedCartItem) return 0;
-
-    let total = Number(this.selectedCartItem.product.price) || 0;
-
-    // Add prices of selected condiments
-    for (const condiment of this.tempSelectedCondiments) {
-      const price = Number(condiment.price);
-      if (!isNaN(price)) {
-        total += price;
-      }
-    }
-
-    return total;
-  }
-
-  saveCondiments(): void {
-    if (!this.selectedCartItem) return;
-
-    this.updatingCondiments = true;
-    this.condimentUpdateError = null;
-
-    // First verify we have a valid cartItem
-    if (!this.selectedCartItem._id) {
-      this.condimentUpdateError = "Invalid cart item";
-      this.updatingCondiments = false;
-      return;
-    }
-
-    // Format condiments to ensure they match expected server format
-    const formattedCondiments = this.tempSelectedCondiments.map(condiment => ({
-      condimentId: condiment.condimentId,
-      name: condiment.name,
-      price: Number(condiment.price) || 0
-    }));
-
-    console.log('Saving condiments for item:', this.selectedCartItem._id);
-    console.log('Condiments data:', formattedCondiments);
-
-    this.cartService.updateCartItemCondiments(
-      this.selectedCartItem._id,
-      formattedCondiments
-    ).subscribe({
-      next: (response) => {
-        console.log('Condiments updated successfully:', response);
-        this.updatingCondiments = false;
-
-        // Close the modal
-        if (this.condimentsModal) {
-          this.condimentsModal.hide();
-        }
-      },
-      error: (err) => {
-        console.error('Detailed condiments update error:', err);
-
-        // Extract error message
-        let errorMessage = 'Failed to update condiments';
-
-        if (err && err.message) {
-          errorMessage = err.message;
-        } else if (typeof err === 'string') {
-          errorMessage = err;
-        }
-
-        this.condimentUpdateError = errorMessage;
-        this.updatingCondiments = false;
-      }
-    });
-  }
   // Extract error message from various error types
   private getErrorMessage(error: any): string {
     if (error instanceof HttpErrorResponse) {

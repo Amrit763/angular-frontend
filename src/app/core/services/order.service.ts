@@ -87,7 +87,7 @@ export class OrderService {
 
   // Get all orders for the current user
   getUserOrders(): Observable<{ success: boolean; orders: Order[] }> {
-    return this.http.get<{ success: boolean; orders: Order[] }>(`${this.apiUrl}`);
+    return this.http.get<{ success: boolean; orders: Order[] }>(`${this.apiUrl}/user`);
   }
 
   // Get a specific order by ID
@@ -97,12 +97,12 @@ export class OrderService {
 
   // Cancel an order
   cancelOrder(orderId: string): Observable<{ success: boolean; order: Order }> {
-    return this.http.put<{ success: boolean; order: Order }>(`${this.apiUrl}/${orderId}/cancel`, {});
+    return this.http.patch<{ success: boolean; order: Order }>(`${this.apiUrl}/${orderId}/cancel`, {});
   }
 
   // Delete an order (if allowed)
   deleteOrder(orderId: string): Observable<{ success: boolean; message: string }> {
-    return this.http.delete<{ success: boolean; message: string }>(`${this.apiUrl}/${orderId}`);
+    return this.http.patch<{ success: boolean; message: string }>(`${this.apiUrl}/${orderId}/delete`, {});
   }
 
   // Get status label for display
@@ -144,7 +144,7 @@ export class OrderService {
 
   // Update an order's status
   updateOrderStatus(orderId: string, status: OrderStatus): Observable<UpdateOrderStatusResponse> {
-    return this.http.put<UpdateOrderStatusResponse>(
+    return this.http.patch<UpdateOrderStatusResponse>(
       `${this.apiUrl}/${orderId}/status`, 
       { status }
     );
@@ -153,7 +153,7 @@ export class OrderService {
   // Get items from an order that belong to the current chef
   getChefItems(order: Order): OrderItem[] {
     // Find the chef item group that belongs to the current chef
-    const chefGroup = order.chefItems.find(group => {
+    const chefGroup = order.chefItems?.find(group => {
       // You may need to add logic here to find the current chef's group
       // For now, we'll assume there's only one chef per order for simplicity
       return true;
@@ -165,7 +165,7 @@ export class OrderService {
   // Get the status of an order for the current chef
   getChefStatus(order: Order): OrderStatus {
     // Find the chef item group that belongs to the current chef
-    const chefGroup = order.chefItems.find(group => {
+    const chefGroup = order.chefItems?.find(group => {
       // You may need to add logic here to find the current chef's group
       // For now, we'll assume there's only one chef per order for simplicity
       return true;

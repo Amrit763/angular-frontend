@@ -70,7 +70,8 @@ export class CartService {
 
   // Update an item's quantity in the cart
   updateCartItem(itemId: string, quantity: number): Observable<CartResponse> {
-    return this.http.put<CartResponse>(`${this.apiUrl}/item/${itemId}`, {
+    // Fix the URL to match the backend route
+    return this.http.put<CartResponse>(`${this.apiUrl}/${itemId}`, {
       quantity
     }).pipe(
       tap(response => {
@@ -95,8 +96,9 @@ export class CartService {
       price: Number(c.price) || 0
     }));
     
+    // Fix the URL to match the backend route
     return this.http.put<CartResponse>(
-      `${this.apiUrl}/item/${itemId}/condiments`, 
+      `${this.apiUrl}/${itemId}/condiments`, 
       { selectedCondiments: formattedCondiments }
     ).pipe(
       tap(response => {
@@ -122,7 +124,8 @@ export class CartService {
 
   // Remove an item from the cart
   removeFromCart(itemId: string): Observable<CartResponse> {
-    return this.http.delete<CartResponse>(`${this.apiUrl}/item/${itemId}`).pipe(
+    // Fix the URL to match the backend route
+    return this.http.delete<CartResponse>(`${this.apiUrl}/${itemId}`).pipe(
       tap(response => {
         // Calculate subtotal, service fee, and total
         response = this.calculateCartTotals(response);

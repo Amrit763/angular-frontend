@@ -70,12 +70,21 @@ export class ChefOrderManagementComponent implements OnInit {
     
     this.orderService.getChefOrders().subscribe({
       next: (response) => {
-        this.orders = response.orders;
-        this.applyFilters();
+        if (response && response.orders) {
+          this.orders = response.orders;
+          this.applyFilters();
+        } else {
+          this.error = 'Invalid response format from server';
+          this.orders = [];
+          this.filteredOrders = [];
+        }
         this.isLoading = false;
       },
       error: (err) => {
+        console.error('Error loading chef orders:', err);
         this.error = err.message || 'An error occurred while loading orders';
+        this.orders = [];
+        this.filteredOrders = [];
         this.isLoading = false;
       }
     });
@@ -87,9 +96,7 @@ export class ChefOrderManagementComponent implements OnInit {
     } else {
       // Filter by chef-specific status
       this.filteredOrders = this.orders.filter(order => {
-        const chefGroup = order.chefItems?.find(group => 
-          group.chef?._id === this.chefId
-        );
+        const chefGroup = this.findChefGroup(order);
         return chefGroup && chefGroup.status === this.statusFilter;
       });
     }
@@ -100,28 +107,46 @@ export class ChefOrderManagementComponent implements OnInit {
     );
   }
 
+  // Helper method to find the chef's group consistently
+  findChefGroup(order: Order): any {
+    if (!order || !order.chefItems) return null;
+    return order.chefItems.find(group => 
+      group.chef && group.chef._id === this.chefId
+    );
+  }
+
   setStatusFilter(status: 'all' | OrderStatus): void {
     this.statusFilter = status;
     this.applyFilters();
   }
 
   updateOrderStatus(orderId: string, newStatus: OrderStatus): void {
+    if (!orderId || !newStatus) {
+      console.error('Invalid order ID or status');
+      return;
+    }
+    
     // Set updating flag for this order
     this.updatingOrderStatus[orderId] = true;
     this.error = null;
     
     this.orderService.updateOrderStatus(orderId, newStatus).subscribe({
       next: (response) => {
-        // Update the order in our list
-        const index = this.orders.findIndex(order => order._id === orderId);
-        if (index !== -1) {
-          this.orders[index] = response.order;
-          this.applyFilters();
+        if (response && response.order) {
+          // Update the order in our list
+          const index = this.orders.findIndex(order => order._id === orderId);
+          if (index !== -1) {
+            this.orders[index] = response.order;
+            this.applyFilters();
+          }
+        } else {
+          this.error = 'Invalid response from server when updating status';
         }
         // Clear updating flag
         this.updatingOrderStatus[orderId] = false;
       },
       error: (err) => {
+        console.error('Update status error:', err);
         this.error = err.message || 'Failed to update order status';
         // Clear updating flag
         this.updatingOrderStatus[orderId] = false;
@@ -129,40 +154,47 @@ export class ChefOrderManagementComponent implements OnInit {
     });
   }
 
-// Update the deleteOrder method
-deleteOrder(orderId: string): void {
-  if (confirm('Are you sure you want to delete this order from your history? This action cannot be undone.')) {
-    // Set deleting flag for this order
-    this.deletingOrder[orderId] = true;
-    this.error = null;
+  deleteOrder(orderId: string): void {
+    if (!orderId) {
+      console.error('Invalid order ID');
+      return;
+    }
     
-    this.orderService.deleteOrder(orderId).subscribe({
-      next: (response) => {
-        // Clear deleting flag
-        this.deletingOrder[orderId] = false;
-        
-        if (response && response.success) {
-          // Remove the order from our lists
-          this.orders = this.orders.filter(order => order._id !== orderId);
-          this.filteredOrders = this.filteredOrders.filter(order => order._id !== orderId);
-        } else {
-          this.error = (response && response.message) || 'Failed to delete the order';
+    if (confirm('Are you sure you want to delete this order from your history? This action cannot be undone.')) {
+      // Set deleting flag for this order
+      this.deletingOrder[orderId] = true;
+      this.error = null;
+      
+      this.orderService.deleteOrder(orderId).subscribe({
+        next: (response) => {
+          // Clear deleting flag
+          this.deletingOrder[orderId] = false;
+          
+          if (response && response.success) {
+            // Remove the order from our lists
+            this.orders = this.orders.filter(order => order._id !== orderId);
+            this.filteredOrders = this.filteredOrders.filter(order => order._id !== orderId);
+          } else {
+            this.error = (response && response.message) || 'Failed to delete the order';
+          }
+        },
+        error: (err) => {
+          // Clear deleting flag
+          this.deletingOrder[orderId] = false;
+          
+          console.error('Delete order error:', err);
+          this.error = err.message || 'Failed to delete the order. The server may not support this operation.';
         }
-      },
-      error: (err) => {
-        // Clear deleting flag
-        this.deletingOrder[orderId] = false;
-        
-        console.error('Delete order error:', err);
-        this.error = err.message || 'Failed to delete the order. The server may not support this operation.';
-      }
-    });
+      });
+    }
   }
-}
 
   // Get the next status in the workflow for a specific order
   getNextStatus(order: Order): OrderStatus | null {
+    if (!order) return null;
+    
     const currentStatus = this.orderService.getChefStatus(order);
+    if (!currentStatus) return null;
     
     const statusFlow: { [key in OrderStatus]: OrderStatus | null } = {
       'pending': 'received',
@@ -178,36 +210,50 @@ deleteOrder(orderId: string): void {
 
   // Check if a next status is available
   hasNextStatus(order: Order): boolean {
+    if (!order) return false;
+    
     const currentStatus = this.orderService.getChefStatus(order);
+    if (!currentStatus) return false;
+    
     return currentStatus !== 'delivered' && currentStatus !== 'cancelled';
   }
 
   // Format date for display
   formatDate(dateString: string): string {
+    if (!dateString) return 'Unknown';
+    
     const date = new Date(dateString);
     return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
   }
   
   // Calculate total items and amount for this chef in an order
   calculateOrderTotals(order: Order): { items: number, amount: number } {
+    if (!order) return { items: 0, amount: 0 };
+    
     const chefItems = this.orderService.getChefItems(order);
-    const totalItems = chefItems.reduce((sum, item) => sum + item.quantity, 0);
-    const totalAmount = chefItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    if (!chefItems || chefItems.length === 0) return { items: 0, amount: 0 };
+    
+    const totalItems = chefItems.reduce((sum, item) => sum + (item.quantity || 0), 0);
+    const totalAmount = chefItems.reduce((sum, item) => {
+      const price = Number(item.price) || 0;
+      const quantity = item.quantity || 0;
+      return sum + (price * quantity);
+    }, 0);
     
     return { items: totalItems, amount: totalAmount };
   }
 
   // Get count of orders with specific status
   getOrderCountByStatus(status: 'all' | OrderStatus): number {
+    if (!this.orders || this.orders.length === 0) return 0;
+    
     if (status === 'all') {
       return this.orders.length;
     }
     
     // Count orders where this chef's items have the specified status
     return this.orders.filter(order => {
-      const chefGroup = order.chefItems?.find(group => 
-        group.chef?._id === this.chefId
-      );
+      const chefGroup = this.findChefGroup(order);
       return chefGroup && chefGroup.status === status;
     }).length;
   }
