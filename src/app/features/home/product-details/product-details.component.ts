@@ -33,7 +33,7 @@ export class ProductDetailsComponent implements OnInit {
 
   constructor(
     private route: ActivatedRoute,
-    private router: Router,
+    public router: Router, // Changed to public for template access
     public productService: ProductService,
     private cartService: CartService,
     private tokenService: TokenService
@@ -47,6 +47,11 @@ export class ProductDetailsComponent implements OnInit {
       this.error = 'Product ID is missing';
       this.isLoading = false;
     }
+  }
+
+  // Method to check if user is logged in
+  isUserLoggedIn(): boolean {
+    return this.tokenService.isLoggedIn();
   }
 
   loadProduct(id: string): void {

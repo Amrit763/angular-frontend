@@ -14,152 +14,172 @@
   </div>
 
   <div *ngIf="!isLoading && product" class="product-detail-container">
-    <div class="row">
-      <!-- Breadcrumb -->
-      <div class="col-12 mb-4">
-        <nav aria-label="breadcrumb">
-          <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a routerLink="/home">Home</a></li>
-            <li class="breadcrumb-item"><a [routerLink]="['/home']" [queryParams]="{category: product.category}">{{
-                product.category | titlecase }}</a></li>
-            <li class="breadcrumb-item active" aria-current="page">{{ product.name }}</li>
-          </ol>
-        </nav>
-      </div>
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a routerLink="/home">Home</a></li>
+        <li class="breadcrumb-item"><a [routerLink]="['/home']" [queryParams]="{category: product.category}">
+            {{ product.category | titlecase }}</a>
+        </li>
+        <li class="breadcrumb-item active" aria-current="page">{{ product.name }}</li>
+      </ol>
+    </nav>
 
-      <!-- Left column - Images -->
-      <div class="col-md-6 mb-4">
-        <div class="card shadow-sm">
-          <div class="card-body p-0">
-            <div class="product-gallery">
-              <!-- Main image display -->
-              <div class="main-image-container">
-                <img
-                  [src]="productService.getImageUrl(product.images && product.images.length > 0 ? product.images[activeImageIndex] : '')"
-                  alt="{{ product.name }}" class="main-image">
-                <div *ngIf="product.isVegetarian || product.isVegan || product.isGlutenFree" class="dietary-badges">
-                  <span *ngIf="product.isVegetarian" class="badge bg-success me-1">Vegetarian</span>
-                  <span *ngIf="product.isVegan" class="badge bg-success me-1">Vegan</span>
-                  <span *ngIf="product.isGlutenFree" class="badge bg-success">Gluten-Free</span>
-                </div>
-              </div>
+    <!-- Main Product Section -->
+    <div class="row gx-5 mb-5">
+      <!-- Left column - Image Gallery -->
+      <div class="col-lg-6 mb-4 mb-lg-0">
+        <div class="product-gallery-wrapper">
+          <!-- Main image display -->
+          <div class="main-image-container mb-3">
+            <img [src]="productService.getImageUrl(product.images && product.images.length > 0 ? product.images[activeImageIndex] : '')"
+              alt="{{ product.name }}" class="main-image">
+            <div *ngIf="product.isVegetarian || product.isVegan || product.isGlutenFree" class="dietary-badges">
+              <span *ngIf="product.isVegetarian" class="badge bg-success me-1">Vegetarian</span>
+              <span *ngIf="product.isVegan" class="badge bg-success me-1">Vegan</span>
+              <span *ngIf="product.isGlutenFree" class="badge bg-success">Gluten-Free</span>
+            </div>
+          </div>
 
-              <!-- Thumbnails if there are multiple images -->
-              <div *ngIf="product.images && product.images.length > 1" class="thumbnails-container">
-                <div *ngFor="let image of product.images; let i = index" class="thumbnail"
-                  [ngClass]="{'active': activeImageIndex === i}" (click)="setActiveImage(i)">
-                  <img [src]="productService.getImageUrl(image)" alt="{{ product.name }} thumbnail {{ i + 1 }}">
-                </div>
-              </div>
+          <!-- Thumbnails if there are multiple images -->
+          <div *ngIf="product.images && product.images.length > 1" class="thumbnails-container">
+            <div *ngFor="let image of product.images; let i = index" class="thumbnail"
+              [ngClass]="{'active': activeImageIndex === i}" (click)="setActiveImage(i)">
+              <img [src]="productService.getImageUrl(image)" alt="{{ product.name }} thumbnail {{ i + 1 }}">
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Right column - Details -->
-      <div class="col-md-6 mb-4">
-        <div class="card shadow-sm h-100">
-          <div class="card-body">
-            <!-- Product Name and Rating -->
-            <div class="d-flex justify-content-between align-items-start mb-3">
-              <h2 class="product-name">{{ product.name }}</h2>
-              <div *ngIf="product.reviewCount > 0" class="rating">
-                <i class="bi bi-star-fill text-warning"></i>
-                <span>{{ product.rating.toFixed(1) }}</span>
-                <small class="text-muted">({{ product.reviewCount }} reviews)</small>
+      <!-- Right column - Product Details -->
+      <div class="col-lg-6">
+        <div class="product-info">
+          <!-- Product Header with Rating -->
+          <div class="d-flex justify-content-between align-items-start mb-2">
+            <h1 class="product-name">{{ product.name }}</h1>
+            <div *ngIf="product.reviewCount > 0" class="rating">
+              <div class="stars">
+                <i *ngFor="let star of [1, 2, 3, 4, 5]" class="bi" 
+                  [ngClass]="star <= product.rating ? 'bi-star-fill' : (star <= product.rating + 0.5 ? 'bi-star-half' : 'bi-star')"></i>
+              </div>
+              <a href="#reviews-section" class="rating-count">
+                {{ product.rating.toFixed(1) }} ({{ product.reviewCount }} {{ product.reviewCount === 1 ? 'review' : 'reviews' }})
+              </a>
+            </div>
+          </div>
+
+          <!-- Price -->
+          <h2 class="price mb-4">${{ getBasePrice().toFixed(2) }}</h2>
+
+          <!-- Chef Info -->
+          <div class="chef-info mb-4" *ngIf="isChefObject(product.chef)">
+            <div class="d-flex align-items-center">
+              <img [src]="productService.getImageUrl(product.chef.profileImage || '')"
+                alt="{{ product.chef.fullName }}" class="chef-image me-2">
+              <div>
+                <p class="mb-0">Made by <strong>{{ product.chef.fullName }}</strong></p>
+                <a [routerLink]="['/home/chef', product.chef._id]" class="chef-link">View All Products by this Chef</a>
               </div>
             </div>
+          </div>
 
-            <!-- Chef Info -->
-            <div class="chef-info mb-3" *ngIf="isChefObject(product.chef)">
-              <div class="d-flex align-items-center">
-                <img [src]="productService.getImageUrl(product.chef.profileImage || '')"
-                  alt="{{ product.chef.fullName }}" class="chef-image me-2">
-                <div>
-                  <p class="mb-0">Made by <strong>{{ product.chef.fullName }}</strong></p>
-                  <a [routerLink]="['/home/chef', product.chef._id]" class="small chef-link">View All Products by this
-                    Chef</a>
+          <!-- Description -->
+          <div class="product-description mb-4">
+            <p>{{ product.description }}</p>
+          </div>
 
-                  <!-- <a [routerLink]="['/chefs', product.chef._id]" class="small">View Chef Profile</a> -->
-                </div>
-              </div>
-            </div>
-
-            <!-- Price -->
-            <h3 class="price mb-3">${{ getBasePrice().toFixed(2) }}</h3>
-
-            <!-- Description -->
-            <div class="mb-4">
-              <h5>Description</h5>
-              <p class="description">{{ product.description }}</p>
-            </div>
-
-            <!-- Preparation and Serving -->
-            <div class="row mb-4">
-              <div class="col-6">
-                <div class="detail-item">
+          <!-- Product Specs -->
+          <div class="product-specs mb-4">
+            <div class="row">
+              <div class="col-6 col-md-4">
+                <div class="spec-item">
                   <i class="bi bi-clock"></i>
-                  <span>{{ product.preparationTime }} minutes</span>
+                  <div>
+                    <label>Preparation</label>
+                    <span>{{ product.preparationTime }} minutes</span>
+                  </div>
                 </div>
               </div>
-              <div class="col-6">
-                <div class="detail-item">
+              <div class="col-6 col-md-4">
+                <div class="spec-item">
                   <i class="bi bi-people"></i>
-                  <span>{{ product.servingSize }}</span>
+                  <div>
+                    <label>Serving Size</label>
+                    <span>{{ product.servingSize }}</span>
+                  </div>
+                </div>
+              </div>
+              <div class="col-6 col-md-4" *ngIf="product.isVegetarian || product.isVegan || product.isGlutenFree">
+                <div class="spec-item">
+                  <i class="bi bi-award"></i>
+                  <div>
+                    <label>Dietary</label>
+                    <span *ngIf="product.isVegetarian">Vegetarian</span>
+                    <span *ngIf="product.isVegan">Vegan</span>
+                    <span *ngIf="product.isGlutenFree">Gluten-Free</span>
+                  </div>
                 </div>
               </div>
             </div>
+          </div>
 
-            <!-- Condiments Section - NEW -->
+          <hr class="my-4">
+
+          <!-- Order Options Section -->
+          <div class="order-options">
+            <!-- Condiments Selection -->
             <div class="mb-4" *ngIf="product.condiments && product.condiments.length > 0">
-              <h5>Condiments & Options</h5>
-              <div class="condiments-list">
-                <div class="form-check" *ngFor="let condiment of product.condiments">
-                  <input 
-                    class="form-check-input" 
-                    type="checkbox" 
-                    [id]="'condiment-'+condiment._id"
-                    [checked]="isCondimentSelected(condiment._id)"
-                    (change)="toggleCondiment(condiment)"
-                  >
-                  <label class="form-check-label d-flex justify-content-between" [for]="'condiment-'+condiment._id">
-                    <span>{{ condiment.name }}</span>
-                    <span *ngIf="condiment.price > 0" class="text-muted">+${{ condiment.price.toFixed(2) }}</span>
-                    <span *ngIf="condiment.price === 0" class="text-muted">Free</span>
-                  </label>
+              <h3 class="section-title">Customize Your Order</h3>
+              <!-- Grid layout for condiments when there are many -->
+              <div class="condiments-grid" *ngIf="product.condiments.length > 4; else singleColumnCondiments">
+                <div class="row g-2">
+                  <div class="col-md-6" *ngFor="let condiment of product.condiments">
+                    <div class="form-check condiment-item">
+                      <input class="form-check-input" type="checkbox" [id]="'condiment-'+condiment._id"
+                        [checked]="isCondimentSelected(condiment._id)" (change)="toggleCondiment(condiment)">
+                      <label class="form-check-label d-flex justify-content-between" [for]="'condiment-'+condiment._id">
+                        <span class="condiment-name">{{ condiment.name }}</span>
+                        <span *ngIf="condiment.price > 0" class="condiment-price">+${{ condiment.price.toFixed(2) }}</span>
+                        <span *ngIf="condiment.price === 0" class="condiment-free">Free</span>
+                      </label>
+                    </div>
+                  </div>
                 </div>
               </div>
-
-              <!-- Show calculation if condiments are selected -->
-              <div class="mt-3 mb-2 small text-muted" *ngIf="selectedCondiments.length > 0">
-                <div>Base price: ${{ product.price.toFixed(2) }}</div>
-                <div *ngFor="let condiment of selectedCondiments">
-                  <span>{{ condiment.name }}: +${{ condiment.price.toFixed(2) }}</span>
+              
+              <!-- Single column layout for condiments when there are few -->
+              <ng-template #singleColumnCondiments>
+                <div class="condiments-list">
+                  <div class="form-check condiment-item" *ngFor="let condiment of product.condiments">
+                    <input class="form-check-input" type="checkbox" [id]="'condiment-'+condiment._id"
+                      [checked]="isCondimentSelected(condiment._id)" (change)="toggleCondiment(condiment)">
+                    <label class="form-check-label d-flex justify-content-between" [for]="'condiment-'+condiment._id">
+                      <span>{{ condiment.name }}</span>
+                      <span *ngIf="condiment.price > 0" class="condiment-price">+${{ condiment.price.toFixed(2) }}</span>
+                      <span *ngIf="condiment.price === 0" class="condiment-free">Free</span>
+                    </label>
+                  </div>
                 </div>
-                <div class="fw-bold mt-1">
-                  Item total: ${{ getItemTotalPrice().toFixed(2) }} × {{ quantity }} = ${{ getTotal().toFixed(2) }}
-                </div>
-              </div>
+              </ng-template>
             </div>
 
-            <!-- Quantity selector -->
-            <div class="quantity-selector mb-4">
-              <h5>Quantity</h5>
-              <div class="d-flex align-items-center">
-                <button class="btn btn-outline-secondary" (click)="decreaseQuantity()">
-                  <i class="bi bi-dash"></i>
-                </button>
-                <span class="mx-3">{{ quantity }}</span>
-                <button class="btn btn-outline-secondary" (click)="increaseQuantity()">
-                  <i class="bi bi-plus"></i>
-                </button>
+            <!-- Quantity and Add to Cart -->
+            <div class="d-flex flex-wrap align-items-center">
+              <div class="quantity-selector me-4 mb-3 mb-md-0">
+                <label class="form-label d-block">Quantity</label>
+                <div class="quantity-controls">
+                  <button class="btn-quantity" (click)="decreaseQuantity()">
+                    <i class="bi bi-dash"></i>
+                  </button>
+                  <span class="quantity-value">{{ quantity }}</span>
+                  <button class="btn-quantity" (click)="increaseQuantity()">
+                    <i class="bi bi-plus"></i>
+                  </button>
+                </div>
               </div>
-            </div>
 
-            <!-- Order button -->
-            <div class="order-buttons">
-              <div class="d-grid gap-2">
-                <button class="btn btn-primary btn-lg" (click)="addToCart()" [disabled]="addingToCart">
+              <div class="add-to-cart-wrapper flex-grow-1">
+                <button class="btn btn-primary btn-add-to-cart" (click)="addToCart()" [disabled]="addingToCart">
                   <span *ngIf="!addingToCart">
                     <i class="bi bi-cart-plus me-2"></i>Add to Cart - ${{ getTotal().toFixed(2) }}
                   </span>
@@ -175,63 +195,113 @@
       </div>
     </div>
 
-    <!-- Bottom section - Additional details with tabs -->
-    <div class="row mt-4">
-      <div class="col-12">
-        <div class="card shadow-sm">
-          <div class="card-body">
-            <ul class="nav nav-tabs" id="productTabs" role="tablist">
-              <li class="nav-item" role="presentation">
-                <button class="nav-link active" id="ingredients-tab" data-bs-toggle="tab" data-bs-target="#ingredients"
-                  type="button" role="tab" aria-controls="ingredients" aria-selected="true">
-                  Ingredients
-                </button>
-              </li>
-              <li class="nav-item" role="presentation">
-                <button class="nav-link" id="allergens-tab" data-bs-toggle="tab" data-bs-target="#allergens"
-                  type="button" role="tab" aria-controls="allergens" aria-selected="false">
-                  Allergens
-                </button>
-              </li>
-              <li class="nav-item" role="presentation">
-                <button class="nav-link" id="reviews-tab" data-bs-toggle="tab" data-bs-target="#reviews"
-                  type="button" role="tab" aria-controls="reviews" aria-selected="false">
-                  Reviews <span *ngIf="product.reviewCount > 0" class="badge bg-primary ms-1">{{ product.reviewCount }}</span>
-                </button>
+    <!-- Product Details Tabs Section -->
+    <div class="product-details-tabs mb-5">
+      <ul class="nav nav-tabs nav-fill" id="productDetailTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+          <button class="nav-link active" id="details-tab" data-bs-toggle="tab" data-bs-target="#details"
+            type="button" role="tab" aria-controls="details" aria-selected="true">
+            Product Details
+          </button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" id="ingredients-tab" data-bs-toggle="tab" data-bs-target="#ingredients"
+            type="button" role="tab" aria-controls="ingredients" aria-selected="false">
+            Ingredients
+          </button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" id="allergens-tab" data-bs-toggle="tab" data-bs-target="#allergens"
+            type="button" role="tab" aria-controls="allergens" aria-selected="false">
+            Allergens
+          </button>
+        </li>
+      </ul>
+      <div class="tab-content" id="productDetailTabsContent">
+        <div class="tab-pane fade show active" id="details" role="tabpanel" aria-labelledby="details-tab">
+          <div class="tab-inner-content">
+            <div class="row">
+              <div class="col-md-8">
+                <h4>About This Product</h4>
+                <p>{{ product.description }}</p>
+                <!-- Additional product details could go here -->
+                <p>This delicious product is carefully prepared by our chefs using the finest ingredients. Perfect for any occasion, it's ready to serve after {{ product.preparationTime }} minutes of preparation.</p>
+              </div>
+              <div class="col-md-4">
+                <div class="key-features">
+                  <h5>Key Features</h5>
+                  <ul class="feature-list">
+                    <li *ngIf="product.isVegetarian"><i class="bi bi-check-circle-fill"></i> Vegetarian-friendly</li>
+                    <li *ngIf="product.isVegan"><i class="bi bi-check-circle-fill"></i> Vegan-friendly</li>
+                    <li *ngIf="product.isGlutenFree"><i class="bi bi-check-circle-fill"></i> Gluten-free</li>
+                    <li><i class="bi bi-check-circle-fill"></i> Serves {{ product.servingSize }}</li>
+                    <li><i class="bi bi-check-circle-fill"></i> Ready in {{ product.preparationTime }} minutes</li>
+                    <li *ngIf="isChefObject(product.chef)"><i class="bi bi-check-circle-fill"></i> Made by professional chef</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="tab-pane fade" id="ingredients" role="tabpanel" aria-labelledby="ingredients-tab">
+          <div class="tab-inner-content">
+            <h4>Ingredients</h4>
+            <p class="text-muted small">We use high-quality, fresh ingredients in all our products.</p>
+            <ul class="ingredients-list">
+              <li *ngFor="let ingredient of product.ingredients">{{ ingredient }}</li>
+              <li *ngIf="!product.ingredients || product.ingredients.length === 0" class="text-muted">
+                No ingredients listed
               </li>
             </ul>
-            <div class="tab-content p-3" id="productTabsContent">
-              <div class="tab-pane fade show active" id="ingredients" role="tabpanel" aria-labelledby="ingredients-tab">
-                <h5>Ingredients</h5>
-                <ul class="ingredients-list">
-                  <li *ngFor="let ingredient of product.ingredients">{{ ingredient }}</li>
-                  <li *ngIf="!product.ingredients || product.ingredients.length === 0" class="text-muted">
-                    No ingredients listed
-                  </li>
-                </ul>
-              </div>
-              <div class="tab-pane fade" id="allergens" role="tabpanel" aria-labelledby="allergens-tab">
-                <h5>Allergens</h5>
-                <p class="small text-muted mb-3">This product contains the following allergens:</p>
-                <ul class="allergens-list">
-                  <li *ngFor="let allergen of product.allergens">{{ allergen }}</li>
-                  <li *ngIf="!product.allergens || product.allergens.length === 0" class="text-muted">
-                    No allergens listed
-                  </li>
-                </ul>
-              </div>
-              <div class="tab-pane fade" id="reviews" role="tabpanel" aria-labelledby="reviews-tab">
-                <!-- Use the ReviewListComponent here -->
-                <app-review-list 
-                  *ngIf="product._id" 
-                  [productId]="product._id"
-                  [limit]="5">
-                </app-review-list>
-              </div>
+          </div>
+        </div>
+        <div class="tab-pane fade" id="allergens" role="tabpanel" aria-labelledby="allergens-tab">
+          <div class="tab-inner-content">
+            <h4>Allergens</h4>
+            <p class="text-muted small">This product contains the following allergens:</p>
+            <ul class="allergens-list">
+              <li *ngFor="let allergen of product.allergens">{{ allergen }}</li>
+              <li *ngIf="!product.allergens || product.allergens.length === 0" class="text-muted">
+                No allergens listed
+              </li>
+            </ul>
+            <div class="allergen-notice mt-4">
+              <i class="bi bi-exclamation-triangle-fill me-2"></i>
+              <span>If you have any specific allergies or dietary concerns, please contact us for more detailed information.</span>
             </div>
           </div>
         </div>
       </div>
     </div>
+
+    <!-- Customer Reviews Section - Only show if product has reviews -->
+    <div id="reviews-section" class="reviews-section" >
+      <div class="section-header">
+        <h2 class="section-title mb-4">Customer Reviews</h2>
+      </div>
+      
+      <app-review-list 
+        *ngIf="product._id" 
+        [productId]="product._id"
+        [limit]="5">
+      </app-review-list>
+    </div>
   </div>
+
+  <!-- <div class="row mt-4">
+    <div class="col-12">
+      <div class="card shadow-sm">
+        <div class="card-header bg-white">
+          <h3 class="mb-0">Customer Reviews</h3>
+        </div>
+        <div class="card-body p-0">
+          <app-review-list 
+            *ngIf="product._id" 
+            [productId]="product._id"
+            [limit]="5">
+          </app-review-list>
+        </div>
+      </div>
+    </div>
+  </div> -->
 </div>
