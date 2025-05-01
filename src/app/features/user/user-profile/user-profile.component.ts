@@ -1,5 +1,5 @@
 // src/app/features/user/user-profile/user-profile.component.ts
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
@@ -8,6 +8,8 @@ import { TokenService } from '../../../core/auth/token.service';
 import { User } from '../../../core/auth/user.model';
 import { environment } from '../../../../environments/environment';
 import { Router, RouterModule } from '@angular/router';
+import { ChatService } from '../../../core/services/chat.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-user-profile',
@@ -20,7 +22,7 @@ import { Router, RouterModule } from '@angular/router';
     RouterModule
   ]
 })
-export class UserProfileComponent implements OnInit {
+export class UserProfileComponent implements OnInit, OnDestroy {
   profileForm: FormGroup;
   user: User | null = null;
   isLoading = true;
@@ -32,17 +34,17 @@ export class UserProfileComponent implements OnInit {
   previewImage: string | ArrayBuffer | null = null;
   selectedFile: File | null = null;
   defaultImagePath = 'assets/images/default-profile.jpg'; // Default image path
-// In src/app/features/user/user-profile/user-profile.component.ts
+  unreadCount = 0; // For chat unread messages
 
-// Find this line:
+  private subscriptions: Subscription[] = [];
 
-// Change it to:
   constructor(
     private fb: FormBuilder,
     private authService: AuthService,
     private tokenService: TokenService,
     private http: HttpClient,
-    private router: Router
+    private router: Router,
+    private chatService: ChatService
   ) {
     this.profileForm = this.fb.group({
       fullName: ['', [Validators.required]],
@@ -54,6 +56,28 @@ export class UserProfileComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadUserProfile();
+    this.initChatService();
+  }
+
+  ngOnDestroy(): void {
+    // Unsubscribe from all subscriptions
+    this.subscriptions.forEach(sub => sub.unsubscribe());
+  }
+
+  // Initialize chat service and subscribe to unread message count
+  initChatService(): void {
+    // Initialize socket connection
+    this.chatService.initializeSocket();
+    
+    // Load chat list to get unread count
+    this.chatService.loadChats();
+    
+    // Subscribe to unread total
+    this.subscriptions.push(
+      this.chatService.unreadTotal$.subscribe(count => {
+        this.unreadCount = count;
+      })
+    );
   }
 
   loadUserProfile(): void {
@@ -185,5 +209,15 @@ export class UserProfileComponent implements OnInit {
   handleImageError(): void {
     console.log('Image failed to load, using default');
     this.previewImage = this.defaultImagePath;
+  }
+
+  // Navigate to chats
+  goToChats(): void {
+    this.router.navigate(['/user/chats']);
+  }
+
+  // Navigate to reviews
+  goToReviews(): void {
+    this.router.navigate(['/user/reviews']);
   }
 }

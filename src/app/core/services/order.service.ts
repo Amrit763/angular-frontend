@@ -5,14 +5,15 @@ import { Observable } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import { CartService, CartItem } from './cart.service';
-import { SelectedCondiment } from '../models/product.model';
 import { 
   Order, 
   OrderStatus, 
   OrderItem, 
   ChefItemGroup,
   ChefOrdersResponse, 
-  UpdateOrderStatusResponse 
+  UpdateOrderStatusResponse,
+  OrderResponse,
+  OrdersResponse
 } from '../models/order.model';
 
 // Define the OrderData interface for creating orders
@@ -86,13 +87,13 @@ export class OrderService {
   }
 
   // Get all orders for the current user
-  getUserOrders(): Observable<{ success: boolean; orders: Order[] }> {
-    return this.http.get<{ success: boolean; orders: Order[] }>(`${this.apiUrl}/user`);
+  getUserOrders(): Observable<OrdersResponse> {
+    return this.http.get<OrdersResponse>(`${this.apiUrl}/user`);
   }
 
   // Get a specific order by ID
-  getOrderById(orderId: string): Observable<{ success: boolean; order: Order }> {
-    return this.http.get<{ success: boolean; order: Order }>(`${this.apiUrl}/${orderId}`);
+  getOrderById(orderId: string): Observable<OrderResponse> {
+    return this.http.get<OrderResponse>(`${this.apiUrl}/${orderId}`);
   }
 
   // Cancel an order
@@ -103,6 +104,13 @@ export class OrderService {
   // Delete an order (if allowed)
   deleteOrder(orderId: string): Observable<{ success: boolean; message: string }> {
     return this.http.patch<{ success: boolean; message: string }>(`${this.apiUrl}/${orderId}/delete`, {});
+  }
+
+  // Check if a product in an order can be reviewed
+  canReviewProduct(orderId: string, productId: string): Observable<{ success: boolean; canReview: boolean; reason?: string }> {
+    return this.http.get<{ success: boolean; canReview: boolean; reason?: string }>(
+      `${this.apiUrl}/${orderId}/can-review/${productId}`
+    );
   }
 
   // Get status label for display

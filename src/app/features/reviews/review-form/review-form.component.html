@@ -1,0 +1,142 @@
+<!-- src/app/features/reviews/review-form/review-form.component.html -->
+<div class="review-form-container">
+  <!-- Debug info (visible in development) -->
+  <div class="alert alert-info small mb-3" *ngIf="debugInfo">
+    <strong>Debug Info:</strong> {{ debugInfo }}
+    <div>canReview: {{ canReview }}, isEditMode: {{ isEditMode }}</div>
+    <div>Form Valid: {{ reviewForm.valid }}</div>
+  </div>
+
+  <!-- Product display -->
+  <div *ngIf="product" class="product-preview mb-4">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <div class="d-flex align-items-center">
+          <img [src]="productService.getImageUrl(product.images && product.images.length > 0 ? product.images[0] : '')" 
+               alt="{{ product.name }}" 
+               class="img-thumbnail me-3" 
+               style="width: 80px; height: 80px; object-fit: cover;">
+          <div>
+            <h5 class="mb-1">{{ product.name }}</h5>
+            <p class="text-muted mb-0">{{ product.category }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Review form -->
+  <form [formGroup]="reviewForm" (ngSubmit)="onSubmit()">
+    <div class="card shadow-sm mb-4">
+      <div class="card-header bg-white">
+        <h5 class="mb-0">{{ isEditMode ? 'Edit Your Review' : 'Write a Review' }}</h5>
+      </div>
+      <div class="card-body">
+        <!-- Rating -->
+        <div class="mb-4">
+          <label class="form-label">Your Rating <span class="text-danger">*</span></label>
+          <div class="rating-input">
+            <div class="stars d-flex">
+              <button type="button" class="btn btn-star" 
+                      [ngClass]="{'active': reviewForm.get('rating')?.value >= 1}"
+                      (click)="onRatingClick(1)">
+                <i class="bi" [ngClass]="reviewForm.get('rating')?.value >= 1 ? 'bi-star-fill' : 'bi-star'"></i>
+              </button>
+              <button type="button" class="btn btn-star" 
+                      [ngClass]="{'active': reviewForm.get('rating')?.value >= 2}"
+                      (click)="onRatingClick(2)">
+                <i class="bi" [ngClass]="reviewForm.get('rating')?.value >= 2 ? 'bi-star-fill' : 'bi-star'"></i>
+              </button>
+              <button type="button" class="btn btn-star" 
+                      [ngClass]="{'active': reviewForm.get('rating')?.value >= 3}"
+                      (click)="onRatingClick(3)">
+                <i class="bi" [ngClass]="reviewForm.get('rating')?.value >= 3 ? 'bi-star-fill' : 'bi-star'"></i>
+              </button>
+              <button type="button" class="btn btn-star" 
+                      [ngClass]="{'active': reviewForm.get('rating')?.value >= 4}"
+                      (click)="onRatingClick(4)">
+                <i class="bi" [ngClass]="reviewForm.get('rating')?.value >= 4 ? 'bi-star-fill' : 'bi-star'"></i>
+              </button>
+              <button type="button" class="btn btn-star" 
+                      [ngClass]="{'active': reviewForm.get('rating')?.value >= 5}"
+                      (click)="onRatingClick(5)">
+                <i class="bi" [ngClass]="reviewForm.get('rating')?.value >= 5 ? 'bi-star-fill' : 'bi-star'"></i>
+              </button>
+            </div>
+            <div *ngIf="reviewForm.get('rating')?.invalid && reviewForm.get('rating')?.touched" class="text-danger mt-2">
+              Please select a rating for this product.
+            </div>
+          </div>
+        </div>
+
+        <!-- Review comment -->
+        <div class="mb-4">
+          <label for="reviewComment" class="form-label">Your Review <span class="text-danger">*</span></label>
+          <textarea 
+            id="reviewComment"
+            formControlName="comment"
+            class="form-control"
+            rows="5"
+            placeholder="Share your experience with this product..."
+            [ngClass]="{'is-invalid': reviewForm.get('comment')?.invalid && reviewForm.get('comment')?.touched}"
+          ></textarea>
+          <div *ngIf="reviewForm.get('comment')?.invalid && reviewForm.get('comment')?.touched" class="invalid-feedback">
+            <div *ngIf="reviewForm.get('comment')?.errors?.['required']">Please write a review.</div>
+            <div *ngIf="reviewForm.get('comment')?.errors?.['minlength']">Your review must be at least 10 characters long.</div>
+            <div *ngIf="reviewForm.get('comment')?.errors?.['maxlength']">Your review cannot exceed 500 characters.</div>
+          </div>
+          <div class="text-muted small mt-2">
+            {{ reviewForm.get('comment')?.value?.length || 0 }}/500 characters
+          </div>
+        </div>
+
+        <!-- Upload images -->
+        <div class="mb-4">
+          <label class="form-label">Add Photos (optional)</label>
+          <div class="upload-section">
+            <input 
+              type="file" 
+              class="form-control" 
+              accept="image/jpeg,image/png,image/gif"
+              multiple
+              (change)="onFileChange($event)"
+              [disabled]="selectedFiles.length >= maxFiles"
+            >
+            <div class="small text-muted mt-1">
+              You can upload up to {{ maxFiles }} images (JPEG, PNG, GIF) - Max 5MB each
+            </div>
+          </div>
+
+          <!-- Image previews -->
+          <div *ngIf="selectedFilePreviews.length > 0" class="image-previews mt-3">
+            <div class="row g-2">
+              <div *ngFor="let preview of selectedFilePreviews; let i = index" class="col-md-2 col-sm-3 col-4">
+                <div class="image-preview-container position-relative">
+                  <img [src]="preview" class="img-thumbnail" alt="Review image preview">
+                  <button type="button" class="btn-close btn-sm position-absolute top-0 end-0" 
+                          (click)="removeFile(i)" title="Remove image"></button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="card-footer bg-white d-flex justify-content-end">
+        <button type="button" class="btn btn-outline-secondary me-2" (click)="onCancel()">Cancel</button>
+        <button 
+          type="submit" 
+          class="btn btn-primary"
+          [disabled]="isSubmitting"
+        >
+          <span *ngIf="!isSubmitting">
+            {{ isEditMode ? 'Update Review' : 'Submit Review' }}
+          </span>
+          <span *ngIf="isSubmitting">
+            <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+            {{ isEditMode ? 'Updating...' : 'Submitting...' }}
+          </span>
+        </button>
+      </div>
+    </div>
+  </form>
+</div>

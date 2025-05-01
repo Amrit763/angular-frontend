@@ -64,4 +64,9 @@ export class TokenService {
     localStorage.removeItem(this.TOKEN_KEY);
     localStorage.removeItem(this.USER_KEY);
   }
+
+  getUserId(): string {
+    const user = this.getUser();
+    return user ? user._id : '';
+  }
 }

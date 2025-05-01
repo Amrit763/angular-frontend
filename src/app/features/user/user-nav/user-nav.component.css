@@ -1,0 +1,39 @@
+/* src/app/features/user/user-nav/user-nav.component.css */
+.user-nav .list-group-item {
+    border-radius: 0;
+    border-left: 3px solid transparent;
+    transition: all 0.2s ease;
+  }
+  
+  .user-nav .list-group-item:hover {
+    background-color: rgba(13, 110, 253, 0.05);
+    border-left-color: rgba(13, 110, 253, 0.5);
+  }
+  
+  .user-nav .list-group-item.active {
+    background-color: rgba(13, 110, 253, 0.1);
+    color: #0d6efd;
+    border-left-color: #0d6efd;
+    font-weight: 500;
+  }
+  
+  /* Ensure the unread badge is properly positioned */
+  .position-relative .badge {
+    right: 0;
+  }
+  
+  /* Hover effect for the quick access buttons */
+  .btn-outline-primary {
+    transition: all 0.2s ease;
+  }
+  
+  .btn-outline-primary:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 8px rgba(13, 110, 253, 0.2);
+  }
+  
+  /* Active indicator for current page */
+  .btn-outline-primary.active {
+    background-color: #0d6efd;
+    color: white;
+  }

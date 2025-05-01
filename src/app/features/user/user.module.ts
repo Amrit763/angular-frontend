@@ -12,6 +12,9 @@ import { ChefApplicationComponent } from './chef-application/chef-application.co
 import { UserProfileComponent } from './user-profile/user-profile.component';
 import { OrderDetailComponent } from './order-detail/order-detail.component';
 import { OrderHistoryComponent } from './order-history/order-history.component';
+import { UserReviewsComponent } from './user-reviews/user-reviews.component';
+import { EditReviewComponent } from './edit-review/edit-review.component';
+import { UserNavComponent } from './user-nav/user-nav.component';
 
 @NgModule({
   declarations: [],
@@ -26,7 +29,10 @@ import { OrderHistoryComponent } from './order-history/order-history.component';
     ChangePasswordComponent,
     OrderDetailComponent,
     OrderHistoryComponent,
-    ChefApplicationComponent
+    ChefApplicationComponent,
+    UserReviewsComponent,
+    EditReviewComponent,
+    UserNavComponent
   ]
 })
 export class UserModule { }

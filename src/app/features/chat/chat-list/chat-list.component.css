@@ -1,0 +1,49 @@
+/* src/app/features/chat/chat-list/chat-list.component.css */
+.chat-item {
+    cursor: pointer;
+    transition: all 0.2s ease;
+    padding: 1rem;
+  }
+  
+  .chat-item:hover {
+    background-color: rgba(13, 110, 253, 0.05);
+  }
+  
+  .chat-item.unread {
+    background-color: rgba(13, 110, 253, 0.1);
+  }
+  
+  .chat-avatar {
+    position: relative;
+  }
+  
+  .chat-avatar img {
+    border: 2px solid #f8f9fa;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  .chat-details {
+    width: calc(100% - 70px);
+  }
+  
+  .chat-actions {
+    opacity: 0;
+    transition: opacity 0.2s ease;
+  }
+  
+  .chat-item:hover .chat-actions {
+    opacity: 1;
+  }
+  
+  .empty-state {
+    padding: 3rem;
+  }
+  
+  .empty-state i {
+    color: #dee2e6;
+  }
+  
+  /* Modal styles */
+  .modal {
+    background-color: rgba(0, 0, 0, 0.5);
+  }

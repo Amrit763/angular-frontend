@@ -175,7 +175,7 @@
       </div>
     </div>
 
-    <!-- Bottom section - Additional details -->
+    <!-- Bottom section - Additional details with tabs -->
     <div class="row mt-4">
       <div class="col-12">
         <div class="card shadow-sm">
@@ -191,6 +191,12 @@
                 <button class="nav-link" id="allergens-tab" data-bs-toggle="tab" data-bs-target="#allergens"
                   type="button" role="tab" aria-controls="allergens" aria-selected="false">
                   Allergens
+                </button>
+              </li>
+              <li class="nav-item" role="presentation">
+                <button class="nav-link" id="reviews-tab" data-bs-toggle="tab" data-bs-target="#reviews"
+                  type="button" role="tab" aria-controls="reviews" aria-selected="false">
+                  Reviews <span *ngIf="product.reviewCount > 0" class="badge bg-primary ms-1">{{ product.reviewCount }}</span>
                 </button>
               </li>
             </ul>
@@ -213,6 +219,14 @@
                     No allergens listed
                   </li>
                 </ul>
+              </div>
+              <div class="tab-pane fade" id="reviews" role="tabpanel" aria-labelledby="reviews-tab">
+                <!-- Use the ReviewListComponent here -->
+                <app-review-list 
+                  *ngIf="product._id" 
+                  [productId]="product._id"
+                  [limit]="5">
+                </app-review-list>
               </div>
             </div>
           </div>

@@ -7,6 +7,7 @@ import { ProductService } from '../../../core/services/product.service';
 import { CartService } from '../../../core/services/cart.service';
 import { TokenService } from '../../../core/auth/token.service';
 import { Product, ChefInfo, ProductResponse, Condiment, SelectedCondiment } from '../../../core/models/product.model';
+import { ReviewListComponent } from '../../reviews/review-list/review-list.component';
 
 @Component({
   selector: 'app-product-details',
@@ -15,7 +16,8 @@ import { Product, ChefInfo, ProductResponse, Condiment, SelectedCondiment } from
   standalone: true,
   imports: [
     CommonModule,
-    RouterModule
+    RouterModule,
+    ReviewListComponent
   ]
 })
 export class ProductDetailsComponent implements OnInit {

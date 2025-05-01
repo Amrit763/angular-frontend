@@ -1,209 +1,289 @@
 <!-- src/app/features/user/user-profile/user-profile.component.html -->
 <div class="container py-5">
-    <div class="row">
-      <div class="col-lg-4">
-        <div class="card shadow-sm mb-4">
-          <div class="card-header bg-light">
-            <h3 class="mb-0"><i class="fas fa-user-circle me-2"></i> Profile</h3>
-          </div>
-          <div class="card-body text-center">
-            <!-- Profile Image with Loading Spinner -->
-            <div *ngIf="isLoading" class="my-3 text-center">
-              <div class="spinner-border text-primary" role="status">
-                <span class="visually-hidden">Loading...</span>
-              </div>
-            </div>
-            
-            <div *ngIf="!isLoading" class="profile-image-container">
-              <img [src]="previewImage" 
-                   alt="Profile Image" 
-                   class="rounded-circle img-fluid mb-3"
-                   style="width: 150px; height: 150px; object-fit: cover;"
-                   (error)="previewImage = defaultImagePath">
-              
-              <h5 class="my-3">{{ user?.fullName }}</h5>
-              <p class="text-muted mb-1">{{ user?.email }}</p>
-              <p class="text-muted mb-4">
-                <span class="badge bg-primary text-white">{{ user?.role | titlecase }}</span>
-              </p>
-            </div>
-  
-            <!-- Navigation panel for small screens -->
-            <div class="d-block d-lg-none mt-3">
-              <div class="list-group dashboard-nav shadow-sm">
-                <a routerLink="/user/dashboard" class="list-group-item">
-                  <i class="fas fa-tachometer-alt me-2"></i> Dashboard
-                </a>
-                <a routerLink="/user/profile" class="list-group-item active">
-                  <i class="fas fa-user me-2"></i> Profile
-                </a>
-                <a routerLink="/user/security/two-factor" class="list-group-item">
-                  <i class="fas fa-shield-alt me-2"></i> Security
-                </a>
-                <a routerLink="/orders" class="list-group-item">
-                  <i class="fas fa-shopping-bag me-2"></i> Orders
-                </a>
-                <a *ngIf="user?.role === 'user'" routerLink="/user/chef-application" class="list-group-item">
-                  <i class="fas fa-utensils me-2"></i> Become a Chef
-                </a>
-              </div>
-            </div>
-          </div>
+  <div class="row">
+    <div class="col-lg-4">
+      <div class="card shadow-sm mb-4">
+        <div class="card-header bg-light">
+          <h3 class="mb-0"><i class="fas fa-user-circle me-2"></i> Profile</h3>
         </div>
-  
-        <!-- Account Status Card -->
-        <div class="card shadow-sm mb-4">
-          <div class="card-header bg-light">
-            <h3 class="mb-0"><i class="fas fa-check-circle me-2"></i> Account Status</h3>
+        <div class="card-body text-center">
+          <!-- Profile Image with Loading Spinner -->
+          <div *ngIf="isLoading" class="my-3 text-center">
+            <div class="spinner-border text-primary" role="status">
+              <span class="visually-hidden">Loading...</span>
+            </div>
           </div>
-          <div class="card-body">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-              <span>Email Verification</span>
-              <span [ngClass]="user?.isEmailVerified ? 'text-success' : 'text-danger'">
-                <i class="fas" [ngClass]="user?.isEmailVerified ? 'fa-check-circle' : 'fa-times-circle'"></i>
-                {{ user?.isEmailVerified ? 'Verified' : 'Not Verified' }}
-              </span>
-            </div>
-            <div class="d-flex justify-content-between align-items-center mb-3">
-              <span>Two-Factor Auth</span>
-              <span [ngClass]="user?.twoFactorEnabled ? 'text-success' : 'text-secondary'">
-                <i class="fas" [ngClass]="user?.twoFactorEnabled ? 'fa-check-circle' : 'fa-circle'"></i>
-                {{ user?.twoFactorEnabled ? 'Enabled' : 'Disabled' }}
-              </span>
-            </div>
-            <div class="d-flex justify-content-between align-items-center">
-              <span>Member Since</span>
-              <span class="text-muted">{{ user?.createdAt | date:'mediumDate' }}</span>
+          
+          <div *ngIf="!isLoading" class="profile-image-container">
+            <img [src]="previewImage" 
+                 alt="Profile Image" 
+                 class="rounded-circle img-fluid mb-3"
+                 style="width: 150px; height: 150px; object-fit: cover;"
+                 (error)="previewImage = defaultImagePath">
+            
+            <h5 class="my-3">{{ user?.fullName }}</h5>
+            <p class="text-muted mb-1">{{ user?.email }}</p>
+            <p class="text-muted mb-4">
+              <span class="badge bg-primary text-white">{{ user?.role | titlecase }}</span>
+            </p>
+          </div>
+
+          <!-- Navigation panel for small screens -->
+          <div class="d-block d-lg-none mt-3">
+            <div class="list-group dashboard-nav shadow-sm">
+              <a routerLink="/user/dashboard" class="list-group-item">
+                <i class="fas fa-tachometer-alt me-2"></i> Dashboard
+              </a>
+              <a routerLink="/user/profile" class="list-group-item active">
+                <i class="fas fa-user me-2"></i> Profile
+              </a>
+              <a routerLink="/user/security/two-factor" class="list-group-item">
+                <i class="fas fa-shield-alt me-2"></i> Security
+              </a>
+              <a routerLink="/user/orders" class="list-group-item">
+                <i class="fas fa-shopping-bag me-2"></i> Orders
+              </a>
+              <!-- Add Chat Navigation -->
+              <a routerLink="/user/chats" class="list-group-item">
+                <i class="fas fa-comments me-2"></i> Messages
+                <span *ngIf="unreadCount > 0" class="badge bg-danger rounded-pill ms-2">{{ unreadCount }}</span>
+              </a>
+              <!-- Add Reviews Navigation -->
+              <a routerLink="/user/reviews" class="list-group-item">
+                <i class="fas fa-star me-2"></i> My Reviews
+              </a>
+              <a *ngIf="user?.role === 'user'" routerLink="/user/chef-application" class="list-group-item">
+                <i class="fas fa-utensils me-2"></i> Become a Chef
+              </a>
             </div>
           </div>
         </div>
       </div>
-      
-      <div class="col-lg-8">
-        <div class="card shadow-sm mb-4">
-          <div class="card-header bg-light">
-            <h3 class="mb-0"><i class="fas fa-user-edit me-2"></i> Edit Profile</h3>
+
+      <!-- Account Status Card -->
+      <div class="card shadow-sm mb-4">
+        <div class="card-header bg-light">
+          <h3 class="mb-0"><i class="fas fa-check-circle me-2"></i> Account Status</h3>
+        </div>
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <span>Email Verification</span>
+            <span [ngClass]="user?.isEmailVerified ? 'text-success' : 'text-danger'">
+              <i class="fas" [ngClass]="user?.isEmailVerified ? 'fa-check-circle' : 'fa-times-circle'"></i>
+              {{ user?.isEmailVerified ? 'Verified' : 'Not Verified' }}
+            </span>
           </div>
-          <div class="card-body">
-            <!-- Loading Spinner -->
-            <div *ngIf="isLoading" class="text-center py-5">
-              <div class="spinner-border text-primary" role="status">
-                <span class="visually-hidden">Loading...</span>
-              </div>
-            </div>
-            
-            <!-- Error Alert -->
-            <div *ngIf="error" class="alert alert-danger alert-dismissible fade show" role="alert">
-              {{ error }}
-              <button type="button" class="btn-close" (click)="error = null"></button>
-            </div>
-            
-            <!-- Success Alert -->
-            <div *ngIf="successMessage" class="alert alert-success alert-dismissible fade show" role="alert">
-              {{ successMessage }}
-              <button type="button" class="btn-close" (click)="successMessage = null"></button>
-            </div>
-            
-            <!-- Profile Form -->
-            <form *ngIf="!isLoading" [formGroup]="profileForm" (ngSubmit)="onSubmit()">
-              <div class="mb-3 row">
-                <label for="fullName" class="col-sm-3 col-form-label">Full Name</label>
-                <div class="col-sm-9">
-                  <input type="text" 
-                         class="form-control" 
-                         id="fullName" 
-                         formControlName="fullName"
-                         [ngClass]="{'is-invalid': profileForm.get('fullName')?.invalid && profileForm.get('fullName')?.touched}">
-                  <div class="invalid-feedback" *ngIf="profileForm.get('fullName')?.invalid && profileForm.get('fullName')?.touched">
-                    Full name is required
-                  </div>
-                </div>
-              </div>
-              
-              <div class="mb-3 row">
-                <label for="email" class="col-sm-3 col-form-label">Email</label>
-                <div class="col-sm-9">
-                  <div class="input-group">
-                    <input type="email" class="form-control" id="email" [value]="user?.email" disabled>
-                    <span class="input-group-text" [ngClass]="user?.isEmailVerified ? 'bg-success text-white' : 'bg-danger text-white'">
-                      <i class="fas" [ngClass]="user?.isEmailVerified ? 'fa-check-circle' : 'fa-exclamation-circle'"></i>
-                    </span>
-                  </div>
-                  <small *ngIf="!user?.isEmailVerified" class="text-danger">
-                    Email not verified. Check your inbox.
-                  </small>
-                </div>
-              </div>
-              
-              <div class="mb-3 row">
-                <label for="phoneNumber" class="col-sm-3 col-form-label">Phone Number</label>
-                <div class="col-sm-9">
-                  <input type="tel" 
-                         class="form-control" 
-                         id="phoneNumber" 
-                         formControlName="phoneNumber"
-                         placeholder="10-digit number (e.g., 0712345678)"
-                         [ngClass]="{'is-invalid': profileForm.get('phoneNumber')?.invalid && profileForm.get('phoneNumber')?.touched}">
-                  <div class="invalid-feedback" *ngIf="profileForm.get('phoneNumber')?.invalid && profileForm.get('phoneNumber')?.touched">
-                    Please enter a valid 10-digit phone number
-                  </div>
-                </div>
-              </div>
-              
-              <div class="mb-3 row">
-                <label for="role" class="col-sm-3 col-form-label">Role</label>
-                <div class="col-sm-9">
-                  <input type="text" class="form-control bg-light" id="role" [value]="user?.role | titlecase" disabled>
-                </div>
-              </div>
-              
-              <div class="mb-4 row">
-                <label for="profileImage" class="col-sm-3 col-form-label">Profile Image</label>
-                <div class="col-sm-9">
-                  <input type="file" 
-                         class="form-control" 
-                         id="profileImage" 
-                         (change)="onFileChange($event)"
-                         accept="image/jpeg,image/png,image/gif,image/webp">
-                  <div class="form-text mt-1">Maximum file size: 5MB. Supported formats: JPEG, PNG, GIF, WebP</div>
-                </div>
-              </div>
-              
-              <div class="text-end">
-                <button type="button" class="btn btn-outline-secondary me-2" routerLink="/user/dashboard">
-                  <i class="fas fa-arrow-left me-1"></i> Back to Dashboard
-                </button>
-                <button type="submit" 
-                        class="btn btn-primary" 
-                        [disabled]="profileForm.invalid || isSubmitting">
-                  <span *ngIf="isSubmitting" class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
-                  <i *ngIf="!isSubmitting" class="fas fa-save me-1"></i> Update Profile
-                </button>
-              </div>
-            </form>
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <span>Two-Factor Auth</span>
+            <span [ngClass]="user?.twoFactorEnabled ? 'text-success' : 'text-secondary'">
+              <i class="fas" [ngClass]="user?.twoFactorEnabled ? 'fa-check-circle' : 'fa-circle'"></i>
+              {{ user?.twoFactorEnabled ? 'Enabled' : 'Disabled' }}
+            </span>
+          </div>
+          <div class="d-flex justify-content-between align-items-center">
+            <span>Member Since</span>
+            <span class="text-muted">{{ user?.createdAt | date:'mediumDate' }}</span>
           </div>
         </div>
-  
-        <!-- Security Quick Access Card -->
-        <div class="card shadow-sm">
-          <div class="card-header bg-light">
-            <h3 class="mb-0"><i class="fas fa-shield-alt me-2"></i> Security Quick Access</h3>
+      </div>
+
+      <!-- Quick Access Menu Card -->
+      <div class="card shadow-sm mb-4">
+        <div class="card-header bg-light">
+          <h3 class="mb-0"><i class="fas fa-th-large me-2"></i> Quick Access</h3>
+        </div>
+        <div class="card-body">
+          <div class="row g-2">
+            <div class="col-6">
+              <a routerLink="/user/orders" class="btn btn-outline-primary w-100">
+                <i class="fas fa-shopping-bag mb-2 d-block"></i>
+                Orders
+              </a>
+            </div>
+            <div class="col-6">
+              <a routerLink="/user/chats" class="btn btn-outline-primary w-100 position-relative">
+                <i class="fas fa-comments mb-2 d-block"></i>
+                Messages
+                <span *ngIf="unreadCount > 0" class="position-absolute top-0 end-0 translate-middle badge rounded-pill bg-danger">
+                  {{ unreadCount > 9 ? '9+' : unreadCount }}
+                </span>
+              </a>
+            </div>
+            <div class="col-6 mt-2">
+              <a routerLink="/user/reviews" class="btn btn-outline-primary w-100">
+                <i class="fas fa-star mb-2 d-block"></i>
+                Reviews
+              </a>
+            </div>
+            <div class="col-6 mt-2">
+              <a routerLink="/cart" class="btn btn-outline-primary w-100">
+                <i class="fas fa-shopping-cart mb-2 d-block"></i>
+                Cart
+              </a>
+            </div>
           </div>
-          <div class="card-body">
-            <div class="row">
-              <div class="col-md-6 mb-3">
-                <div class="d-grid">
-                  <a routerLink="/user/security/change-password" class="btn btn-outline-primary">
-                    <i class="fas fa-key me-2"></i> Change Password
-                  </a>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-lg-8">
+      <div class="card shadow-sm mb-4">
+        <div class="card-header bg-light">
+          <h3 class="mb-0"><i class="fas fa-user-edit me-2"></i> Edit Profile</h3>
+        </div>
+        <div class="card-body">
+          <!-- Loading Spinner -->
+          <div *ngIf="isLoading" class="text-center py-5">
+            <div class="spinner-border text-primary" role="status">
+              <span class="visually-hidden">Loading...</span>
+            </div>
+          </div>
+          
+          <!-- Error Alert -->
+          <div *ngIf="error" class="alert alert-danger alert-dismissible fade show" role="alert">
+            {{ error }}
+            <button type="button" class="btn-close" (click)="error = null"></button>
+          </div>
+          
+          <!-- Success Alert -->
+          <div *ngIf="successMessage" class="alert alert-success alert-dismissible fade show" role="alert">
+            {{ successMessage }}
+            <button type="button" class="btn-close" (click)="successMessage = null"></button>
+          </div>
+          
+          <!-- Profile Form -->
+          <form *ngIf="!isLoading" [formGroup]="profileForm" (ngSubmit)="onSubmit()">
+            <div class="mb-3 row">
+              <label for="fullName" class="col-sm-3 col-form-label">Full Name</label>
+              <div class="col-sm-9">
+                <input type="text" 
+                       class="form-control" 
+                       id="fullName" 
+                       formControlName="fullName"
+                       [ngClass]="{'is-invalid': profileForm.get('fullName')?.invalid && profileForm.get('fullName')?.touched}">
+                <div class="invalid-feedback" *ngIf="profileForm.get('fullName')?.invalid && profileForm.get('fullName')?.touched">
+                  Full name is required
                 </div>
               </div>
-              <div class="col-md-6 mb-3">
-                <div class="d-grid">
-                  <a routerLink="/user/security/two-factor" class="btn btn-outline-primary">
-                    <i class="fas fa-lock me-2"></i> Two-Factor Authentication
-                  </a>
+            </div>
+            
+            <div class="mb-3 row">
+              <label for="email" class="col-sm-3 col-form-label">Email</label>
+              <div class="col-sm-9">
+                <div class="input-group">
+                  <input type="email" class="form-control" id="email" [value]="user?.email" disabled>
+                  <span class="input-group-text" [ngClass]="user?.isEmailVerified ? 'bg-success text-white' : 'bg-danger text-white'">
+                    <i class="fas" [ngClass]="user?.isEmailVerified ? 'fa-check-circle' : 'fa-exclamation-circle'"></i>
+                  </span>
                 </div>
+                <small *ngIf="!user?.isEmailVerified" class="text-danger">
+                  Email not verified. Check your inbox.
+                </small>
+              </div>
+            </div>
+            
+            <div class="mb-3 row">
+              <label for="phoneNumber" class="col-sm-3 col-form-label">Phone Number</label>
+              <div class="col-sm-9">
+                <input type="tel" 
+                       class="form-control" 
+                       id="phoneNumber" 
+                       formControlName="phoneNumber"
+                       placeholder="10-digit number (e.g., 0712345678)"
+                       [ngClass]="{'is-invalid': profileForm.get('phoneNumber')?.invalid && profileForm.get('phoneNumber')?.touched}">
+                <div class="invalid-feedback" *ngIf="profileForm.get('phoneNumber')?.invalid && profileForm.get('phoneNumber')?.touched">
+                  Please enter a valid 10-digit phone number
+                </div>
+              </div>
+            </div>
+            
+            <div class="mb-3 row">
+              <label for="role" class="col-sm-3 col-form-label">Role</label>
+              <div class="col-sm-9">
+                <input type="text" class="form-control bg-light" id="role" [value]="user?.role | titlecase" disabled>
+              </div>
+            </div>
+            
+            <div class="mb-4 row">
+              <label for="profileImage" class="col-sm-3 col-form-label">Profile Image</label>
+              <div class="col-sm-9">
+                <input type="file" 
+                       class="form-control" 
+                       id="profileImage" 
+                       (change)="onFileChange($event)"
+                       accept="image/jpeg,image/png,image/gif,image/webp">
+                <div class="form-text mt-1">Maximum file size: 5MB. Supported formats: JPEG, PNG, GIF, WebP</div>
+              </div>
+            </div>
+            
+            <div class="text-end">
+              <button type="button" class="btn btn-outline-secondary me-2" routerLink="/user/dashboard">
+                <i class="fas fa-arrow-left me-1"></i> Back to Dashboard
+              </button>
+              <button type="submit" 
+                      class="btn btn-primary" 
+                      [disabled]="profileForm.invalid || isSubmitting">
+                <span *ngIf="isSubmitting" class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                <i *ngIf="!isSubmitting" class="fas fa-save me-1"></i> Update Profile
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Feature Access Card -->
+      <div class="card shadow-sm">
+        <div class="card-header bg-light">
+          <h3 class="mb-0"><i class="fas fa-th-large me-2"></i> Features</h3>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-4 mb-3">
+              <div class="d-grid">
+                <a routerLink="/user/security/change-password" class="btn btn-outline-primary">
+                  <i class="fas fa-key me-2"></i> Change Password
+                </a>
+              </div>
+            </div>
+            <div class="col-md-4 mb-3">
+              <div class="d-grid">
+                <a routerLink="/user/security/two-factor" class="btn btn-outline-primary">
+                  <i class="fas fa-lock me-2"></i> Two-Factor Auth
+                </a>
+              </div>
+            </div>
+            <div class="col-md-4 mb-3">
+              <div class="d-grid">
+                <a routerLink="/user/chats" class="btn btn-outline-primary position-relative">
+                  <i class="fas fa-comments me-2"></i> Messages
+                  <span *ngIf="unreadCount > 0" class="position-absolute top-0 end-0 translate-middle badge rounded-pill bg-danger">
+                    {{ unreadCount > 9 ? '9+' : unreadCount }}
+                  </span>
+                </a>
+              </div>
+            </div>
+            <div class="col-md-4 mb-3">
+              <div class="d-grid">
+                <a routerLink="/user/reviews" class="btn btn-outline-primary">
+                  <i class="fas fa-star me-2"></i> My Reviews
+                </a>
+              </div>
+            </div>
+            <div class="col-md-4 mb-3">
+              <div class="d-grid">
+                <a routerLink="/user/orders" class="btn btn-outline-primary">
+                  <i class="fas fa-shopping-bag me-2"></i> My Orders
+                </a>
+              </div>
+            </div>
+            <div class="col-md-4 mb-3">
+              <div class="d-grid">
+                <a *ngIf="user?.role === 'user'" routerLink="/user/chef-application" class="btn btn-outline-primary">
+                  <i class="fas fa-utensils me-2"></i> Become a Chef
+                </a>
+                <a *ngIf="user?.role === 'chef'" routerLink="/chef/dashboard" class="btn btn-outline-primary">
+                  <i class="fas fa-utensils me-2"></i> Chef Dashboard
+                </a>
               </div>
             </div>
           </div>
@@ -211,3 +291,4 @@
       </div>
     </div>
   </div>
+</div>

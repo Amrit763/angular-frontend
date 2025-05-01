@@ -3,11 +3,26 @@
   <div class="row mb-4">
     <div class="col-12">
       <div class="d-flex align-items-center mb-4">
-        <button class="btn btn-sm btn-outline-secondary me-3" (click)="backToOrders()">
-          <i class="bi bi-arrow-left"></i>
+        <button class="btn btn-sm btn-outline-secondary me-3" (click)="goBack()">
+          <i class="bi bi-arrow-left"></i> Back to Orders
         </button>
-        <h2 class="mb-0">Order Details</h2>
+        <h2 class="mb-0">Order Detail</h2>
+        <button *ngIf="showDebug" class="btn btn-sm btn-outline-warning ms-auto" (click)="toggleDebug()">
+          Hide Debug
+        </button>
+        <button *ngIf="!showDebug" class="btn btn-sm btn-outline-warning ms-auto" (click)="toggleDebug()">
+          Show Debug
+        </button>
       </div>
+    </div>
+  </div>
+
+  <!-- Debug info (only visible when debug is enabled) -->
+  <div *ngIf="showDebug && order" class="alert alert-info mb-4">
+    <h6>Debug Information:</h6>
+    <p>Order Status: {{ order.status }}</p>
+    <div *ngFor="let chefGroup of order.chefItems; let i = index">
+      <p>Chef Group {{ i + 1 }} Status: {{ chefGroup.status }}</p>
     </div>
   </div>
 
@@ -25,230 +40,276 @@
   </div>
 
   <!-- Order details -->
-  <ng-container *ngIf="!isLoading && order">
-    <div class="row">
-      <div class="col-12">
-        <div class="card shadow-sm mb-4">
-          <div class="card-body">
-            <div class="row">
-              <div class="col-md-8">
-                <h3 class="card-title mb-3">Order #{{ order._id.slice(-8) }}</h3>
-                <p class="text-muted mb-1">Placed on {{ formatDate(order.createdAt) }}</p>
-              </div>
-              <div class="col-md-4 text-md-end">
-                <div class="status-badge mb-3">
-                  <span class="badge p-2 px-3 fs-6" [ngClass]="orderService.getStatusClass(order.status)">
-                    {{ orderService.getStatusLabel(order.status) }}
-                  </span>
-                </div>
-                <div class="action-buttons">
-                  <button *ngIf="order.status === 'pending'" class="btn btn-outline-danger" (click)="cancelOrder()">
-                    Cancel Order
-                  </button>
-                  <button *ngIf="orderService.canDeleteOrder(order)" class="btn btn-danger" (click)="deleteOrder()">
-                    Delete Order
-                  </button>
-                </div>
-              </div>
-            </div>
+  <div *ngIf="!isLoading && order" class="order-details">
+    <!-- Order info card -->
+    <div class="card shadow-sm mb-4">
+      <div class="card-header bg-white">
+        <div class="d-flex justify-content-between align-items-center">
+          <h5 class="mb-0">Order #{{ order._id.substring(order._id.length - 8) }}</h5>
+          <div class="order-status">
+            <span class="badge" [ngClass]="getStatusBadgeClass(order.status)">
+              {{ getStatusLabel(order.status) }}
+            </span>
+          </div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="row mb-4">
+          <div class="col-md-4">
+            <h6>Order Date</h6>
+            <p>{{ formatDate(order.createdAt) }}</p>
+          </div>
+          <div class="col-md-4">
+            <h6>Total Amount</h6>
+            <p>${{ order.totalAmount.toFixed(2) }}</p>
+          </div>
+          <div class="col-md-4">
+            <h6>Payment Method</h6>
+            <p>{{ order.paymentMethod }}</p>
+            <small class="text-muted">Status: {{ order.paymentStatus }}</small>
+          </div>
+        </div>
+        
+        <div class="row">
+          <div class="col-md-6">
+            <h6>Delivery Address</h6>
+            <p>{{ order.deliveryAddress }}</p>
+          </div>
+          <div class="col-md-6">
+            <h6>Delivery Details</h6>
+            <p>Delivery Date: {{ formatDate(order.deliveryDate) }}<br>
+               Delivery Time: {{ order.deliveryTime }}<br>
+               <span *ngIf="order.deliveryNotes">Notes: {{ order.deliveryNotes }}</span></p>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Timeline + Items + Summary -->
-    <div class="row">
-      <div class="col-lg-8">
-        <!-- Timeline -->
-        <div class="card shadow-sm mb-4">
-          <div class="card-body">
-            <h4 class="mb-4">Order Status Timeline</h4>
-            <div class="order-timeline">
-              <div class="timeline-item completed">
-                <div class="timeline-badge"><i class="bi bi-check-circle-fill"></i></div>
-                <div class="timeline-content">
-                  <h5>Order Placed</h5>
-                  <p class="text-muted">{{ formatDate(order.createdAt) }}</p>
-                </div>
-              </div>
+    <!-- Order summary -->
+    <div class="card shadow-sm mb-4">
+      <div class="card-header bg-white">
+        <h5 class="mb-0">Order Summary</h5>
+      </div>
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table">
+            <tbody>
+              <tr>
+                <td>Subtotal</td>
+                <td class="text-end">${{ order.subtotal.toFixed(2) }}</td>
+              </tr>
+              <tr>
+                <td>Service Fee</td>
+                <td class="text-end">${{ order.serviceFee.toFixed(2) }}</td>
+              </tr>
+              <tr class="fw-bold">
+                <td>Total</td>
+                <td class="text-end">${{ order.totalAmount.toFixed(2) }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
 
-              <div class="timeline-item" [ngClass]="{'completed': order.status !== 'pending'}">
-                <div class="timeline-badge">
-                  <i class="bi" [ngClass]="order.status !== 'pending' ? 'bi-check-circle-fill' : 'bi-circle'"></i>
-                </div>
-                <div class="timeline-content">
-                  <h5>Order Received</h5>
-                  <p class="text-muted">
-                    {{ order.status !== 'pending' ? 'Chefs have received your order' : 'Waiting for chef confirmation' }}
-                  </p>
-                </div>
-              </div>
-
-              <div class="timeline-item" [ngClass]="{'completed': ['in_progress','ready','delivered'].includes(order.status)}">
-                <div class="timeline-badge">
-                  <i class="bi" [ngClass]="['in_progress','ready','delivered'].includes(order.status) ? 'bi-check-circle-fill' : 'bi-circle'"></i>
-                </div>
-                <div class="timeline-content">
-                  <h5>In Preparation</h5>
-                  <p class="text-muted">
-                    {{ ['in_progress','ready','delivered'].includes(order.status) ? 'Your order is being prepared' : 'Coming up next' }}
-                  </p>
-                </div>
-              </div>
-
-              <div class="timeline-item" [ngClass]="{'completed': ['ready','delivered'].includes(order.status)}">
-                <div class="timeline-badge">
-                  <i class="bi" [ngClass]="['ready','delivered'].includes(order.status) ? 'bi-check-circle-fill' : 'bi-circle'"></i>
-                </div>
-                <div class="timeline-content">
-                  <h5>Ready for Delivery</h5>
-                  <p class="text-muted">
-                    {{ ['ready','delivered'].includes(order.status) ? 'Your order is ready and awaiting delivery' : 'Coming up next' }}
-                  </p>
-                </div>
-              </div>
-
-              <div class="timeline-item" [ngClass]="{'completed': order.status === 'delivered'}">
-                <div class="timeline-badge">
-                  <i class="bi" [ngClass]="order.status === 'delivered' ? 'bi-check-circle-fill' : 'bi-circle'"></i>
-                </div>
-                <div class="timeline-content">
-                  <h5>Delivered</h5>
-                  <p class="text-muted">
-                    {{ order.status === 'delivered' ? 'Order has been delivered successfully' : 'Coming up next' }}
-                  </p>
-                </div>
-              </div>
-            </div>
+    <!-- Order items -->
+    <div class="card shadow-sm mb-4" *ngFor="let chefGroup of order.chefItems; let chefIndex = index">
+      <div class="card-header bg-white">
+        <div class="d-flex justify-content-between align-items-center">
+          <h5 class="mb-0">{{ chefGroup.chef?.fullName || 'Chef' }}</h5>
+          <div class="d-flex align-items-center">
+            <span class="badge me-2" [ngClass]="getStatusBadgeClass(chefGroup.status)">
+              {{ getStatusLabel(chefGroup.status) }}
+            </span>
+            <a *ngIf="chefGroup.chef && chefGroup.chef._id" [routerLink]="['/chefs', chefGroup.chef._id]" class="btn btn-sm btn-outline-primary">
+              <i class="bi bi-shop me-1"></i> View Chef Profile
+            </a>
           </div>
         </div>
-
-        <!-- Items by chef -->
-        <div *ngFor="let chefGroup of getChefGroups()" class="card shadow-sm mb-4">
-          <div class="card-body">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-              <h4 class="mb-0">Items by {{ chefGroup.chef?.fullName || 'Chef' }}</h4>
-              <span class="badge" [ngClass]="getStatusClass(chefGroup)">
-                {{ getStatusLabel(chefGroup) }}
-              </span>
-            </div>
-            
-            <div class="table-responsive">
-              <table class="table table-hover border">
-                <thead class="table-light">
-                  <tr>
-                    <th>Item</th>
-                    <th class="text-center">Price</th>
-                    <th class="text-center">Quantity</th>
-                    <th class="text-end">Subtotal</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr *ngFor="let item of chefGroup.items">
-                    <td>
-                      <div class="d-flex align-items-center">
-                        <img [src]="productService.getImageUrl(item.product?.images?.[0])"
-                             [alt]="item.product?.name || 'Product'" class="img-thumbnail me-3"
-                             style="width: 60px; height: 60px; object-fit: cover;">
-                        <div>
-                          <h6 class="mb-0">{{ item.product?.name || 'Product' }}</h6>
-                          <small class="text-muted">{{ item.product?.category || 'Category' }}</small>
-                        </div>
+      </div>
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-hover align-middle">
+            <thead>
+              <tr>
+                <th>Product</th>
+                <th>Price</th>
+                <th>Quantity</th>
+                <th>Total</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of chefGroup.items; let i = index">
+                <td>
+                  <div class="d-flex align-items-center">
+                    <ng-container *ngIf="item.product">
+                      <img *ngIf="item.product.images && item.product.images.length > 0"
+                          [src]="productService.getImageUrl(item.product.images[0])" 
+                          alt="{{ item.product.name || 'Product' }}" 
+                          class="img-thumbnail me-3" 
+                          style="width: 60px; height: 60px; object-fit: cover;">
+                      <div>
+                        <h6 class="mb-0">{{ item.product.name || 'Product' }}</h6>
+                        <small class="text-muted">{{ item.product.category || 'Category' }}</small>
+                        <!-- Add debug info for product ID -->
+                        <small *ngIf="showDebug" class="d-block" [ngClass]="item.product._id ? 'text-success' : 'text-danger'">
+                          ID: {{ item.product._id || 'Missing' }}
+                        </small>
                       </div>
-                    </td>
-                    <td class="text-center align-middle">${{ item.price.toFixed(2) }}</td>
-                    <td class="text-center align-middle">{{ item.quantity }}</td>
-                    <td class="text-end align-middle">${{ (item.price * item.quantity).toFixed(2) }}</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-            
-            <!-- Chef-specific timeline for this chef group -->
-            <div class="mt-4 ps-2">
-              <h5 class="mb-3">Status from {{ chefGroup.chef?.fullName || 'Chef' }}</h5>
-              <ul class="list-group">
-                <li class="list-group-item d-flex justify-content-between align-items-center">
-                  Order Received
-                  <span *ngIf="chefGroup.status !== 'pending'" class="badge bg-success rounded-pill">
-                    <i class="bi bi-check-circle-fill"></i>
-                  </span>
-                  <span *ngIf="chefGroup.status === 'pending'" class="badge bg-secondary rounded-pill">
-                    Pending
-                  </span>
-                </li>
-                <li class="list-group-item d-flex justify-content-between align-items-center">
-                  In Preparation
-                  <span *ngIf="['in_progress', 'ready', 'delivered'].includes(chefGroup.status)" class="badge bg-success rounded-pill">
-                    <i class="bi bi-check-circle-fill"></i>
-                  </span>
-                  <span *ngIf="!['in_progress', 'ready', 'delivered'].includes(chefGroup.status)" class="badge bg-secondary rounded-pill">
-                    Pending
-                  </span>
-                </li>
-                <li class="list-group-item d-flex justify-content-between align-items-center">
-                  Ready for Delivery
-                  <span *ngIf="['ready', 'delivered'].includes(chefGroup.status)" class="badge bg-success rounded-pill">
-                    <i class="bi bi-check-circle-fill"></i>
-                  </span>
-                  <span *ngIf="!['ready', 'delivered'].includes(chefGroup.status)" class="badge bg-secondary rounded-pill">
-                    Pending
-                  </span>
-                </li>
-                <li class="list-group-item d-flex justify-content-between align-items-center">
-                  Delivered
-                  <span *ngIf="chefGroup.status === 'delivered'" class="badge bg-success rounded-pill">
-                    <i class="bi bi-check-circle-fill"></i>
-                  </span>
-                  <span *ngIf="chefGroup.status !== 'delivered'" class="badge bg-secondary rounded-pill">
-                    Pending
-                  </span>
-                </li>
-              </ul>
-            </div>
-          </div>
+                    </ng-container>
+                    <ng-container *ngIf="!item.product">
+                      <div class="img-thumbnail me-3 d-flex align-items-center justify-content-center" 
+                          style="width: 60px; height: 60px;">
+                        <i class="bi bi-image text-muted"></i>
+                      </div>
+                      <div>
+                        <h6 class="mb-0">Product</h6>
+                        <small class="text-muted">Category</small>
+                        <small *ngIf="showDebug" class="d-block text-danger">Product data missing</small>
+                      </div>
+                    </ng-container>
+                  </div>
+                </td>
+                <td>${{ item.price.toFixed(2) }}</td>
+                <td>{{ item.quantity }}</td>
+                <td>${{ item.subtotal.toFixed(2) }}</td>
+                <td>
+                  <div class="btn-group">
+                    <!-- View product button -->
+                    <a *ngIf="item.product && item.product._id" 
+                       [routerLink]="['/products', item.product._id]" 
+                       class="btn btn-sm btn-outline-primary">
+                      <i class="bi bi-eye me-1"></i> View
+                    </a>
+                    
+                    <!-- Debug button to show product content -->
+                    <button *ngIf="showDebug && item.product" 
+                            class="btn btn-sm btn-outline-warning"
+                            (click)="showProductDebug(item.product)">
+                      <i class="bi bi-bug me-1"></i> Inspect
+                    </button>
+                    
+                    <!-- Review button - now navigates to review page -->
+                    <button *ngIf="item.product && order.status === 'delivered'"
+                            class="btn btn-sm btn-outline-primary" 
+                            (click)="navigateToReviewPage(order._id, item.product)">
+                      <i class="bi bi-star me-1"></i> Review
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
+    </div>
 
-      <!-- Order Summary -->
-      <div class="col-lg-4">
-        <div class="card shadow-sm mb-4">
-          <div class="card-body">
-            <h4 class="mb-4">Order Summary</h4>
-            <div class="d-flex justify-content-between mb-2">
-              <span>Subtotal</span>
-              <span>${{ order.subtotal.toFixed(2) }}</span>
-            </div>
-            <div class="d-flex justify-content-between mb-2">
-              <span>Service Fee (10%)</span>
-              <span>${{ order.serviceFee.toFixed(2) }}</span>
-            </div>
-            <hr>
-            <div class="d-flex justify-content-between mb-4">
-              <span class="fw-bold">Total</span>
-              <span class="fw-bold fs-5">${{ order.totalAmount.toFixed(2) }}</span>
-            </div>
-
-            <h5 class="mb-3">Delivery Information</h5>
-            <div class="mb-4">
-              <p class="mb-1"><strong>Delivery Date:</strong> {{ order.deliveryDate }}</p>
-              <p class="mb-1"><strong>Delivery Time:</strong> {{ order.deliveryTime }}</p>
-              <p class="mb-1"><strong>Address:</strong> {{ order.deliveryAddress }}</p>
-              <p class="mb-0" *ngIf="order.deliveryNotes"><strong>Notes:</strong> {{ order.deliveryNotes }}</p>
-            </div>
-
-            <h5 class="mb-3">Payment Information</h5>
-            <div>
-              <p class="mb-1"><strong>Payment Method:</strong> {{ order.paymentMethod }}</p>
-              <p class="mb-0"><strong>Payment Status:</strong>
-                <span class="badge" [ngClass]="order.paymentStatus === 'paid' ? 'bg-success' : 'bg-warning'">
-                  {{ order.paymentStatus | titlecase }}
+    <!-- Status history -->
+    <div class="card shadow-sm mb-4" *ngIf="order.statusHistory && order.statusHistory.length > 0">
+      <div class="card-header bg-white">
+        <h5 class="mb-0">Order Status History</h5>
+      </div>
+      <div class="card-body">
+        <ul class="list-group">
+          <li *ngFor="let statusItem of order.statusHistory" class="list-group-item">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <span class="badge me-2" [ngClass]="getStatusBadgeClass(statusItem.status)">
+                  {{ getStatusLabel(statusItem.status) }}
                 </span>
-              </p>
+              </div>
+              <small class="text-muted">{{ formatDate(statusItem.timestamp.toString()) }}</small>
             </div>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Order actions -->
+    <div *ngIf="order.status === 'pending' || order.status === 'received'" class="card shadow-sm mb-4">
+      <div class="card-body">
+        <div class="d-flex justify-content-end">
+          <button class="btn btn-danger" (click)="openCancelDialog()">
+            <i class="bi bi-x-circle me-1"></i> Cancel Order
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Cancel order confirmation modal -->
+  <div class="modal fade" [ngClass]="{'show d-block': isCancelDialogOpen, 'd-none': !isCancelDialogOpen}">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Cancel Order</h5>
+          <button type="button" class="btn-close" (click)="closeCancelDialog()"></button>
+        </div>
+        <div class="modal-body">
+          <p>Are you sure you want to cancel this order? This action cannot be undone.</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="closeCancelDialog()">Keep Order</button>
+          <button type="button" class="btn btn-danger" [disabled]="isCancelling" (click)="cancelOrder()">
+            <span *ngIf="!isCancelling">Cancel Order</span>
+            <span *ngIf="isCancelling">
+              <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+              Cancelling...
+            </span>
+          </button>
+        </div>
+      </div>
+    </div>
+    <div class="modal-backdrop fade show"></div>
+  </div>
+
+  <!-- Debug modal for product inspection -->
+  <div *ngIf="debugModalOpen" class="modal d-block">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Product Debug Info</h5>
+          <button type="button" class="btn-close" (click)="closeDebugModal()"></button>
+        </div>
+        <div class="modal-body">
+          <div *ngIf="debugProduct">
+            <h6>Object Properties</h6>
+            <table class="table table-bordered table-sm">
+              <tbody>
+                <tr>
+                  <th style="width: 100px;">_id</th>
+                  <td>
+                    <span [ngClass]="debugProduct._id ? 'text-success' : 'text-danger'">
+                      {{ debugProduct._id || 'MISSING' }}
+                    </span>
+                    <span *ngIf="debugProduct._id" class="ms-2 badge bg-info">{{ typeof debugProduct._id }}</span>
+                  </td>
+                </tr>
+                <tr>
+                  <th>name</th>
+                  <td>{{ debugProduct.name || 'MISSING' }}</td>
+                </tr>
+                <tr>
+                  <th>images</th>
+                  <td>
+                    <span *ngIf="!debugProduct.images">MISSING</span>
+                    <span *ngIf="debugProduct.images">Array with {{ debugProduct.images?.length || 0 }} items</span>
+                  </td>
+                </tr>
+                <tr>
+                  <th>Keys</th>
+                  <td>{{ objectKeys(debugProduct).join(', ') }}</td>
+                </tr>
+              </tbody>
+            </table>
+            
+            <h6>Raw Object</h6>
+            <pre class="bg-light p-2" style="max-height: 300px; overflow-y: auto;">{{ debugProduct | json }}</pre>
           </div>
         </div>
       </div>
     </div>
-  </ng-container>
+    <div class="modal-backdrop fade show"></div>
+  </div>
 </div>

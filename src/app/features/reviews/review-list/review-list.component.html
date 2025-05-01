@@ -1,0 +1,165 @@
+<!-- src/app/features/reviews/review-list/review-list.component.html -->
+<div class="review-list-container">
+  <!-- Loading indicator -->
+  <div *ngIf="isLoading" class="text-center py-4">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading reviews...</span>
+    </div>
+    <p class="mt-3">Loading reviews...</p>
+  </div>
+
+  <!-- Error message -->
+  <div *ngIf="error && !isLoading" class="alert alert-danger">
+    {{ error }}
+  </div>
+
+  <!-- Review content -->
+  <div *ngIf="!isLoading && !error">
+    <!-- No reviews -->
+    <div *ngIf="reviews.length === 0" class="text-center py-4">
+      <div class="no-reviews">
+        <i class="bi bi-star display-1 text-muted"></i>
+        <h4 class="mt-3">No Reviews Yet</h4>
+        <p class="text-muted">Be the first to review this product!</p>
+      </div>
+    </div>
+
+    <!-- Reviews summary -->
+    <div *ngIf="reviews.length > 0" class="card shadow-sm mb-4">
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-4 text-center border-end">
+            <div class="reviews-summary">
+              <h3 class="display-4 fw-bold">{{ averageRating.toFixed(1) }}</h3>
+              <div class="rating-stars mb-2">
+                <i *ngFor="let star of [1, 2, 3, 4, 5]" class="bi" 
+                   [ngClass]="star <= averageRating ? 'bi-star-fill' : (star <= averageRating + 0.5 ? 'bi-star-half' : 'bi-star')"></i>
+              </div>
+              <p class="text-muted">{{ totalReviews }} {{ totalReviews === 1 ? 'review' : 'reviews' }}</p>
+            </div>
+          </div>
+          <div class="col-md-8">
+            <div class="rating-bars ps-md-4">
+              <div *ngFor="let rating of [5, 4, 3, 2, 1]" class="rating-bar d-flex align-items-center mb-2">
+                <div class="rating-label me-3">{{ rating }} <i class="bi bi-star-fill"></i></div>
+                <div class="progress flex-grow-1">
+                  <div class="progress-bar bg-warning" [style.width.%]="getRatingPercentage(rating)"></div>
+                </div>
+                <div class="rating-count ms-3">{{ getRatingCount(rating) }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Review list -->
+    <div *ngIf="reviews.length > 0">
+      <div class="review-item card shadow-sm mb-3" *ngFor="let review of reviews">
+        <div class="card-body">
+          <!-- Review header -->
+          <div class="d-flex justify-content-between align-items-start mb-3">
+            <div class="d-flex align-items-center">
+              <div class="reviewer-avatar me-3">
+                <img [src]="productService.getImageUrl(review.user.profileImage)" 
+                     alt="{{ review.user.fullName }}" 
+                     class="rounded-circle" 
+                     style="width: 50px; height: 50px; object-fit: cover;">
+              </div>
+              <div>
+                <h5 class="mb-0">{{ review.user.fullName }}</h5>
+                <div class="rating-stars">
+                  <i *ngFor="let star of [1, 2, 3, 4, 5]" class="bi" 
+                     [ngClass]="star <= review.rating ? 'bi-star-fill' : 'bi-star'"></i>
+                </div>
+                <small class="text-muted">{{ formatDate(review.createdAt) }}</small>
+              </div>
+            </div>
+            
+            <!-- Action buttons for own reviews -->
+            <div *ngIf="isOwnReview(review)" class="review-actions">
+              <div class="btn-group">
+                <a [routerLink]="['/user/reviews/edit', review._id]" class="btn btn-sm btn-outline-primary">
+                  <i class="bi bi-pencil"></i>
+                </a>
+                <button class="btn btn-sm btn-outline-danger" (click)="openDeleteDialog(review._id)">
+                  <i class="bi bi-trash"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Review content -->
+          <div class="review-content mb-3">
+            <p>{{ review.comment }}</p>
+          </div>
+          
+          <!-- Review images -->
+          <div *ngIf="review.reviewImages && review.reviewImages.length > 0" class="review-images mb-3">
+            <div class="row g-2">
+              <div *ngFor="let image of review.reviewImages" class="col-md-2 col-sm-3 col-4">
+                <div class="review-image">
+                  <img [src]="productService.getImageUrl(image)" 
+                       alt="Review image" 
+                       class="img-thumbnail"
+                       style="width: 100%; height: 100px; object-fit: cover;">
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Pagination -->
+      <div *ngIf="totalPages > 1" class="d-flex justify-content-center mt-4">
+        <nav aria-label="Review pagination">
+          <ul class="pagination">
+            <li class="page-item" [ngClass]="{'disabled': currentPage === 1}">
+              <button class="page-link" (click)="changePage(currentPage - 1)" [disabled]="currentPage === 1">
+                <i class="bi bi-chevron-left"></i>
+              </button>
+            </li>
+            <li *ngFor="let page of getPagesArray(); let i = index" 
+                class="page-item" 
+                [ngClass]="{'active': currentPage === i + 1}">
+              <button class="page-link" (click)="changePage(i + 1)">{{ i + 1 }}</button>
+            </li>
+            <li class="page-item" [ngClass]="{'disabled': currentPage === totalPages}">
+              <button class="page-link" (click)="changePage(currentPage + 1)" [disabled]="currentPage === totalPages">
+                <i class="bi bi-chevron-right"></i>
+              </button>
+            </li>
+          </ul>
+        </nav>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete review confirmation modal -->
+  <div class="modal fade" [ngClass]="{'show d-block': isDeleteDialogOpen, 'd-none': !isDeleteDialogOpen}">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Delete Review</h5>
+          <button type="button" class="btn-close" (click)="closeDeleteDialog()"></button>
+        </div>
+        <div class="modal-body">
+          <p>Are you sure you want to delete this review? This action cannot be undone.</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="closeDeleteDialog()">Cancel</button>
+          <button type="button" class="btn btn-danger" [disabled]="isDeleting" (click)="deleteReview()">
+            <span *ngIf="!isDeleting">Delete</span>
+            <span *ngIf="isDeleting">
+              <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+              Deleting...
+            </span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Modal backdrop -->
+  <div *ngIf="isDeleteDialogOpen" class="modal-backdrop fade show"></div>
+</div>

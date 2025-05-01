@@ -7,19 +7,22 @@ import { RouterModule } from '@angular/router';
 import { HeaderComponent } from '../shared/components/header/header.component';
 import { FooterComponent } from '../shared/components/footer/footer.component';
 import { NgIf } from '@angular/common';
+import { ToastComponent } from '../shared/components/toast/toast.component';
+import { ChatService } from '../core/services/chat.service';
 
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css'],
   standalone: true,
-  imports: [RouterModule, HeaderComponent, FooterComponent, NgIf]
+  imports: [RouterModule, HeaderComponent, FooterComponent, NgIf, ToastComponent]
 })
 export class AppComponent implements OnInit {
   constructor(
     private router: Router,
     private authService: AuthService,
-    private tokenService: TokenService
+    private tokenService: TokenService,
+    private chatService: ChatService
   ) {}
 
   isResetPasswordRoute(): boolean {
@@ -40,6 +43,9 @@ export class AppComponent implements OnInit {
   ngOnInit(): void {
     // Check if user is already logged in
     this.checkAuth();
+    
+    // Initialize socket connection for real-time messaging
+    this.chatService.initializeSocket();
     
     // Listen for route changes to scroll to top
     this.router.events.pipe(

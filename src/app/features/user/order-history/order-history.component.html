@@ -1,9 +1,16 @@
-<!-- src/app/features/user/order-history/order-history.component.html -->
+<!-- src/app/features/user/order-history/order-history.component.html (Updated) -->
 <div class="container py-5">
     <div class="row mb-4">
         <div class="col-12">
-            <h2 class="fw-bold">Order History</h2>
-            <p class="text-muted">Track and manage your orders</p>
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2 class="fw-bold mb-0">Order History</h2>
+                    <p class="text-muted">Track and manage your orders</p>
+                </div>
+                <a routerLink="/user/reviews" class="btn btn-outline-primary">
+                    <i class="bi bi-star me-1"></i> My Reviews
+                </a>
+            </div>
         </div>
     </div>
 
@@ -176,6 +183,7 @@
                                                     <th scope="col" class="text-center">Price</th>
                                                     <th scope="col" class="text-center">Quantity</th>
                                                     <th scope="col" class="text-end">Subtotal</th>
+                                                    <th *ngIf="order.status === 'delivered'" scope="col" class="text-center">Actions</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -191,11 +199,24 @@
                                                             </div>
                                                         </div>
                                                     </td>
-                                                    <td class="text-center align-middle">${{ item.price.toFixed(2) }}
-                                                    </td>
+                                                    <td class="text-center align-middle">${{ item.price.toFixed(2) }}</td>
                                                     <td class="text-center align-middle">{{ item.quantity }}</td>
                                                     <td class="text-end align-middle">${{ (item.price *
                                                         item.quantity).toFixed(2) }}</td>
+                                                    <td *ngIf="order.status === 'delivered'" class="text-center align-middle">
+                                                        <!-- Review button for delivered items -->
+                                                        <button *ngIf="item.product && item.product._id && canReviewProduct(item.product._id)"
+                                                                class="btn btn-sm btn-outline-primary"
+                                                                (click)="openReviewForm(order._id, item.product._id, item.product)">
+                                                            <i class="bi bi-star me-1"></i> Write Review
+                                                        </button>
+                                                        
+                                                        <!-- If already reviewed or cannot be reviewed -->
+                                                        <span *ngIf="item.product && item.product._id && !canReviewProduct(item.product._id)"
+                                                              class="badge bg-secondary">
+                                                            Already Reviewed
+                                                        </span>
+                                                    </td>
                                                 </tr>
                                             </tbody>
                                         </table>
@@ -207,6 +228,10 @@
                                     <a [routerLink]="['/user/orders', order._id]" class="btn btn-outline-primary me-2">
                                         View Details
                                     </a>
+                                    <button *ngIf="order.status === 'delivered'" class="btn btn-outline-primary me-2"
+                                            (click)="goToUserReviews()">
+                                        My Reviews
+                                    </button>
                                     <button *ngIf="order.status === 'pending'" class="btn btn-outline-danger me-2"
                                         (click)="cancelOrder(order._id)">
                                         Cancel Order
@@ -222,5 +247,27 @@
                 </div>
             </div>
         </div>
+    </div>
+    
+    <!-- Review Form Modal -->
+    <div *ngIf="showReviewForm" class="modal d-block">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Write a Review</h5>
+                    <button type="button" class="btn-close" (click)="closeReviewForm()"></button>
+                </div>
+                <div class="modal-body">
+                    <app-review-form
+                        [orderId]="selectedOrderId"
+                        [productId]="selectedProductId"
+                        [product]="selectedProduct"
+                        (reviewSubmitted)="onReviewSubmitted($event)"
+                        (cancelled)="closeReviewForm()"
+                    ></app-review-form>
+                </div>
+            </div>
+        </div>
+        <div class="modal-backdrop fade show"></div>
     </div>
 </div>
