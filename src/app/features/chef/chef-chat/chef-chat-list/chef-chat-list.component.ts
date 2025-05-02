@@ -1,19 +1,19 @@
-// src/app/features/chat/chat-list/chat-list.component.ts
+// src/app/features/chef/chef-chat/chef-chat-list/chef-chat-list.component.ts
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { Subscription } from 'rxjs';
-import { Chat, ChatService } from '../../../core/services/chat.service';
-import { ProductService } from '../../../core/services/product.service';
-import { ToastService } from '../../../core/services/toast.service';
-import { TokenService } from '../../../core/auth/token.service';
-import { User } from '../../../core/models/chat.model';
+import { Chat, ChatService } from '../../../../core/services/chat.service';
+import { ProductService } from '../../../../core/services/product.service';
+import { ToastService } from '../../../../core/services/toast.service';
+import { TokenService } from '../../../../core/auth/token.service';
+import { User } from '../../../../core/models/chat.model';
 
 @Component({
-  selector: 'app-chat-list',
-  templateUrl: './chat-list.component.html',
-  styleUrls: ['./chat-list.component.css'],
+  selector: 'app-chef-chat-list',
+  templateUrl: './chef-chat-list.component.html',
+  styleUrls: ['./chef-chat-list.component.css'],
   standalone: true,
   imports: [
     CommonModule,
@@ -21,7 +21,7 @@ import { User } from '../../../core/models/chat.model';
     FormsModule
   ]
 })
-export class ChatListComponent implements OnInit, OnDestroy {
+export class ChefChatListComponent implements OnInit, OnDestroy {
   chats: Chat[] = [];
   isLoading = true;
   error: string | null = null;
@@ -78,7 +78,7 @@ export class ChatListComponent implements OnInit, OnDestroy {
   }
 
   openChat(chatId: string): void {
-    this.router.navigate(['/user/chats', chatId]);
+    this.router.navigate(['/chef/chats', chatId]);
   }
 
   // Open delete confirmation dialog
@@ -150,7 +150,7 @@ export class ChatListComponent implements OnInit, OnDestroy {
     return date.toLocaleDateString([], { month: 'short', day: 'numeric' });
   }
 
-  // Get other participant(s) in a chat (chefs)
+  // Get other participant(s) in a chat (customers)
   getOtherParticipants(chat: Chat): string {
     if (!chat.participants || chat.participants.length === 0) {
       return 'Unknown';
@@ -167,16 +167,16 @@ export class ChatListComponent implements OnInit, OnDestroy {
     return others.join(', ');
   }
 
-  // Get chef phone number if available
-  getChefPhone(chat: Chat): string | null {
+  // Get customer phone number if available
+  getCustomerPhone(chat: Chat): string | null {
     if (!chat.participants || chat.participants.length === 0) {
       return null;
     }
     
-    const chef = chat.participants.find((p: User) => p._id !== this.currentUserId);
+    const customer = chat.participants.find((p: User) => p._id !== this.currentUserId);
     
-    if (chef && chef.phone) {
-      return chef.phone;
+    if (customer && customer.phone) {
+      return customer.phone;
     }
     
     return null;
@@ -197,7 +197,7 @@ export class ChatListComponent implements OnInit, OnDestroy {
     return prefix + content;
   }
 
-  // Get participant avatar (chef)
+  // Get participant avatar (customer)
   getParticipantAvatar(chat: Chat): string {
     if (!chat.participants || chat.participants.length === 0) {
       return '';

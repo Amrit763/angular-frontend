@@ -80,12 +80,6 @@
   margin-right: 0.25rem;
 }
 
-/* Chef badge styling */
-.badge.chef-badge {
-  background-color: #28a745;
-  color: white;
-}
-
 /* Status badges */
 .badge.bg-warning {
   color: #212529;

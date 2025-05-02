@@ -1,0 +1,8 @@
+<!-- src/app/features/chef/chef-chat/chef-chat-notification.component.html -->
+<a routerLink="/chef/chats" class="position-relative">
+    <i class="bi bi-chat-dots fs-5"></i>
+    <span *ngIf="unreadCount > 0" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+      {{ unreadCount > 9 ? '9+' : unreadCount }}
+      <span class="visually-hidden">unread customer messages</span>
+    </span>
+  </a>

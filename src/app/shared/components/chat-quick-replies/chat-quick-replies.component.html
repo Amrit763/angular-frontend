@@ -1,0 +1,21 @@
+<!-- src/app/shared/components/chat-quick-replies/chat-quick-replies.component.html -->
+<div class="quick-replies-container mt-2">
+  <button class="btn btn-sm btn-outline-secondary" (click)="toggleExpanded()">
+    <i class="bi" [ngClass]="expanded ? 'bi-lightning-charge-fill' : 'bi-lightning-charge'"></i>
+    {{ expanded ? 'Hide Quick Replies' : 'Quick Replies' }}
+  </button>
+  
+  <div *ngIf="expanded" class="quick-replies-content mt-2">
+    <div *ngFor="let category of categories" class="mb-3">
+      <h6 class="quick-reply-category">{{ category.name }}</h6>
+      <div class="quick-replies-grid">
+        <button 
+          *ngFor="let reply of category.replies" 
+          class="btn btn-sm btn-light quick-reply-item"
+          (click)="selectReply(reply)">
+          {{ reply }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

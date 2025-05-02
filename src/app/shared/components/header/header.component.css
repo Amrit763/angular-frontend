@@ -90,6 +90,10 @@
   font-size: 1.3rem;
   padding: 5px 15px;
 }
+.logo-img {
+  height: 60px;
+  width: auto;
+}
 
 .cart-badge {
   position: absolute;

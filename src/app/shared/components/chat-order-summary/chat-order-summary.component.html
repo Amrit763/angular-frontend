@@ -1,0 +1,113 @@
+<!-- src/app/shared/components/chat-order-summary/chat-order-summary.component.html -->
+<div class="order-summary-card card mb-3" *ngIf="order">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <h5 class="mb-0">
+      <i class="bi bi-bag me-2"></i>
+      Order #{{ order._id.slice(-8) }}
+    </h5>
+    <div>
+      <span class="badge me-2" [ngClass]="getStatusClass()">{{ order.status }}</span>
+      <button class="btn btn-sm btn-outline-secondary" (click)="toggleCollapsed()" *ngIf="collapsed !== undefined">
+        <i class="bi" [ngClass]="collapsed ? 'bi-chevron-down' : 'bi-chevron-up'"></i>
+      </button>
+    </div>
+  </div>
+  
+  <div [ngClass]="{'collapse': collapsed}">
+    <div class="card-body">
+      <div class="order-items mb-3">
+        <h6 class="mb-2">Order Items</h6>
+        <div class="table-responsive">
+          <table class="table table-sm">
+            <thead>
+              <tr>
+                <th>Item</th>
+                <th class="text-center">Qty</th>
+                <th class="text-end">Price</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of order.items">
+                <td>
+                  {{ item.name }}
+                  <div *ngIf="item.options && item.options.length > 0" class="text-muted small">
+                    <span *ngFor="let option of item.options; let last = last">
+                      {{ option.name }}{{ !last ? ', ' : '' }}
+                    </span>
+                  </div>
+                </td>
+                <td class="text-center">{{ item.quantity }}</td>
+                <td class="text-end">{{ formatPrice(item.price * item.quantity) }}</td>
+              </tr>
+            </tbody>
+            <tfoot>
+              <tr>
+                <td colspan="2" class="text-end">Subtotal:</td>
+                <td class="text-end">{{ formatPrice(order.subtotal) }}</td>
+              </tr>
+              <tr *ngIf="order.tax > 0">
+                <td colspan="2" class="text-end">Tax:</td>
+                <td class="text-end">{{ formatPrice(order.tax) }}</td>
+              </tr>
+              <tr *ngIf="order.deliveryFee > 0">
+                <td colspan="2" class="text-end">Delivery Fee:</td>
+                <td class="text-end">{{ formatPrice(order.deliveryFee) }}</td>
+              </tr>
+              <tr *ngIf="order.tip > 0">
+                <td colspan="2" class="text-end">Tip:</td>
+                <td class="text-end">{{ formatPrice(order.tip) }}</td>
+              </tr>
+              <tr>
+                <td colspan="2" class="text-end fw-bold">Total:</td>
+                <td class="text-end fw-bold">{{ formatPrice(order.total) }}</td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+      
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <h6 class="mb-2">Delivery Information</h6>
+          <div class="card card-body bg-light p-3">
+            <div *ngIf="order.deliveryAddress; else pickup">
+              <p class="mb-1">
+                <strong>{{ order.user?.fullName }}</strong>
+              </p>
+              <p class="mb-1">{{ order.deliveryAddress.street }}</p>
+              <p class="mb-1">
+                {{ order.deliveryAddress.city }}, {{ order.deliveryAddress.state }} 
+                {{ order.deliveryAddress.postalCode }}
+              </p>
+              <p class="mb-1" *ngIf="order.deliveryAddress.instructions">
+                <strong>Instructions:</strong> {{ order.deliveryAddress.instructions }}
+              </p>
+            </div>
+            <ng-template #pickup>
+              <p class="mb-1"><strong>Pickup Order</strong></p>
+              <p class="mb-1">{{ order.user?.fullName }}</p>
+              <p class="mb-0">Pickup from restaurant</p>
+            </ng-template>
+          </div>
+        </div>
+        
+        <div class="col-md-6 mb-3">
+          <h6 class="mb-2">Order Details</h6>
+          <div class="card card-body bg-light p-3">
+            <p class="mb-1">
+              <strong>Order Date:</strong> {{ formatDate(order.createdAt) }}
+            </p>
+            <p class="mb-1">
+              <strong>Payment Method:</strong> 
+              {{ order.paymentMethod === 'card' ? 'Credit Card' : 'Cash' }}
+            </p>
+            <p class="mb-0" *ngIf="order.specialInstructions">
+              <strong>Special Instructions:</strong><br>
+              {{ order.specialInstructions }}
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

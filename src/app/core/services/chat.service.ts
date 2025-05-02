@@ -52,11 +52,14 @@ export class ChatService {
   private _activeChat = new BehaviorSubject<Chat | null>(null);
   private _chats = new BehaviorSubject<Chat[]>([]);
   private _unreadTotal = new BehaviorSubject<number>(0);
+  private _typingUsers = new BehaviorSubject<{[chatId: string]: string[]}>({});
+  private typingTimeout: any = null;
   
   // Expose observables
   public activeChat$ = this._activeChat.asObservable();
   public chats$ = this._chats.asObservable();
   public unreadTotal$ = this._unreadTotal.asObservable();
+  public typingUsers$ = this._typingUsers.asObservable();
 
   constructor(
     private http: HttpClient,
@@ -147,6 +150,30 @@ export class ChatService {
     // Successfully joined a chat
     this.socket.on('chatJoined', ({ chatId }) => {
       console.log(`Successfully joined chat ${chatId}`);
+    });
+
+    // User typing indicator events
+    this.socket.on('userTyping', ({ chatId, userId, userName }) => {
+      const currentTyping = this._typingUsers.value;
+      
+      // Check if user is already in the typing list
+      if (!currentTyping[chatId]) {
+        currentTyping[chatId] = [];
+      }
+      
+      if (!currentTyping[chatId].includes(userName)) {
+        currentTyping[chatId].push(userName);
+        this._typingUsers.next({ ...currentTyping });
+        
+        // Automatically remove user from typing after 3 seconds of inactivity
+        setTimeout(() => {
+          this.removeTypingUser(chatId, userName);
+        }, 3000);
+      }
+    });
+
+    this.socket.on('userStoppedTyping', ({ chatId, userId, userName }) => {
+      this.removeTypingUser(chatId, userName);
     });
   }
 
@@ -317,6 +344,80 @@ export class ChatService {
   // Create chat channels for an order
   createOrderChat(orderId: string): Observable<{success: boolean, message: string}> {
     return this.http.post<{success: boolean, message: string}>(`${this.apiUrl}/order/${orderId}`, {});
+  }
+
+  /**
+   * Send typing indicator to other users in chat
+   * @param chatId The ID of the chat
+   * @param isTyping Whether the user is typing or has stopped typing
+   */
+  // src/app/core/services/chat.service.ts
+
+// Fix the sendTypingIndicator method
+sendTypingIndicator(chatId: string, isTyping: boolean): void {
+  if (!this.socket) return;
+  
+  if (isTyping) {
+    // Send typing event
+    this.socket.emit('typing', { chatId });
+    
+    // Clear existing timeout and set a new one
+    if (this.typingTimeout) {
+      clearTimeout(this.typingTimeout);
+    }
+    
+    // Stop typing after 3 seconds of inactivity
+    this.typingTimeout = setTimeout(() => {
+      if (this.socket) { // Add null check here
+        this.socket.emit('stopTyping', { chatId });
+      }
+      this.typingTimeout = null;
+    }, 3000);
+  } else if (!isTyping && this.typingTimeout) {
+    // Send stop typing event
+    if (this.socket) { // Add null check here
+      this.socket.emit('stopTyping', { chatId });
+    }
+    clearTimeout(this.typingTimeout);
+    this.typingTimeout = null;
+  }
+}
+  /**
+   * Get users currently typing in a specific chat
+   * @param chatId The ID of the chat
+   * @returns Array of user names who are typing
+   */
+  getTypingUsers(chatId: string): string[] {
+    const currentTyping = this._typingUsers.value;
+    return currentTyping[chatId] || [];
+  }
+
+  /**
+   * Remove a user from the typing list
+   * @param chatId The ID of the chat
+   * @param userName The name of the user to remove
+   */
+  private removeTypingUser(chatId: string, userName: string): void {
+    const currentTyping = this._typingUsers.value;
+    
+    if (currentTyping[chatId]) {
+      currentTyping[chatId] = currentTyping[chatId].filter(name => name !== userName);
+      
+      // If no users are typing in this chat, remove the chat entry
+      if (currentTyping[chatId].length === 0) {
+        delete currentTyping[chatId];
+      }
+      
+      this._typingUsers.next({ ...currentTyping });
+    }
+  }
+
+  /**
+   * Get socket instance (for use in other services)
+   * @returns The socket instance
+   */
+  getSocket(): Socket | null {
+    return this.socket;
   }
 
   // Disconnect socket

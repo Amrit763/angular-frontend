@@ -1,21 +1,23 @@
-// src/app/features/chat/chat-detail/chat-detail.component.ts
+// src/app/features/chef/chef-chat/chef-chat-detail/chef-chat-detail.component.ts
 import { Component, OnInit, OnDestroy, ViewChild, ElementRef, AfterViewChecked, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Subscription } from 'rxjs';
-import { ChatService } from '../../../core/services/chat.service';
-import { ProductService } from '../../../core/services/product.service';
-import { ToastService } from '../../../core/services/toast.service';
-import { TokenService } from '../../../core/auth/token.service';
-import { Chat, ChatMessage, User } from '../../../core/models/chat.model';
-import { ChatQuickRepliesComponent } from '../../../shared/components/chat-quick-replies/chat-quick-replies.component';
-import { ChatOrderSummaryComponent } from '../../../shared/components/chat-order-summary/chat-order-summary.component';
+import { ChatService } from '../../../../core/services/chat.service';
+import { ProductService } from '../../../../core/services/product.service';
+import { OrderService } from '../../../../core/services/order.service';
+import { ToastService } from '../../../../core/services/toast.service';
+import { TokenService } from '../../../../core/auth/token.service';
+import { Chat, ChatMessage, User } from '../../../../core/models/chat.model';
+import { OrderStatus } from '../../../../core/models/order.model';
+import { ChatQuickRepliesComponent } from '../../../../shared/components/chat-quick-replies/chat-quick-replies.component';
+import { ChatOrderSummaryComponent } from '../../../../shared/components/chat-order-summary/chat-order-summary.component';
 
 @Component({
-  selector: 'app-chat-detail',
-  templateUrl: './chat-detail.component.html',
-  styleUrls: ['./chat-detail.component.css'],
+  selector: 'app-chef-chat-detail',
+  templateUrl: './chef-chat-detail.component.html',
+  styleUrls: ['./chef-chat-detail.component.css'],
   standalone: true,
   imports: [
     CommonModule,
@@ -25,7 +27,7 @@ import { ChatOrderSummaryComponent } from '../../../shared/components/chat-order
     ChatOrderSummaryComponent
   ]
 })
-export class ChatDetailComponent implements OnInit, OnDestroy, AfterViewChecked {
+export class ChefChatDetailComponent implements OnInit, OnDestroy, AfterViewChecked {
   @ViewChild('chatContainer') chatContainer!: ElementRef;
   @ViewChild('messageInput') messageInput!: ElementRef;
   
@@ -59,6 +61,7 @@ export class ChatDetailComponent implements OnInit, OnDestroy, AfterViewChecked 
     private fb: FormBuilder,
     private chatService: ChatService,
     public productService: ProductService,
+    private orderService: OrderService,
     private toastService: ToastService,
     private tokenService: TokenService
   ) { }
@@ -74,7 +77,7 @@ export class ChatDetailComponent implements OnInit, OnDestroy, AfterViewChecked 
     
     // Subscribe to active chat observable
     this.subscriptions.push(
-      this.chatService.activeChat$.subscribe(chat => {
+      this.chatService.activeChat$.subscribe((chat: Chat | null) => {
         // Determine if new messages have been added
         const hadChat = !!this.chat;
         const oldMessageCount = hadChat && this.chat ? this.chat.messages.length : 0;
@@ -88,8 +91,7 @@ export class ChatDetailComponent implements OnInit, OnDestroy, AfterViewChecked 
         // 3. We sent a message (lastMessageCount will be incremented when we send)
         if (!hadChat || 
             (chat && oldMessageCount < chat.messages.length && this.isScrolledToBottom()) || 
-            (chat && this.lastMessageCount < chat.messages.length && 
-              chat.messages.length > 0 && this.isOwnMessage(chat.messages[chat.messages.length - 1]))) {
+            (chat && this.lastMessageCount < chat.messages.length && this.isOwnMessage(chat.messages[chat.messages.length - 1]))) {
           this.shouldScrollToBottom = true;
         }
         
@@ -100,12 +102,11 @@ export class ChatDetailComponent implements OnInit, OnDestroy, AfterViewChecked 
     );
     
     // Subscribe to typing indicators
-    this.typingSubscription = this.chatService.typingUsers$.subscribe(typingUsers => {
+    this.typingSubscription = this.chatService.typingUsers$.subscribe((typingUsers: Record<string, string[]>) => {
       if (this.chatId && typingUsers[this.chatId]) {
         // Filter out current user from typing users list
-        const user = this.tokenService.getUser();
-        this.typingUsers = typingUsers[this.chatId].filter(userName => 
-          user && userName !== user.fullName
+        this.typingUsers = typingUsers[this.chatId].filter((userName: string) => 
+          userName !== this.tokenService.getUser()?.fullName
         );
       } else {
         this.typingUsers = [];
@@ -186,8 +187,7 @@ export class ChatDetailComponent implements OnInit, OnDestroy, AfterViewChecked 
       return;
     }
     
-    const messageControl = this.messageForm.get('message');
-    let message = messageControl?.value || '';
+    let message = this.messageForm.get('message')?.value;
     
     // Check for special commands
     if (message === '/order') {
@@ -205,7 +205,7 @@ export class ChatDetailComponent implements OnInit, OnDestroy, AfterViewChecked 
     this.lastMessageCount++;
     
     this.chatService.sendMessage(this.chatId, message).subscribe({
-      next: (response) => {
+      next: (response: any) => {
         // Successfully sent - clear form
         this.messageForm.reset();
         this.sending = false;
@@ -216,7 +216,7 @@ export class ChatDetailComponent implements OnInit, OnDestroy, AfterViewChecked 
           this.messageInput.nativeElement.style.height = 'auto';
         }
       },
-      error: (err) => {
+      error: (err: any) => {
         this.toastService.showError(err.message || 'Failed to send message');
         this.sending = false;
         
@@ -247,6 +247,86 @@ export class ChatDetailComponent implements OnInit, OnDestroy, AfterViewChecked 
     if (this.messageInput) {
       this.messageInput.nativeElement.focus();
     }
+  }
+
+  // Update order status
+  updateOrderStatus(): void {
+    if (!this.chat || !this.chat.order) {
+      return;
+    }
+    
+    const nextStatus = this.getNextOrderStatus();
+    if (!nextStatus) {
+      return;
+    }
+    
+    this.orderService.updateOrderStatus(this.chat.order._id, nextStatus).subscribe({
+      next: (response: any) => {
+        if (response.success) {
+          // Update order in chat
+          if (this.chat) {
+            this.chat.order = response.order;
+            
+            // Create a status update message
+            const statusLabel = this.getOrderStatus();
+            const statusMessages: Record<string, string> = {
+              'Received': 'I\'ve received your order and will start preparing it soon!',
+              'In Progress': 'I\'ve started preparing your order. It should be ready in about 15-20 minutes.',
+              'Ready for Pickup': 'Great news! Your order is ready for pickup or delivery.',
+              'Delivered': 'Your order has been delivered. Enjoy your meal! Please let me know if everything is to your satisfaction.'
+            };
+            
+            const statusMessage = statusMessages[statusLabel] || 
+              `Your order status has been updated to: ${statusLabel}`;
+            
+            // Send the automated status update message
+            this.chatService.sendMessage(this.chatId, statusMessage).subscribe(
+              () => {
+                this.toastService.showSuccess('Order status updated and customer notified');
+                this.shouldScrollToBottom = true;
+              },
+              (err: any) => {
+                console.error('Error sending status message:', err);
+                this.toastService.showSuccess('Order status updated but failed to notify customer');
+              }
+            );
+          }
+        } else {
+          this.toastService.showError(response.message || 'Failed to update order status');
+        }
+      },
+      error: (err: any) => {
+        this.toastService.showError(err.message || 'Failed to update order status');
+      }
+    });
+  }
+
+  // Get next order status
+  getNextOrderStatus(): OrderStatus | null {
+    if (!this.chat || !this.chat.order) {
+      return null;
+    }
+    
+    const currentStatus = this.chat.order.status;
+    
+    // Define status flow
+    const statusFlow: Record<string, OrderStatus | null> = {
+      'Pending': 'received' as OrderStatus,
+      'Received': 'in_progress' as OrderStatus,
+      'In Progress': 'ready' as OrderStatus,
+      'Ready for Pickup': 'delivered' as OrderStatus
+    };
+    
+    return statusFlow[currentStatus] || null;
+  }
+
+  // Get order status label
+  getOrderStatus(): string {
+    if (!this.chat || !this.chat.order) {
+      return 'Unknown';
+    }
+    
+    return this.chat.order.status;
   }
 
   // Check if message is from current user
@@ -320,48 +400,16 @@ export class ChatDetailComponent implements OnInit, OnDestroy, AfterViewChecked 
     return '';
   }
 
-  // Get participant ID for role determination
-  getParticipantId(): string {
-    if (!this.chat || !this.chat.participants || this.chat.participants.length === 0) {
-      return '';
-    }
-    
-    const other = this.chat.participants.find((p: User) => p._id !== this.currentUserId);
-    
-    if (other) {
-      return other._id;
-    }
-    
-    return '';
-  }
-
-  // Get participant role (e.g., "Chef" or "Customer")
-  getParticipantRole(participantId: string): string {
-    if (!this.chat || !participantId) return '';
-    
-    // Check if participant is related to the order's chef
-    if (this.chat.order && this.chat.order.chef && this.chat.order.chef._id === participantId) {
-      return 'Chef';
-    }
-    
-    // Check if participant is the order's customer
-    if (this.chat.order && this.chat.order.user && this.chat.order.user._id === participantId) {
-      return 'Customer';
-    }
-    
-    return '';
-  }
-
-  // Get chef phone number if available
-  getChefPhone(): string | null {
+  // Get customer phone number if available
+  getCustomerPhone(): string | null {
     if (!this.chat || !this.chat.participants) {
       return null;
     }
     
-    const chef = this.chat.participants.find((p: User) => p._id !== this.currentUserId);
+    const customer = this.chat.participants.find((p: User) => p._id !== this.currentUserId);
     
-    if (chef && chef.phone) {
-      return chef.phone;
+    if (customer && customer.phone) {
+      return customer.phone;
     }
     
     return null;
@@ -396,13 +444,13 @@ export class ChatDetailComponent implements OnInit, OnDestroy, AfterViewChecked 
     this.isDeleting = true;
     
     this.chatService.deleteMessage(this.chatId, this.messageToDelete).subscribe({
-      next: (response) => {
+      next: (response: any) => {
         if (response.success) {
           this.toastService.showSuccess('Message deleted');
           
           // Update local chat if not updated by socket
           if (this.chat) {
-            this.chat.messages = this.chat.messages.filter(msg => msg._id !== this.messageToDelete);
+            this.chat.messages = this.chat.messages.filter((msg: ChatMessage) => msg._id !== this.messageToDelete);
           }
         } else {
           this.toastService.showError(response.message || 'Failed to delete message');
@@ -410,7 +458,7 @@ export class ChatDetailComponent implements OnInit, OnDestroy, AfterViewChecked 
         this.isDeleting = false;
         this.closeDeleteDialog();
       },
-      error: (err) => {
+      error: (err: any) => {
         this.toastService.showError(err.message || 'Failed to delete message');
         this.isDeleting = false;
         this.closeDeleteDialog();
@@ -429,13 +477,13 @@ export class ChatDetailComponent implements OnInit, OnDestroy, AfterViewChecked 
 
   // Navigate back to chats list
   backToChats(): void {
-    this.router.navigate(['/user/chats']);
+    this.router.navigate(['/chef/chats']);
   }
 
   // Navigate to order details
   viewOrder(): void {
     if (this.chat?.order) {
-      this.router.navigate(['/user/orders', this.chat.order._id]);
+      this.router.navigate(['/chef/orders', this.chat.order._id]);
     }
   }
 }

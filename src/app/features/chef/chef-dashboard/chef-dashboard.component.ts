@@ -8,6 +8,7 @@ import { TokenService } from '../../../core/auth/token.service';
 import { Order, OrderStatus } from '../../../core/models/order.model';
 import { Product } from '../../../core/models/product.model';
 import { User } from '../../../core/auth/user.model';
+import { Chat, ChatService } from '../../../core/services/chat.service';
 
 // Extend the User interface to include the rating property
 interface ChefUser extends User {
@@ -33,18 +34,23 @@ export class ChefDashboardComponent implements OnInit {
   error: string | null = null;
   updatingStatus: { [key: string]: boolean } = {};
   updatingAvailability: { [key: string]: boolean } = {};
+  recentChats: Chat[] = [];
+  currentUserId: string = '';
 
   constructor(
     private orderService: OrderService,
     public productService: ProductService,
-    private tokenService: TokenService
+    private tokenService: TokenService,
+    private chatService: ChatService
   ) { }
 
   ngOnInit(): void {
     // Cast to ChefUser to include the rating property
     this.chef = this.tokenService.getUser() as ChefUser;
+    this.currentUserId = this.chef?._id || '';
     this.loadRecentOrders();
     this.loadProducts();
+    this.loadRecentChats(); 
   }
 
   loadRecentOrders(): void {
@@ -57,6 +63,28 @@ export class ChefDashboardComponent implements OnInit {
       },
       error: (err) => {
         this.error = err.message || 'Failed to load orders';
+      }
+    });
+  }
+
+  // Load recent chats
+  loadRecentChats(): void {
+    this.chatService.getChats().subscribe({
+      next: (response) => {
+        if (response.success) {
+          // Get most recent 3 chats with messages
+          this.recentChats = response.chats
+            .filter(chat => chat.lastMessage) // Only include chats with messages
+            .sort((a, b) => {
+              const dateA = a.lastMessage ? new Date(a.lastMessage.createdAt).getTime() : new Date(a.createdAt).getTime();
+              const dateB = b.lastMessage ? new Date(b.lastMessage.createdAt).getTime() : new Date(b.createdAt).getTime();
+              return dateB - dateA;
+            })
+            .slice(0, 3);
+        }
+      },
+      error: (err) => {
+        console.error('Error loading chats:', err);
       }
     });
   }
@@ -211,5 +239,73 @@ export class ChefDashboardComponent implements OnInit {
     if (!this.products.length) return 0;
     
     return this.products.filter(product => product.isAvailable).length;
+  }
+
+  // Get other participants in a chat (customers)
+  getOtherParticipants(chat: Chat): string {
+    if (!chat.participants || chat.participants.length === 0) {
+      return 'Unknown';
+    }
+    
+    const others = chat.participants
+      .filter(p => p._id !== this.currentUserId)
+      .map(p => p.fullName);
+    
+    if (others.length === 0) {
+      return chat.participants[0].fullName; // Fallback to first participant if no others
+    }
+    
+    return others.join(', ');
+  }
+
+  // Get participant avatar (customer)
+  getParticipantAvatar(chat: Chat): string {
+    if (!chat.participants || chat.participants.length === 0) {
+      return '';
+    }
+    
+    const other = chat.participants.find(p => p._id !== this.currentUserId);
+    
+    if (other && other.profileImage) {
+      return other.profileImage;
+    }
+    
+    return '';
+  }
+
+  // Get last message preview text
+  getChatMessagePreview(chat: Chat): string {
+    if (!chat.lastMessage) {
+      return 'No messages yet';
+    }
+    
+    const isSender = chat.lastMessage.sender._id === this.currentUserId;
+    const prefix = isSender ? 'You: ' : '';
+    const content = chat.lastMessage.content.length > 30 
+      ? chat.lastMessage.content.substring(0, 30) + '...' 
+      : chat.lastMessage.content;
+    
+    return prefix + content;
+  }
+
+  // Format date for chat display
+  formatChatDate(dateString: string): string {
+    const date = new Date(dateString);
+    const now = new Date();
+    const yesterday = new Date(now);
+    yesterday.setDate(yesterday.getDate() - 1);
+    
+    // If date is today, show time only
+    if (date.toDateString() === now.toDateString()) {
+      return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    }
+    
+    // If date is yesterday, show "Yesterday"
+    if (date.toDateString() === yesterday.toDateString()) {
+      return 'Yesterday';
+    }
+    
+    // Otherwise show date
+    return date.toLocaleDateString([], { month: 'short', day: 'numeric' });
   }
 }

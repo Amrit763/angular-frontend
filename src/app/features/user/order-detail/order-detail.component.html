@@ -17,6 +17,14 @@
     </div>
   </div>
 
+<!-- Add this button in the order details page -->
+<button class="btn btn-primary" (click)="openChat()" *ngIf="order && chatId">
+  <i class="bi bi-chat-dots me-2"></i>
+  Chat with Chef
+</button>
+
+
+
   <!-- Debug info (only visible when debug is enabled) -->
   <div *ngIf="showDebug && order" class="alert alert-info mb-4">
     <h6>Debug Information:</h6>

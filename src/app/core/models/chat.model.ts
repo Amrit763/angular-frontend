@@ -1,6 +1,45 @@
 // src/app/core/models/chat.model.ts
-import { Order } from './order.model';
-import { User } from '../auth/user.model';
+export interface User {
+  _id: string;
+  fullName: string;
+  profileImage?: string;
+  email?: string;
+  phone?: string;
+  role?: string;
+}
+
+export interface Order {
+  _id: string;
+  user?: User;
+  chef?: User;
+  status: string;
+  items: OrderItem[];
+  subtotal: number;
+  tax: number;
+  deliveryFee: number;
+  tip: number;
+  total: number;
+  deliveryAddress?: DeliveryAddress;
+  specialInstructions?: string;
+  paymentMethod: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface OrderItem {
+  name: string;
+  quantity: number;
+  price: number;
+  options?: {name: string, value?: string}[];
+}
+
+export interface DeliveryAddress {
+  street: string;
+  city: string;
+  state: string;
+  postalCode: string;
+  instructions?: string;
+}
 
 export interface ChatMessage {
   _id: string;

@@ -1,0 +1,49 @@
+/* src/app/shared/components/chat-quick-replies/chat-quick-replies.component.css */
+.quick-replies-container {
+  overflow: hidden;
+}
+
+.quick-replies-content {
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  padding: 12px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.quick-reply-category {
+  font-size: 0.9rem;
+  color: #6c757d;
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+
+.quick-replies-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 8px;
+}
+
+.quick-reply-item {
+  text-align: left;
+  white-space: normal;
+  padding: 8px 12px;
+  border: 1px solid #dee2e6;
+  border-radius: 20px;
+  font-size: 0.875rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: all 0.2s ease;
+}
+
+.quick-reply-item:hover {
+  background-color: #e9ecef;
+  border-color: #ced4da;
+}
+
+/* Responsive adjustments */
+@media (max-width: 576px) {
+  .quick-replies-grid {
+    grid-template-columns: 1fr;
+  }
+}

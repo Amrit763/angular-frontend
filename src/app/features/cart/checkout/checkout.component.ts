@@ -197,8 +197,8 @@ export class CheckoutComponent implements OnInit, OnDestroy {
       next: (response) => {
         this.processing = false;
 
-        // Navigate to order confirmation
-        this.router.navigate(['/user/orders', response.order._id]);
+        // Navigate to order success page instead of order details
+        this.router.navigate(['/cart/success', response.order._id]);
       },
       error: (err) => {
         this.processing = false;

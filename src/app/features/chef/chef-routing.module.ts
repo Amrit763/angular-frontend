@@ -1,4 +1,4 @@
-// src/app/features/chef/chef-routing.module.ts
+// src/app/features/chef/chef-routing.module.ts (updated with chat routes)
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { AuthGuard } from '../../core/auth/auth.guard';
@@ -9,6 +9,8 @@ import { ProductListComponent } from './product-list/product-list.component';
 import { ProductDetailsComponent } from './product-details/product-details.component';
 import { ChefOrderManagementComponent } from './chef-order-management/chef-order-management.component';
 import { ChefOrderDetailComponent } from './chef-order-detail/chef-order-detail.component';
+import { ChefChatListComponent } from './chef-chat/chef-chat-list/chef-chat-list.component';
+import { ChefChatDetailComponent } from './chef-chat/chef-chat-detail/chef-chat-detail.component';
 
 export const CHEF_ROUTES: Routes = [
   { 
@@ -50,6 +52,18 @@ export const CHEF_ROUTES: Routes = [
   {
     path: 'orders/:id',
     component: ChefOrderDetailComponent,
+    canActivate: [AuthGuard],
+    data: { role: 'chef' }
+  },
+  {
+    path: 'chats',
+    component: ChefChatListComponent,
+    canActivate: [AuthGuard],
+    data: { role: 'chef' }
+  },
+  {
+    path: 'chats/:id',
+    component: ChefChatDetailComponent,
     canActivate: [AuthGuard],
     data: { role: 'chef' }
   },

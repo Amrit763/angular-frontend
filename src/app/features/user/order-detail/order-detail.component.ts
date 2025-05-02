@@ -8,6 +8,7 @@ import { ReviewService } from '../../../core/services/review.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { Order, OrderStatus } from '../../../core/models/order.model';
 import { Product, ChefInfo } from '../../../core/models/product.model';
+import { ChatService } from '../../../core/services/chat.service';
 
 @Component({
   selector: 'app-order-detail',
@@ -24,11 +25,12 @@ export class OrderDetailComponent implements OnInit {
   order: Order | null = null;
   isLoading = true;
   error: string | null = null;
-  
+  chatId: string | null = null;
+
   // Cancel order
   isCancelDialogOpen = false;
   isCancelling = false;
-  
+
   // Debug functionality
   showDebug = false;
   debugModalOpen = false;
@@ -40,7 +42,8 @@ export class OrderDetailComponent implements OnInit {
     private orderService: OrderService,
     public productService: ProductService,
     private reviewService: ReviewService,
-    private toastService: ToastService
+    private toastService: ToastService,
+    private chatService: ChatService
   ) { }
 
   ngOnInit(): void {
@@ -54,7 +57,7 @@ export class OrderDetailComponent implements OnInit {
         this.isLoading = false;
       }
     });
-    
+
     // Check if debug mode is enabled in localStorage
     this.showDebug = localStorage.getItem('orderDebug') === 'true';
   }
@@ -62,15 +65,18 @@ export class OrderDetailComponent implements OnInit {
   loadOrderDetails(orderId: string): void {
     this.isLoading = true;
     this.error = null;
-    
+
     this.orderService.getOrderById(orderId).subscribe({
       next: (response) => {
         this.order = response.order;
         console.log('Order details loaded:', this.order);
-        
+
         // Validate and fix product IDs when the order loads
         this.validateOrderProducts();
-        
+
+        // Load the associated chat for this order
+        this.loadOrderChat();
+
         this.isLoading = false;
       },
       error: (err) => {
@@ -88,34 +94,34 @@ export class OrderDetailComponent implements OnInit {
     if (id === undefined || id === null) {
       return '';
     }
-    
+
     // If already a string, return it
     if (typeof id === 'string') {
       return id;
     }
-    
+
     // If it's a number, convert to string
     if (typeof id === 'number') {
       return String(id);
     }
-    
+
     // If it's an object (potentially a MongoDB ObjectId)
     if (typeof id === 'object') {
       // Handle MongoDB ObjectId in various formats
       if (id.toString && typeof id.toString === 'function') {
         return id.toString();
       }
-      
+
       // Handle serialized ObjectId
       if (id.$oid) {
         return id.$oid;
       }
-      
+
       // Handle id property
       if (id.id) {
         return String(id.id);
       }
-      
+
       // Last resort: JSON stringify
       try {
         return JSON.stringify(id);
@@ -123,7 +129,7 @@ export class OrderDetailComponent implements OnInit {
         return '';
       }
     }
-    
+
     // Default fallback
     return String(id);
   }
@@ -134,15 +140,15 @@ export class OrderDetailComponent implements OnInit {
    */
   validateOrderProducts(): void {
     if (!this.order || !this.order.chefItems) return;
-    
+
     // Loop through all chef items and validate products
     this.order.chefItems.forEach(chefGroup => {
       if (!chefGroup.items) return;
-      
+
       chefGroup.items.forEach(item => {
         // Skip if product is missing completely
         if (!item.product) return;
-        
+
         // Special case: if product is a string instead of an object, convert it to an object with _id
         if (typeof item.product === 'string') {
           console.log(`Converting string product to object: ${item.product}`);
@@ -153,9 +159,9 @@ export class OrderDetailComponent implements OnInit {
             description: 'No description available',
             price: item.price || 0,
             category: 'Unknown',
-            chef: (typeof chefGroup.chef === 'object' && chefGroup.chef) ? 
-                  (chefGroup.chef as ChefInfo) : 
-                  { _id: 'unknown', fullName: 'Unknown Chef' },
+            chef: (typeof chefGroup.chef === 'object' && chefGroup.chef) ?
+              (chefGroup.chef as ChefInfo) :
+              { _id: 'unknown', fullName: 'Unknown Chef' },
             images: [],
             ingredients: [],
             allergens: [],
@@ -173,12 +179,12 @@ export class OrderDetailComponent implements OnInit {
           };
           return;
         }
-        
+
         // Fix potential MongoDB ObjectId format
         if (item.product._id !== undefined && item.product._id !== null) {
           const originalId = item.product._id;
           const stringId = this.extractStringId(originalId);
-          
+
           if (stringId && stringId !== originalId) {
             console.log(`Fixed product ID format: ${JSON.stringify(originalId)} -> ${stringId}`);
             item.product._id = stringId;
@@ -198,20 +204,20 @@ export class OrderDetailComponent implements OnInit {
     this.showDebug = !this.showDebug;
     localStorage.setItem('orderDebug', this.showDebug.toString());
   }
-  
+
   // Show debug modal for a product
   showProductDebug(product: any): void {
     this.debugProduct = product;
     this.debugModalOpen = true;
     console.log('Debug product:', product);
   }
-  
+
   // Close debug modal
   closeDebugModal(): void {
     this.debugModalOpen = false;
     this.debugProduct = null;
   }
-  
+
   // Format date for display
   formatDate(dateString: string): string {
     if (!dateString) return 'N/A';
@@ -248,9 +254,9 @@ export class OrderDetailComponent implements OnInit {
   // Cancel order
   cancelOrder(): void {
     if (!this.orderId) return;
-    
+
     this.isCancelling = true;
-    
+
     this.orderService.cancelOrder(this.orderId).subscribe({
       next: (response) => {
         if (response.success) {
@@ -276,27 +282,27 @@ export class OrderDetailComponent implements OnInit {
    */
   navigateToReviewPage(orderId: string, product: any): void {
     console.log('Navigating to review page with product:', product);
-    
+
     // Check if product exists
     if (!product) {
       this.toastService.showError('Invalid product information: Product is missing');
       return;
     }
-    
+
     // Extract product ID
     let productId = '';
-    
+
     if (typeof product === 'string') {
       productId = product;
     } else if (typeof product === 'object' && product !== null) {
       productId = product._id ? this.extractStringId(product._id) : '';
     }
-    
+
     if (!productId) {
       this.toastService.showError('Invalid product information: Product ID is missing');
       return;
     }
-    
+
     // Navigate to review page with query parameters
     this.router.navigate(['/user/reviews/write'], {
       queryParams: {
@@ -304,5 +310,64 @@ export class OrderDetailComponent implements OnInit {
         productId: productId
       }
     });
+  }
+
+  // After order is loaded, find the associated chat
+  loadOrderChat(): void {
+    if (!this.order) return;
+
+    this.chatService.getChats().subscribe({
+      next: (response) => {
+        if (response.success) {
+          const chat = response.chats.find(c =>
+            c.order && c.order._id === this.order?._id
+          );
+
+          if (chat) {
+            this.chatId = chat._id;
+          } else {
+            // Chat doesn't exist yet, we can create it
+            this.createOrderChat();
+          }
+        }
+      },
+      error: (err) => {
+        console.error('Error checking for chat:', err);
+      }
+    });
+  }
+
+  // Create chat for order if it doesn't exist
+  createOrderChat(): void {
+    if (!this.order) return;
+
+    this.chatService.createOrderChat(this.order._id).subscribe({
+      next: (response) => {
+        if (response.success) {
+          // Refresh chats to get the new chat ID
+          this.chatService.loadChats();
+          this.chatService.chats$.subscribe(chats => {
+            const newChat = chats.find(chat =>
+              chat.order && chat.order._id === this.order?._id
+            );
+            if (newChat) {
+              this.chatId = newChat._id;
+            }
+          });
+        }
+      },
+      error: (err) => {
+        console.error('Error creating chat:', err);
+      }
+    });
+  }
+
+  // Navigate to chat
+  openChat(): void {
+    if (this.chatId) {
+      this.router.navigate(['/user/chats', this.chatId]);
+    } else {
+      this.toastService.showError('Chat not available yet. Please try again shortly.');
+    }
   }
 }

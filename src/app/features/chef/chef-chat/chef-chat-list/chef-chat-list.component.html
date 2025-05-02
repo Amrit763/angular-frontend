@@ -1,11 +1,11 @@
-<!-- src/app/features/user/chat/chat-list/chat-list.component.html -->
+<!-- src/app/features/chef/chef-chat/chef-chat-list/chef-chat-list.component.html -->
 <div class="container py-5">
   <div class="row mb-4">
     <div class="col-12">
       <div class="d-flex justify-content-between align-items-center">
         <div>
-          <h2 class="fw-bold mb-1">My Conversations</h2>
-          <p class="text-muted">Chat with your order chefs</p>
+          <h2 class="fw-bold mb-1">Customer Messages</h2>
+          <p class="text-muted">Chat with your order customers</p>
         </div>
         <div class="form-check form-switch">
           <input class="form-check-input" type="checkbox" id="activeChatsOnly" 
@@ -34,11 +34,11 @@
     <div class="empty-state">
       <i class="bi bi-chat-dots display-1 text-muted"></i>
       <h3 class="mt-3">No Conversations</h3>
-      <p class="text-muted mb-4">You don't have any {{ showOnlyActive ? 'active ' : '' }}conversations yet.</p>
+      <p class="text-muted mb-4">You don't have any {{ showOnlyActive ? 'active ' : '' }}customer conversations yet.</p>
       <button *ngIf="showOnlyActive" class="btn btn-primary" (click)="toggleActiveFilter()">
         Show All Conversations
       </button>
-      <a *ngIf="!showOnlyActive" routerLink="/user/orders" class="btn btn-primary">
+      <a *ngIf="!showOnlyActive" routerLink="/chef/orders" class="btn btn-primary">
         Check Your Orders
       </a>
     </div>
@@ -53,10 +53,10 @@
              [ngClass]="{'unread': chat.unreadCount && chat.unreadCount > 0}"
              (click)="openChat(chat._id)">
           <div class="d-flex align-items-center">
-            <!-- Chef avatar -->
+            <!-- Participant avatar -->
             <div class="chat-avatar me-3 position-relative">
               <img [src]="productService.getImageUrl(getParticipantAvatar(chat))" 
-                   alt="Chef" 
+                   alt="Customer" 
                    class="rounded-circle" 
                    style="width: 50px; height: 50px; object-fit: cover;">
               <span *ngIf="chat.unreadCount && chat.unreadCount > 0" 
@@ -70,9 +70,8 @@
               <div class="d-flex justify-content-between align-items-center">
                 <h5 class="mb-1">
                   {{ getOtherParticipants(chat) }}
-                  <span class="badge chef-badge ms-1">Chef</span>
-                  <small *ngIf="getChefPhone(chat)" class="phone-number ms-2">
-                    <i class="bi bi-telephone"></i> {{ getChefPhone(chat) }}
+                  <small *ngIf="getCustomerPhone(chat)" class="text-muted ms-2">
+                    <i class="bi bi-telephone"></i> {{ getCustomerPhone(chat) }}
                   </small>
                 </h5>
                 <small class="text-muted">{{ formatDate(chat.lastMessage?.createdAt || chat.createdAt) }}</small>

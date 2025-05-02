@@ -1,8 +1,8 @@
-<!-- src/app/features/chat/chat-detail/chat-detail.component.html -->
-<div class="chat-detail-container">
+<!-- src/app/features/chef/chef-chat/chef-chat-detail/chef-chat-detail.component.html -->
+<div class="chat-detail-container chef-chat">
   <!-- Loading indicator -->
   <div *ngIf="isLoading" class="text-center py-5">
-    <div class="spinner-border text-primary" role="status">
+    <div class="spinner-border text-success" role="status">
       <span class="visually-hidden">Loading...</span>
     </div>
     <p class="mt-3">Loading conversation...</p>
@@ -39,7 +39,7 @@
             <button class="btn btn-sm btn-outline-secondary me-3 d-md-none" (click)="backToChats()">
               <i class="bi bi-arrow-left"></i>
             </button>
-            <a class="btn btn-sm btn-outline-secondary me-3 d-none d-md-block" routerLink="/user/chats">
+            <a class="btn btn-sm btn-outline-secondary me-3 d-none d-md-block" routerLink="/chef/chats">
               <i class="bi bi-arrow-left"></i> Back
             </a>
             <div class="chat-participant d-flex align-items-center">
@@ -52,9 +52,9 @@
               <div>
                 <h5 class="mb-0">{{ getOtherParticipants() }}</h5>
                 <small class="text-muted">
-                  <span class="badge bg-info me-2">{{ getParticipantRole(getParticipantId()) }}</span>
-                  <span *ngIf="getChefPhone()" class="me-2">
-                    <i class="bi bi-telephone"></i> {{ getChefPhone() }}
+                  <span class="badge bg-info me-2">Customer</span>
+                  <span *ngIf="getCustomerPhone()" class="me-2">
+                    <i class="bi bi-telephone"></i> {{ getCustomerPhone() }}
                   </span>
                   Order #{{ chat.order._id.slice(-8) }}
                 </small>
@@ -62,9 +62,20 @@
             </div>
           </div>
           <div class="col-md-4 text-end">
-            <button class="btn btn-sm btn-outline-primary" (click)="viewOrder()">
-              <i class="bi bi-bag"></i> View Order
-            </button>
+            <div class="d-flex justify-content-end align-items-center">
+              <div class="me-3">
+                <span class="badge bg-primary">{{ getOrderStatus() }}</span>
+              </div>
+              <button class="btn btn-sm btn-success me-2" 
+                      (click)="updateOrderStatus()" 
+                      *ngIf="getNextOrderStatus()">
+                <i class="bi bi-arrow-up-circle"></i> 
+                Update to {{ getNextOrderStatus() }}
+              </button>
+              <button class="btn btn-sm btn-outline-primary" (click)="viewOrder()">
+                <i class="bi bi-bag"></i> View Order
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -110,7 +121,7 @@
 
               <!-- Message bubble - WhatsApp/Messenger style -->
               <div class="message-container" [ngClass]="{'own-message-container': isOwnMessage(message), 'other-message-container': !isOwnMessage(message)}">
-                <!-- Sender info for chef messages (only shown for first consecutive message) -->
+                <!-- Sender info for customer messages (only shown for first consecutive message) -->
                 <div *ngIf="!isOwnMessage(message) && (i === 0 || isOwnMessage(chat.messages[i-1]))" class="sender-info mb-1">
                   {{ message.sender.fullName }}
                 </div>
@@ -162,7 +173,7 @@
             ></textarea>
             <button 
               type="submit" 
-              class="btn btn-primary" 
+              class="btn btn-success" 
               [disabled]="messageForm.invalid || sending"
             >
               <span *ngIf="!sending">
@@ -184,7 +195,7 @@
         
         <!-- Quick replies component -->
         <app-chat-quick-replies
-          [role]="'user'"
+          [role]="'chef'"
           [orderStatus]="chat && chat.order && chat.order.status || ''"
           (replySelected)="onQuickReplySelected($event)">
         </app-chat-quick-replies>

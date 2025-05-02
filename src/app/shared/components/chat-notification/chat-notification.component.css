@@ -1,0 +1,30 @@
+/* src/app/shared/components/chat-notification/chat-notification.component.css */
+a {
+    text-decoration: none;
+    color: inherit;
+    display: inline-block;
+    padding: 0.5rem;
+    position: relative;
+  }
+  
+  .badge {
+    font-size: 0.65rem;
+    padding: 0.25em 0.45em;
+    transform: translate(-50%, -50%);
+  }
+  
+  @keyframes pulse {
+    0% {
+      transform: translate(-50%, -50%) scale(1);
+    }
+    50% {
+      transform: translate(-50%, -50%) scale(1.2);
+    }
+    100% {
+      transform: translate(-50%, -50%) scale(1);
+    }
+  }
+  
+  .badge.bg-danger {
+    animation: pulse 1.5s infinite;
+  }

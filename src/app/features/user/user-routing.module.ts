@@ -28,7 +28,20 @@ export const USER_ROUTES: Routes = [
   { path: 'chats', component: ChatListComponent, canActivate: [AuthGuard] },
   { path: 'chats/:id', component: ChatDetailComponent, canActivate: [AuthGuard] },
   { path: 'chef-application', component: ChefApplicationComponent, canActivate: [AuthGuard] },
-  { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
+  { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+  {
+    path: 'chats',
+    component: ChatListComponent,
+    canActivate: [AuthGuard],
+    data: { role: 'user' }
+  },
+  {
+    path: 'chats/:id',
+    component: ChatDetailComponent,
+    canActivate: [AuthGuard],
+    data: { role: 'user' }
+  }
+
 ];
 
 @NgModule({
