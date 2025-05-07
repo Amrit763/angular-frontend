@@ -123,14 +123,11 @@
   
   .btn-primary {
     color: #fff;
-    background-color: #007bff;
-    border-color: #007bff;
+    background-color: #126195 ;
+    border-color: #126195 ;
   }
   
-  .btn-primary:hover {
-    background-color: #0069d9;
-    border-color: #0062cc;
-  }
+  
   
   .btn-secondary {
     color: #fff;

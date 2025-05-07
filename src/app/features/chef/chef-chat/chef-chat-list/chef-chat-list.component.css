@@ -1,4 +1,4 @@
-/* Common chat styles for both user and chef components */
+/* src/app/features/chef/chef-chat/chef-chat-list/chef-chat-list.component.css */
 
 /* Chat list styles */
 .chat-avatar {
@@ -24,93 +24,83 @@
   opacity: 0.7;
 }
 
-/* Chat detail styles */
-.chat-messages-container {
-  scroll-behavior: smooth;
-}
-
-.message-wrapper {
-  max-width: 80%;
-  clear: both;
-}
-
-.message-own {
-  margin-left: auto;
-}
-
-.message-other {
-  margin-right: auto;
-}
-
-.message-content {
-  max-width: 100%;
+/* Chat item with delete functionality */
+.chat-item-wrapper {
   position: relative;
-  word-wrap: break-word;
-}
-
-.message-own .message-content {
-  border-radius: 20px 20px 4px 20px !important;
-}
-
-.message-other .message-content {
-  border-radius: 20px 20px 20px 4px !important;
-}
-
-/* Quick action buttons hover effect */
-.btn-outline-primary, .btn-outline-secondary {
+  display: flex;
+  align-items: center;
+  width: 100%;
   transition: all 0.2s ease;
 }
 
-.btn-outline-primary:hover, .btn-outline-secondary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+/* Chat content - the main clickable area */
+.chat-content {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  width: 100%;
+  transition: all 0.2s ease;
 }
 
-/* Custom colors for chat components */
-.bg-primary-light {
-  background-color: rgba(13, 110, 253, 0.1);
+.chat-content:hover {
+  background-color: #f8f9fa;
 }
 
-.bg-success-light {
-  background-color: rgba(25, 135, 84, 0.1);
+/* Delete button */
+.chat-actions {
+  display: none;
+  opacity: 0;
+  transition: all 0.3s ease;
 }
 
-.bg-info-light {
-  background-color: rgba(13, 202, 240, 0.1);
+.chat-item-wrapper:hover .chat-actions {
+  display: flex;
+  opacity: 1;
 }
 
-.bg-warning-light {
-  background-color: rgba(255, 193, 7, 0.1);
+.chat-actions .btn {
+  color: #6c757d;
+  border: none;
+  background: transparent;
 }
 
-/* Stat icons for dashboard */
-.stat-icon {
-  width: 48px;
-  height: 48px;
-  border-radius: 12px;
+.chat-actions .btn:hover {
+  color: #dc3545;
+  background-color: rgba(220, 53, 69, 0.1);
+}
+
+/* Delete confirmation */
+.chat-delete-confirm {
   display: flex;
   align-items: center;
-  justify-content: center;
-  font-size: 1.5rem;
+  border-radius: 4px;
+  white-space: nowrap;
 }
 
-.stat-label {
-  color: #6c757d;
-  font-weight: 500;
+/* Animation effects */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
-.stat-value {
-  font-weight: 600;
+.chat-delete-confirm {
+  animation: fadeIn 0.2s ease-out;
 }
 
-/* Status badges */
-.badge.bg-warning {
-  color: #212529;
+/* Custom hover effect */
+.list-group-item:hover {
+  z-index: 1;
+  background-color: rgba(248, 249, 250, 0.8);
 }
 
 /* Responsive adjustments */
 @media (max-width: 767.98px) {
-  .message-wrapper {
-    max-width: 90%;
+  .chat-actions {
+    display: flex;
+    opacity: 0.7;
+  }
+  
+  .chat-actions .btn {
+    padding: 0.25rem 0.5rem;
   }
 }

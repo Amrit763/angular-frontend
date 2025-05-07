@@ -1,5 +1,5 @@
 // src/app/features/chef/chef-chat/chef-chat-detail/chef-chat-detail.component.ts
-import { Component, OnInit, OnDestroy, ViewChild, ElementRef, AfterViewChecked } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, ElementRef, AfterViewChecked, NgZone, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
@@ -33,6 +33,7 @@ export class ChefChatDetailComponent implements OnInit, OnDestroy, AfterViewChec
   messageForm!: FormGroup;
   private subscriptions: Subscription[] = [];
   shouldScrollToBottom = true;
+  connectionStatus: 'connected' | 'disconnected' | 'connecting' = 'connecting';
 
   constructor(
     private chatService: ChatService,
@@ -40,7 +41,8 @@ export class ChefChatDetailComponent implements OnInit, OnDestroy, AfterViewChec
     private tokenService: TokenService,
     private route: ActivatedRoute,
     private router: Router,
-    private fb: FormBuilder
+    private fb: FormBuilder,
+    private ngZone: NgZone
   ) { }
 
   ngOnInit(): void {
@@ -65,17 +67,49 @@ export class ChefChatDetailComponent implements OnInit, OnDestroy, AfterViewChec
       })
     );
     
-    // Subscribe to messages
+    // Subscribe to messages with NgZone to ensure change detection
     this.subscriptions.push(
       this.chatService.messages$.subscribe(messages => {
-        this.messages = messages || [];
-        this.shouldScrollToBottom = true;
-        this.isLoading = false;
+        this.ngZone.run(() => {
+          this.messages = messages || [];
+          this.shouldScrollToBottom = true;
+          this.isLoading = false;
+        });
       })
     );
     
     // Initialize socket connection
     this.chatService.initializeSocket();
+    
+    // Monitor socket connection status
+    const socket = this.chatService.getSocket();
+    if (socket) {
+      socket.on('connect', () => {
+        this.ngZone.run(() => {
+          this.connectionStatus = 'connected';
+          console.log('Socket connected in chef chat detail');
+          
+          // Rejoin chat room after reconnection
+          if (this.chatId) {
+            this.chatService.joinChat(this.chatId);
+          }
+        });
+      });
+      
+      socket.on('disconnect', () => {
+        this.ngZone.run(() => {
+          this.connectionStatus = 'disconnected';
+          console.log('Socket disconnected in chef chat detail');
+        });
+      });
+      
+      socket.on('connect_error', () => {
+        this.ngZone.run(() => {
+          this.connectionStatus = 'disconnected';
+          console.log('Socket connection error in chef chat detail');
+        });
+      });
+    }
   }
 
   ngAfterViewChecked(): void {
@@ -93,6 +127,22 @@ export class ChefChatDetailComponent implements OnInit, OnDestroy, AfterViewChec
     
     // Clean up subscriptions
     this.subscriptions.forEach(sub => sub.unsubscribe());
+  }
+
+  // Check for unsaved changes when navigating away
+  @HostListener('window:beforeunload', ['$event'])
+  unloadNotification($event: any): void {
+    if (this.messageForm?.dirty) {
+      $event.returnValue = true;
+    }
+  }
+
+  // Allow router to check if it's safe to navigate away
+  canDeactivate(): boolean {
+    if (this.messageForm?.dirty) {
+      return confirm('You have an unsent message. Are you sure you want to leave?');
+    }
+    return true;
   }
 
   // Initialize the message form
@@ -113,9 +163,6 @@ export class ChefChatDetailComponent implements OnInit, OnDestroy, AfterViewChec
         if (response.success) {
           // After getting chat, load messages
           this.loadMessages();
-          
-          // Join the chat room for real-time updates
-          this.chatService.joinChat(this.chatId);
         } else {
           this.error = response.message || 'Failed to load chat';
           this.isLoading = false;
@@ -258,5 +305,11 @@ export class ChefChatDetailComponent implements OnInit, OnDestroy, AfterViewChec
       return this.chat.order._id.slice(-8);
     }
     return 'N/A';
+  }
+  
+  // Force reconnect if connection is lost
+  reconnectSocket(): void {
+    this.connectionStatus = 'connecting';
+    this.chatService.reconnect();
   }
 }

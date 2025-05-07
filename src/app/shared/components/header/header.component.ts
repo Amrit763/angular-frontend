@@ -1,5 +1,5 @@
 // src/app/shared/components/header/header.component.ts
-import { Component, OnInit, AfterViewInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, AfterViewInit, OnDestroy, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { Router } from '@angular/router';
@@ -23,6 +23,8 @@ export class HeaderComponent implements OnInit, AfterViewInit, OnDestroy {
   currentUser: User | null = null;
   isChefMode = false;
   cartItemCount = 0;
+  unreadMessages = 0; // For chat badge
+  pendingOrders = 0; // For orders badge
   isDropdownOpen = false; // Track dropdown state
   isMenuCollapsed = true; // Track mobile menu collapsed state
   
@@ -46,9 +48,9 @@ export class HeaderComponent implements OnInit, AfterViewInit, OnDestroy {
           this.isChefMode = false;
         }
         
-        // If user is logged in, get cart count
+        // If user is logged in, get cart count and notifications
         if (user) {
-          this.cartService.getCart().subscribe();
+          this.loadUserData();
         }
       })
     );
@@ -57,14 +59,38 @@ export class HeaderComponent implements OnInit, AfterViewInit, OnDestroy {
     const user = this.tokenService.getUser();
     if (user) {
       this.currentUser = user;
+      this.loadUserData();
     }
-    
-    // Subscribe to cart count changes
+  }
+
+  // Load all user-related data including notifications
+  loadUserData(): void {
+    // Load cart data
     this.subscriptions.push(
       this.cartService.cartCount$.subscribe(count => {
         this.cartItemCount = count;
       })
     );
+    
+    this.cartService.getCart().subscribe();
+    
+    // You would implement these services in your actual application
+    this.loadUnreadMessages();
+    this.loadPendingOrders();
+  }
+  
+  // Load unread messages count
+  loadUnreadMessages(): void {
+    // This is a placeholder - replace with your actual service call
+    // For example: this.messageService.getUnreadCount().subscribe(count => this.unreadMessages = count);
+    this.unreadMessages = Math.floor(Math.random() * 5); // Placeholder for demo
+  }
+  
+  // Load pending orders count
+  loadPendingOrders(): void {
+    // This is a placeholder - replace with your actual service call
+    // For example: this.orderService.getPendingCount().subscribe(count => this.pendingOrders = count);
+    this.pendingOrders = Math.floor(Math.random() * 3); // Placeholder for demo
   }
 
   ngAfterViewInit(): void {
@@ -80,6 +106,11 @@ export class HeaderComponent implements OnInit, AfterViewInit, OnDestroy {
   // Toggle mobile menu
   toggleMenu(): void {
     this.isMenuCollapsed = !this.isMenuCollapsed;
+    
+    // Close dropdown if open when menu is toggled
+    if (!this.isMenuCollapsed && this.isDropdownOpen) {
+      this.isDropdownOpen = false;
+    }
   }
 
   // Method to manually initialize dropdowns
@@ -87,8 +118,6 @@ export class HeaderComponent implements OnInit, AfterViewInit, OnDestroy {
     // Close dropdowns when clicking outside
     document.addEventListener('click', (event) => {
       if (!(event.target as HTMLElement).closest('.dropdown')) {
-        const menus = document.querySelectorAll('.dropdown-menu.show');
-        menus.forEach(menu => menu.classList.remove('show'));
         this.isDropdownOpen = false;
       }
     });
@@ -122,11 +151,14 @@ export class HeaderComponent implements OnInit, AfterViewInit, OnDestroy {
     } else {
       this.router.navigate(['/home']);
     }
+    
+    // Close dropdown after toggle
+    this.isDropdownOpen = false;
   }
 
   logout(): void {
     this.authService.logout();
     this.router.navigate(['/']);
+    this.isDropdownOpen = false;
   }
-
 }

@@ -5,6 +5,9 @@ import { RouterModule } from '@angular/router';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { TokenService } from '../../../core/auth/token.service';
 import { AuthService } from '../../../core/auth/auth.service';
+import { ReviewService } from '../../../core/services/review.service';
+import { ProductService } from '../../../core/services/product.service';
+import { OrderService } from '../../../core/services/order.service';
 import { Router } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
 import { environment } from '../../../../environments/environment';
@@ -36,6 +39,9 @@ function matchingPasswords(controlName: string, matchingControlName: string) {
 })
 export class DashboardComponent implements OnInit {
   user: any;
+  orderCount: number = 0;
+  completedOrderCount: number = 0;
+  reviewCount: number = 0;
   changePasswordForm!: FormGroup;
   submitted = false;
   passwordChanging = false;
@@ -47,6 +53,9 @@ export class DashboardComponent implements OnInit {
   constructor(
     private tokenService: TokenService,
     private authService: AuthService,
+    private reviewService: ReviewService,
+    private productService: ProductService,
+    private orderService: OrderService,
     private router: Router,
     private formBuilder: FormBuilder,
     private toastr: ToastrService
@@ -74,6 +83,41 @@ export class DashboardComponent implements OnInit {
 
     // Refresh user data to ensure we have the latest
     this.refreshUserData();
+    
+    // Load user stats
+    this.loadUserStats();
+  }
+
+  // Load user stats for dashboard
+  loadUserStats(): void {
+    // For orders count
+    this.orderService.getUserOrders().subscribe({
+      next: (response) => {
+        if (response && response.orders) {
+          this.orderCount = response.orders.length;
+          
+          // Count completed orders
+          this.completedOrderCount = response.orders.filter(
+            (order: any) => order.status === 'delivered'
+          ).length;
+        }
+      },
+      error: (error) => {
+        console.error('Error loading user orders:', error);
+      }
+    });
+    
+    // For review count
+    this.reviewService.getUserReviews(1, 1).subscribe({
+      next: (response) => {
+        if (response && response.count) {
+          this.reviewCount = response.count;
+        }
+      },
+      error: (error) => {
+        console.error('Error loading user review count:', error);
+      }
+    });
   }
 
   // Reload user data from the server

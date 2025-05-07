@@ -1,135 +1,130 @@
-<!-- src/app/features/user/user-reviews/user-reviews.component.html (Fixed) -->
+<!-- src/app/features/user/user-reviews/user-reviews.component.html -->
 <div class="container py-5">
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <h2 class="fw-bold mb-0">My Reviews</h2>
-                    <p class="text-muted">Manage your product reviews</p>
-                </div>
-                <div>
-                    <a routerLink="/user/orders" class="btn btn-outline-primary">
-                        <i class="bi bi-box me-1"></i> My Orders
-                    </a>
+    <div class="page-container">
+        <!-- Header section -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h2 class="page-title mb-3">My Reviews</h2>
+                        <p class="text-muted">Manage and track your product reviews and experiences</p>
+                    </div>
+                    <div>
+                        <a routerLink="/user/orders" class="btn action-btn" style="background-color: #126195; color: white;">
+                            <i class="bi bi-box me-1"></i> My Orders
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- Tab Navigation -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <ul class="nav nav-tabs">
-                <li class="nav-item">
-                    <button class="nav-link" [ngClass]="{'active': activeTabIndex === 0}" 
+        <!-- Tab Navigation -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="custom-tabs">
+                    <button class="custom-tab" [ngClass]="{'active': activeTabIndex === 0}" 
                             (click)="setActiveTab(0)">
-                        My Reviews <span *ngIf="totalReviews > 0" class="badge bg-primary ms-1">{{ totalReviews }}</span>
+                        My Reviews <span *ngIf="totalReviews > 0" class="badge-count">{{ totalReviews }}</span>
                     </button>
-                </li>
-                <li class="nav-item">
-                    <button class="nav-link" [ngClass]="{'active': activeTabIndex === 1}" 
+                    <button class="custom-tab" [ngClass]="{'active': activeTabIndex === 1}" 
                             (click)="setActiveTab(1)">
-                        Pending Reviews <span *ngIf="pendingReviews.length > 0" class="badge bg-primary ms-1">{{ pendingReviews.length }}</span>
+                        Pending Reviews <span *ngIf="pendingReviews.length > 0" class="badge-count">{{ pendingReviews.length }}</span>
                     </button>
-                </li>
-            </ul>
-        </div>
-    </div>
-
-    <!-- My Reviews Tab -->
-    <div *ngIf="activeTabIndex === 0">
-        <!-- Loading indicator -->
-        <div *ngIf="isLoading" class="text-center py-5">
-            <div class="spinner-border text-primary" role="status">
-                <span class="visually-hidden">Loading...</span>
+                </div>
             </div>
-            <p class="mt-3">Loading your reviews...</p>
         </div>
 
-        <!-- Error message -->
-        <div *ngIf="error && !isLoading" class="alert alert-danger">
-            {{ error }}
-        </div>
+        <!-- My Reviews Tab -->
+        <div *ngIf="activeTabIndex === 0">
+            <!-- Loading indicator -->
+            <div *ngIf="isLoading" class="loader-container">
+                <div class="spinner-border loader-spinner" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <p class="loader-text">Loading your reviews...</p>
+            </div>
 
-        <!-- Empty state -->
-        <div *ngIf="!isLoading && reviews.length === 0 && !error" class="text-center py-5">
-            <div class="empty-state">
-                <i class="bi bi-star display-1 text-muted"></i>
-                <h3 class="mt-3">No reviews yet</h3>
-                <p class="text-muted mb-4">You haven't reviewed any products yet.</p>
-                <button class="btn btn-primary" (click)="setActiveTab(1)" *ngIf="pendingReviews.length > 0">
-                    Review Delivered Products
+            <!-- Error message -->
+            <div *ngIf="error && !isLoading" class="alert alert-danger">
+                {{ error }}
+            </div>
+
+            <!-- Empty state -->
+            <div *ngIf="!isLoading && reviews.length === 0 && !error" class="empty-state-container">
+                <i class="bi bi-star empty-state-icon"></i>
+                <h3 class="empty-state-title">No reviews yet</h3>
+                <p class="empty-state-message">You haven't reviewed any products yet. Share your experience to help others make informed decisions.</p>
+                <button class="btn btn-primary action-btn" (click)="setActiveTab(1)" *ngIf="pendingReviews.length > 0">
+                    <i class="bi bi-pencil-square me-1"></i> Write Your First Review
                 </button>
-                <a routerLink="/user/orders" class="btn btn-primary" *ngIf="pendingReviews.length === 0">
-                    Browse Your Orders
+                <a routerLink="/user/orders" class="btn btn-primary action-btn" *ngIf="pendingReviews.length === 0">
+                    <i class="bi bi-box me-1"></i> Browse Your Orders
                 </a>
             </div>
-        </div>
 
-        <!-- Review list -->
-        <div *ngIf="!isLoading && reviews.length > 0">
-            <div class="row">
-                <div class="col-12">
-                    <div class="review-item card shadow-sm mb-4" *ngFor="let review of reviews">
-                        <div class="card-body">
-                            <div class="row">
-                                <!-- Product info -->
-                                <div class="col-md-3 mb-3 mb-md-0 border-end">
-                                    <div class="product-info text-center">
+            <!-- Review list -->
+            <div *ngIf="!isLoading && reviews.length > 0">
+                <div class="row">
+                    <div class="col-12">
+                        <!-- Review cards -->
+                        <div class="review-card card" *ngFor="let review of reviews">
+                            <div class="row g-0">
+                                <!-- Product sidebar -->
+                                <div class="col-lg-3">
+                                    <div class="product-sidebar">
                                         <img [src]="productService.getImageUrl(review.product.images && review.product.images.length > 0 ? review.product.images[0] : null)"
                                             alt="{{ review.product.name || 'Product' }}"
-                                            class="img-thumbnail mb-3"
-                                            style="width: 120px; height: 120px; object-fit: cover;">
-                                        <h5 class="mb-1">{{ review.product.name || 'Product' }}</h5>
-                                        <p class="text-muted mb-2">{{ review.product.category || 'Category' }}</p>
-                                        <a [routerLink]="['/products', review.product._id]" class="btn btn-sm btn-outline-primary">
-                                            View Product
-                                        </a>
+                                            class="product-image">
+                                        <div class="product-details">
+                                            <h5 class="product-name">{{ review.product.name || 'Product' }}</h5>
+                                            <p class="product-category">{{ review.product.category || 'Category' }}</p>
+                                            <a [routerLink]="['/home/products', review.product._id]" class="btn view-product-btn" style="background-color: #126195; color: white;">
+                                                <i class="bi bi-eye me-1"></i> View Product
+                                            </a>
+                                        </div>
                                     </div>
                                 </div>
                                 
                                 <!-- Review content -->
-                                <div class="col-md-9">
-                                    <div class="d-flex justify-content-between align-items-start mb-3">
-                                        <div>
-                                            <div class="d-flex align-items-center">
-                                                <div class="rating me-2">
-                                                    <i *ngFor="let star of [1, 2, 3, 4, 5]" class="bi" 
-                                                    [ngClass]="star <= review.rating ? 'bi-star-fill' : 'bi-star'" 
-                                                    style="color: #ffc107;"></i>
+                                <div class="col-lg-9">
+                                    <div class="review-content-wrapper">
+                                        <div class="review-header">
+                                            <div class="rating-info">
+                                                <div class="rating-display">
+                                                    <div class="star-rating">
+                                                        <i *ngFor="let star of [1, 2, 3, 4, 5]" class="bi" 
+                                                        [ngClass]="star <= review.rating ? 'bi-star-fill' : 'bi-star'"></i>
+                                                    </div>
+                                                    <span class="rating-value">{{ review.rating.toFixed(1) }}</span>
                                                 </div>
-                                                <span class="rating-value">{{ review.rating.toFixed(1) }}</span>
+                                                <p class="review-date mt-1 mb-0">
+                                                    <i class="bi bi-calendar3 me-1"></i> {{ formatDate(review.createdAt) }}
+                                                </p>
                                             </div>
-                                            <p class="text-muted mb-0">
-                                                <small>Reviewed on {{ formatDate(review.createdAt) }}</small>
-                                            </p>
-                                        </div>
-                                        
-                                        <div class="review-actions">
-                                            <div class="btn-group">
-                                                <a [routerLink]="['/user/reviews/edit', review._id]" class="btn btn-sm btn-outline-primary">
+                                            
+                                            <div class="review-actions">
+                                                <a [routerLink]="['/user/reviews/edit', review._id]" class="btn edit-btn action-btn me-2">
                                                     <i class="bi bi-pencil me-1"></i> Edit
                                                 </a>
-                                                <button class="btn btn-sm btn-outline-danger" (click)="openDeleteDialog(review._id)">
+                                                <button class="btn delete-btn action-btn" (click)="openDeleteDialog(review._id)">
                                                     <i class="bi bi-trash me-1"></i> Delete
                                                 </button>
                                             </div>
                                         </div>
-                                    </div>
-                                    
-                                    <div class="review-content mb-3">
-                                        <p>{{ review.comment }}</p>
-                                    </div>
-                                    
-                                    <!-- Review images -->
-                                    <div *ngIf="review.reviewImages && review.reviewImages.length > 0" class="review-images">
-                                        <div class="row g-2">
-                                            <div *ngFor="let image of review.reviewImages" class="col-md-2 col-sm-3 col-4">
-                                                <div class="review-image">
-                                                    <img [src]="productService.getImageUrl(image)" 
-                                                        alt="Review image" 
-                                                        class="img-thumbnail"
-                                                        style="width: 100%; height: 80px; object-fit: cover;">
+                                        
+                                        <div class="review-content">
+                                            <p>{{ review.comment }}</p>
+                                        </div>
+                                        
+                                        <!-- Review images -->
+                                        <div *ngIf="review.reviewImages && review.reviewImages.length > 0" class="review-images">
+                                            <div class="row g-2">
+                                                <div *ngFor="let image of review.reviewImages" class="col-md-2 col-sm-3 col-4">
+                                                    <div class="review-image">
+                                                        <img [src]="productService.getImageUrl(image)" 
+                                                            alt="Review image" 
+                                                            class="img-fluid">
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
@@ -137,94 +132,100 @@
                                 </div>
                             </div>
                         </div>
-                    </div>
-                    
-                    <!-- Pagination -->
-                    <div *ngIf="totalPages > 1" class="d-flex justify-content-center mt-4">
-                        <nav aria-label="Review pagination">
-                            <ul class="pagination">
-                                <li class="page-item" [ngClass]="{'disabled': currentPage === 1}">
-                                    <button class="page-link" (click)="changePage(currentPage - 1)" [disabled]="currentPage === 1">
-                                        <i class="bi bi-chevron-left"></i>
-                                    </button>
-                                </li>
-                                <li *ngFor="let page of [].constructor(totalPages); let i = index" 
-                                    class="page-item" 
-                                    [ngClass]="{'active': currentPage === i + 1}">
-                                    <button class="page-link" (click)="changePage(i + 1)">{{ i + 1 }}</button>
-                                </li>
-                                <li class="page-item" [ngClass]="{'disabled': currentPage === totalPages}">
-                                    <button class="page-link" (click)="changePage(currentPage + 1)" [disabled]="currentPage === totalPages">
-                                        <i class="bi bi-chevron-right"></i>
-                                    </button>
-                                </li>
-                            </ul>
-                        </nav>
+                        
+                        <!-- Pagination - shows when more than 6 reviews -->
+                        <div *ngIf="totalReviews > 6" class="d-flex justify-content-center custom-pagination">
+                            <nav aria-label="Review pagination">
+                                <ul class="pagination">
+                                    <li class="page-item" [ngClass]="{'disabled': currentPage === 1}">
+                                        <button class="page-link" (click)="changePage(currentPage - 1)" [disabled]="currentPage === 1">
+                                            <i class="bi bi-chevron-left"></i>
+                                        </button>
+                                    </li>
+                                    <li *ngFor="let page of [].constructor(totalPages); let i = index" 
+                                        class="page-item" 
+                                        [ngClass]="{'active': currentPage === i + 1}">
+                                        <button class="page-link" (click)="changePage(i + 1)">{{ i + 1 }}</button>
+                                    </li>
+                                    <li class="page-item" [ngClass]="{'disabled': currentPage === totalPages}">
+                                        <button class="page-link" (click)="changePage(currentPage + 1)" [disabled]="currentPage === totalPages">
+                                            <i class="bi bi-chevron-right"></i>
+                                        </button>
+                                    </li>
+                                </ul>
+                            </nav>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- Pending Reviews Tab -->
-    <div *ngIf="activeTabIndex === 1">
-        <!-- Loading indicator -->
-        <div *ngIf="loadingPendingReviews" class="text-center py-5">
-            <div class="spinner-border text-primary" role="status">
-                <span class="visually-hidden">Loading...</span>
+        <!-- Pending Reviews Tab -->
+        <div *ngIf="activeTabIndex === 1">
+            <!-- Loading indicator -->
+            <div *ngIf="loadingPendingReviews" class="loader-container">
+                <div class="spinner-border loader-spinner" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <p class="loader-text">Finding products you can review...</p>
             </div>
-            <p class="mt-3">Finding products you can review...</p>
-        </div>
 
-        <!-- Empty state for pending reviews -->
-        <div *ngIf="!loadingPendingReviews && pendingReviews.length === 0" class="text-center py-5">
-            <div class="empty-state">
-                <i class="bi bi-check-circle display-1 text-muted"></i>
-                <h3 class="mt-3">No products to review</h3>
-                <p class="text-muted mb-4">You've reviewed all your delivered products or haven't received any orders yet.</p>
+            <!-- Empty state for pending reviews -->
+            <div *ngIf="!loadingPendingReviews && pendingReviews.length === 0" class="empty-state-container">
+                <i class="bi bi-check-circle-fill empty-state-icon"></i>
+                <h3 class="empty-state-title">All caught up!</h3>
+                <p class="empty-state-message">You've reviewed all your delivered products or haven't received any orders yet.</p>
                 <div class="d-flex justify-content-center">
-                    <a routerLink="/user/orders" class="btn btn-primary me-2">
-                        View Your Orders
+                    <a routerLink="/user/orders" class="btn btn-primary action-btn me-2">
+                        <i class="bi bi-box me-1"></i> View Your Orders
                     </a>
-                    <button class="btn btn-outline-primary" (click)="setActiveTab(0)">
-                        See Your Reviews
+                    <button class="btn btn-outline-primary action-btn" (click)="setActiveTab(0)" *ngIf="reviews.length > 0">
+                        <i class="bi bi-star me-1"></i> See Your Reviews
                     </button>
                 </div>
             </div>
-        </div>
 
-        <!-- Pending reviews list -->
-        <div *ngIf="!loadingPendingReviews && pendingReviews.length > 0" class="row">
-            <div class="col-12 mb-4">
-                <div class="alert alert-info">
-                    <i class="bi bi-info-circle-fill me-2"></i>
-                    You have {{ pendingReviews.length }} delivered {{ pendingReviews.length === 1 ? 'product' : 'products' }} that you can review. Sharing your experience helps other customers make informed decisions.
-                </div>
-            </div>
-
-            <div class="col-md-6 col-lg-4 mb-4" *ngFor="let item of pendingReviews">
-                <div class="card h-100 shadow-sm">
-                    <div class="position-relative">
-                        <img [src]="productService.getImageUrl(item.product.images && item.product.images.length > 0 ? item.product.images[0] : null)"
-                            class="card-img-top" alt="{{ item.product.name }}"
-                            style="height: 200px; object-fit: cover;">
-                        <div class="badge bg-success position-absolute top-0 end-0 m-2">
-                            Delivered
+            <!-- Pending reviews list -->
+            <div *ngIf="!loadingPendingReviews && pendingReviews.length > 0">
+                <div class="info-alert mb-4">
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-info-circle-fill me-3 fs-4"></i>
+                        <div>
+                            <strong>Ready to share your thoughts?</strong>
+                            <p class="mb-0">You have {{ pendingReviews.length }} delivered {{ pendingReviews.length === 1 ? 'product' : 'products' }} waiting for your review. Your feedback helps the community make better choices!</p>
                         </div>
                     </div>
-                    <div class="card-body">
-                        <h5 class="card-title">{{ item.product.name }}</h5>
-                        <p class="card-text text-muted small">{{ item.product.category }}</p>
-                        <p class="card-text">
-                            <small class="text-muted">Delivered on {{ formatDate(item.orderDate) }}</small>
-                        </p>
-                        <div class="d-grid gap-2">
-                            <button class="btn btn-primary" (click)="openReviewForm(item.orderId, item.product)">
-                                <i class="bi bi-star-fill me-1"></i> Write a Review
-                            </button>
-                            <button class="btn btn-outline-secondary" (click)="viewOrder(item.orderId)">
-                                <i class="bi bi-eye me-1"></i> View Order
-                            </button>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 col-lg-4 mb-4" *ngFor="let item of pendingReviews">
+                        <div class="pending-review-card card h-100">
+                            <div class="card-img-container">
+                                <img [src]="productService.getImageUrl(item.product.images && item.product.images.length > 0 ? item.product.images[0] : null)"
+                                    class="card-img-top" alt="{{ item.product.name }}">
+                                <span class="status-badge bg-success">
+                                    <i class="bi bi-check-circle me-1"></i> Delivered
+                                </span>
+                            </div>
+                            <div class="card-body d-flex flex-column">
+                                <h5 class="card-title text-accent">{{ item.product.name }}</h5>
+                                <div class="d-flex align-items-center mb-2">
+                                    <span class="badge bg-light text-dark me-2">{{ item.product.category }}</span>
+                                </div>
+                                <p class="card-text mb-3">
+                                    <small class="text-muted">
+                                        <i class="bi bi-box-seam me-1"></i> Delivered on {{ formatDate(item.orderDate) }}
+                                    </small>
+                                </p>
+                                <div class="mt-auto">
+                                    <button class="btn btn-primary w-100 mb-2" (click)="openReviewForm(item.orderId, item.product)">
+                                        <i class="bi bi-star-fill me-1"></i> Write a Review
+                                    </button>
+                                    <button class="btn btn-outline-secondary w-100" (click)="viewOrder(item.orderId)">
+                                        <i class="bi bi-eye me-1"></i> View Order Details
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -234,19 +235,22 @@
 
     <!-- Delete review confirmation modal -->
     <div class="modal fade" [ngClass]="{'show d-block': isDeleteDialogOpen, 'd-none': !isDeleteDialogOpen}">
-        <div class="modal-dialog">
+        <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
-                <div class="modal-header">
+                <div class="modal-header custom-modal-header">
                     <h5 class="modal-title">Delete Review</h5>
-                    <button type="button" class="btn-close" (click)="closeDeleteDialog()"></button>
+                    <button type="button" class="btn-close btn-close-white" (click)="closeDeleteDialog()"></button>
                 </div>
                 <div class="modal-body">
-                    <p>Are you sure you want to delete this review? This action cannot be undone.</p>
+                    <div class="text-center mb-3">
+                        <i class="bi bi-exclamation-triangle-fill text-warning" style="font-size: 3rem;"></i>
+                    </div>
+                    <p class="text-center">Are you sure you want to delete this review? This action cannot be undone.</p>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" (click)="closeDeleteDialog()">Cancel</button>
-                    <button type="button" class="btn btn-danger" [disabled]="isDeleting" (click)="deleteReview()">
-                        <span *ngIf="!isDeleting">Delete</span>
+                <div class="modal-footer custom-modal-footer">
+                    <button type="button" class="btn btn-outline-secondary action-btn" (click)="closeDeleteDialog()">Cancel</button>
+                    <button type="button" class="btn btn-danger action-btn" [disabled]="isDeleting" (click)="deleteReview()">
+                        <span *ngIf="!isDeleting"><i class="bi bi-trash me-1"></i> Delete</span>
                         <span *ngIf="isDeleting">
                             <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
                             Deleting...
@@ -262,11 +266,11 @@
 
     <!-- Review Form Modal -->
     <div *ngIf="showReviewForm" class="modal d-block">
-        <div class="modal-dialog modal-lg">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
             <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Write a Review</h5>
-                    <button type="button" class="btn-close" (click)="closeReviewForm()"></button>
+                <div class="modal-header custom-modal-header">
+                    <h5 class="modal-title"><i class="bi bi-pencil-square me-2"></i> Write Your Review</h5>
+                    <button type="button" class="btn-close btn-close-white" (click)="closeReviewForm()"></button>
                 </div>
                 <div class="modal-body">
                     <app-review-form

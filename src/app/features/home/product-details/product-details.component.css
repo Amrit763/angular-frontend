@@ -18,13 +18,13 @@ hr {
 
 /* Breadcrumb Styles */
 .breadcrumb-item a {
-  color: #ff6b6b;
+  color: #155475;
   text-decoration: none;
   transition: color 0.2s;
 }
 
 .breadcrumb-item a:hover {
-  color: #ff5252;
+  color: #155475;
   text-decoration: underline;
 }
 
@@ -81,7 +81,7 @@ hr {
 }
 
 .thumbnail.active {
-  border-color: #ff6b6b;
+  border-color: #155475;
   transform: translateY(-3px);
 }
 
@@ -118,7 +118,7 @@ hr {
 .price {
   font-size: 2rem;
   font-weight: 700;
-  color: #ff6b6b;
+  color: #155475;
 }
 
 .rating {
@@ -142,7 +142,7 @@ hr {
 }
 
 .rating-count:hover {
-  color: #ff6b6b;
+  color: #155475;
   text-decoration: underline;
 }
 
@@ -157,7 +157,7 @@ hr {
   padding: 15px;
   background-color: rgba(255, 107, 107, 0.05);
   border-radius: 10px;
-  border-left: 4px solid #ff6b6b;
+  border-left: 4px solid #155475;
 }
 
 .chef-image {
@@ -170,14 +170,14 @@ hr {
 }
 
 .chef-link {
-  color: #ff6b6b;
+  color: #155475;
   text-decoration: none;
   font-size: 0.9rem;
   transition: color 0.2s;
 }
 
 .chef-link:hover {
-  color: #ff5252;
+  color: #155475;
   text-decoration: underline;
 }
 
@@ -197,7 +197,7 @@ hr {
 
 .spec-item i {
   font-size: 1.5rem;
-  color: #ff6b6b;
+  color: #155475;
   width: 40px;
   height: 40px;
   display: flex;
@@ -257,8 +257,8 @@ hr {
 }
 
 .condiment-item .form-check-input:checked {
-  background-color: #ff6b6b;
-  border-color: #ff6b6b;
+  background-color: #155475;
+  border-color: #155475;
 }
 
 .condiment-item label {
@@ -281,7 +281,7 @@ hr {
 
 .condiment-price {
   font-weight: 600;
-  color: #ff6b6b;
+  color: #155475;
   white-space: nowrap;
 }
 
@@ -321,7 +321,7 @@ hr {
   margin-top: 5px;
   font-size: 1.25rem;
   font-weight: 700;
-  color: #ff6b6b;
+  color: #155475;
 }
 
 /* Quantity Controls */
@@ -356,7 +356,7 @@ hr {
 }
 
 .btn-quantity:hover {
-  background-color: #ff6b6b;
+  background-color: #155475;
   color: white;
 }
 
@@ -374,14 +374,14 @@ hr {
   font-size: 1.1rem;
   font-weight: 600;
   border-radius: 30px;
-  background-color: #ff6b6b;
-  border-color: #ff6b6b;
+  background-color: #155475;
+  border-color: #155475;
   transition: all 0.3s;
 }
 
 .btn-add-to-cart:hover {
-  background-color: #ff5252;
-  border-color: #ff5252;
+  background-color: #155475;
+  border-color: #155475;
   transform: translateY(-2px);
   box-shadow: 0 4px 10px rgba(255, 107, 107, 0.3);
 }
@@ -421,16 +421,16 @@ hr {
 }
 
 .product-details-tabs .nav-link:hover {
-  color: #ff6b6b;
+  color: #155475;
 }
 
 .product-details-tabs .nav-link.active {
-  color: #ff6b6b;
+  color: #155475;
   background-color: transparent;
 }
 
 .product-details-tabs .nav-link.active:after {
-  background-color: #ff6b6b;
+  background-color: #155475;
 }
 
 .tab-inner-content {
@@ -497,8 +497,8 @@ hr {
 }
 
 .btn-write-review {
-  border-color: #ff6b6b;
-  color: #ff6b6b;
+  border-color: #155475;
+  color: #155475;
   border-radius: 30px;
   font-weight: 500;
   padding: 8px 20px;
@@ -506,7 +506,7 @@ hr {
 }
 
 .btn-write-review:hover {
-  background-color: #ff6b6b;
+  background-color: #155475;
   color: white;
 }
 
@@ -541,20 +541,20 @@ hr {
   margin-top: 15px;
   padding: 10px 30px;
   border-radius: 30px;
-  background-color: #ff6b6b;
-  border-color: #ff6b6b;
+  background-color: #155475;
+  border-color: #155475;
   transition: all 0.3s;
 }
 
 .no-reviews-yet .btn:hover {
-  background-color: #ff5252;
-  border-color: #ff5252;
+  background-color: #155475;
+  border-color: #155475;
   transform: translateY(-2px);
   box-shadow: 0 4px 10px rgba(255, 107, 107, 0.3);
 }
 
 .no-reviews-yet .small a {
-  color: #ff6b6b;
+  color: #155475;
   text-decoration: none;
 }
 

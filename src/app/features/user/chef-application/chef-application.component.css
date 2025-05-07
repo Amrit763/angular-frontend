@@ -1,84 +1,287 @@
 /* src/app/features/chef-application/chef-application.component.css */
 .chef-application-container {
-  padding: 2rem 0;
+  padding: 3rem 0;
+  background-color: #f9f9f9;
+}
+
+.application-card {
+  border: none;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+}
+
+.application-header {
+  background: linear-gradient(135deg, #083a5d 0%, #126195 100%);
+  color: white;
+  padding: 1.5rem;
+  position: relative;
+}
+
+.application-header h2 {
+  margin: 0;
+  font-weight: 600;
+  font-size: 1.75rem;
+}
+
+.application-header p {
+  margin-top: 0.5rem;
+  opacity: 0.9;
+  font-size: 1rem;
+}
+
+.application-body {
+  padding: 2rem;
+  background-color: white;
+}
+
+.form-label {
+  font-weight: 500;
+  color: #333;
+  margin-bottom: 0.5rem;
+  font-size: 0.95rem;
+}
+
+.form-control {
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  border: 1px solid #e2e8f0;
+  transition: all 0.3s ease;
+}
+
+.form-control:focus {
+  border-color: #126195;
+  box-shadow: 0 0 0 3px rgba(18, 97, 149, 0.1);
+}
+
+textarea.form-control {
+  min-height: 120px;
+}
+
+.text-muted {
+  display: block;
+  margin-top: 0.5rem;
+  color: #6c757d;
+  font-size: 0.85rem;
 }
 
 .custom-file-upload {
   position: relative;
 }
 
+.file-upload-btn {
+  position: relative;
+  display: inline-block;
+  width: 100%;
+  cursor: pointer;
+  overflow: hidden;
+  background-color: #f8f9fa;
+  border: 2px dashed #ddd;
+  border-radius: 8px;
+  padding: 1.5rem;
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.file-upload-btn:hover {
+  background-color: #e9ecef;
+  border-color: #ced4da;
+}
+
+.file-upload-btn input[type="file"] {
+  position: absolute;
+  left: 0;
+  top: 0;
+  opacity: 0;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+}
+
+.file-upload-icon {
+  display: block;
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+  color: #126195;
+}
+
+.file-upload-text {
+  color: #495057;
+  font-weight: 500;
+}
+
 .selected-files {
-  margin-top: 0.5rem;
+  margin-top: 1rem;
 }
 
 .selected-file {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.5rem;
-  margin-bottom: 0.5rem;
+  padding: 0.75rem 1rem;
+  margin-bottom: 0.75rem;
   background-color: #f8f9fa;
-  border-radius: 0.25rem;
+  border-radius: 8px;
+  border-left: 3px solid #126195;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+  transition: all 0.2s ease;
+}
+
+.selected-file:hover {
+  background-color: #e9ecef;
+}
+
+.selected-file span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   font-size: 0.9rem;
+  color: #333;
 }
 
-.selected-file .btn-close {
-  font-size: 0.75rem;
+.selected-file .btn-remove {
+  background: none;
+  border: none;
+  color: #dc3545;
+  cursor: pointer;
+  font-size: 1rem;
   padding: 0.25rem;
+  margin-left: 0.5rem;
+  transition: all 0.2s ease;
 }
 
+.selected-file .btn-remove:hover {
+  color: #bd2130;
+  transform: scale(1.1);
+}
+
+.form-divider {
+  height: 1px;
+  background-color: #e9ecef;
+  margin: 2rem 0;
+}
+
+.submit-btn {
+  background: linear-gradient(135deg, #083a5d 0%, #126195 100%);
+  border: none;
+  border-radius: 8px;
+  color: white;
+  padding: 0.875rem 1.5rem;
+  font-weight: 600;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  width: 100%;
+}
+
+.submit-btn:hover {
+  background: linear-gradient(135deg, #072e49 0%, #0e4d77 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(18, 97, 149, 0.2);
+}
+
+.submit-btn:disabled {
+  background: #6c757d;
+  transform: none;
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
+.submit-btn .spinner-border {
+  width: 1.2rem;
+  height: 1.2rem;
+  margin-right: 0.5rem;
+}
+
+.error-message {
+  color: #fff;
+  background-color: #dc3545;
+  border-radius: 8px;
+  padding: 0.875rem 1rem;
+  font-size: 0.9rem;
+  margin-top: 1rem;
+  font-weight: 500;
+  text-align: center;
+}
+
+/* Success Message Styling */
 .application-success {
-  padding: 2rem 0;
+  padding: 2rem;
+  text-align: center;
 }
 
 .success-icon {
-  font-size: 4rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background-color: rgba(25, 135, 84, 0.1);
   color: #198754;
+  font-size: 3rem;
+  margin-bottom: 1.5rem;
 }
 
-.text-muted {
-  display: block;
-  margin-top: 0.25rem;
+.success-heading {
+  color: #126195;
+  font-weight: 600;
+  font-size: 1.75rem;
+  margin-bottom: 1rem;
 }
 
-/* Add visual indicator for form errors */
+.success-message {
+  color: #495057;
+  font-size: 1.1rem;
+  margin-bottom: 1.5rem;
+  max-width: 500px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.dashboard-link {
+  background-color: #126195;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 0.875rem 1.5rem;
+  font-weight: 600;
+  text-decoration: none;
+  display: inline-block;
+  transition: all 0.3s ease;
+}
+
+.dashboard-link:hover {
+  background-color: #083a5d;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(18, 97, 149, 0.2);
+}
+
+/* Validation styles */
 .is-invalid {
   border-color: #dc3545;
 }
 
-/* Style the file upload display */
-.selected-file {
-  display: flex;
-  align-items: center;
-  padding: 8px 12px;
-  background-color: #f0f0f0;
-  border-radius: 4px;
-  margin-bottom: 8px;
-}
-
-.selected-file span {
-  flex: 1;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  margin-right: 10px;
-}
-
-/* Make spinner more visible */
-.spinner-border {
-  width: 1rem;
-  height: 1rem;
-}
-
-/* Error message styling */
-.error-message {
+.invalid-feedback {
   color: #dc3545;
-  background-color: #f8d7da;
-  border: 1px solid #f5c6cb;
-  border-radius: 4px;
-  padding: 10px 15px;
-  font-size: 14px;
-  margin-top: 10px;
-  font-weight: 500;
-  text-align: center;
+  font-size: 0.85rem;
+  margin-top: 0.25rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .chef-application-container {
+    padding: 1.5rem 0;
+  }
+  
+  .application-header {
+    padding: 1.25rem;
+  }
+  
+  .application-body {
+    padding: 1.5rem;
+  }
+  
+  .selected-file {
+    padding: 0.5rem 0.75rem;
+  }
 }

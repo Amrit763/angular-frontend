@@ -3,11 +3,29 @@
   <div class="row">
     <!-- Back button and title -->
     <div class="col-12 mb-4">
-      <div class="d-flex align-items-center">
-        <a routerLink="/user/chats" class="btn btn-outline-secondary me-3">
-          <i class="bi bi-arrow-left"></i>
-        </a>
-        <h2 class="mb-0">Chat with {{ getChefName() }}</h2>
+      <div class="d-flex align-items-center justify-content-between">
+        <div class="d-flex align-items-center">
+          <a routerLink="/user/chats" class="btn btn-outline-secondary me-3">
+            <i class="bi bi-arrow-left"></i>
+          </a>
+          <h2 class="mb-0">Chat with {{ getChefName() }}</h2>
+        </div>
+        
+        <!-- Connection status indicator -->
+        <div class="connection-status">
+          <span *ngIf="connectionStatus === 'connected'" class="badge bg-success">
+            <i class="bi bi-wifi me-1"></i> Connected
+          </span>
+          <span *ngIf="connectionStatus === 'disconnected'" class="badge bg-danger">
+            <i class="bi bi-wifi-off me-1"></i> Disconnected
+            <button class="btn btn-sm btn-light ms-2" (click)="reconnectSocket()">
+              <i class="bi bi-arrow-clockwise"></i> Reconnect
+            </button>
+          </span>
+          <span *ngIf="connectionStatus === 'connecting'" class="badge bg-warning text-dark">
+            <i class="bi bi-wifi me-1"></i> Connecting...
+          </span>
+        </div>
       </div>
     </div>
     
@@ -106,15 +124,20 @@
                 class="form-control" 
                 placeholder="Type your message..." 
                 [ngClass]="{'is-invalid': messageForm.get('content')?.invalid && messageForm.get('content')?.touched}"
+                [disabled]="connectionStatus === 'disconnected'"
               >
               <button 
                 type="submit" 
                 class="btn btn-primary" 
-                [disabled]="messageForm.invalid || isSending"
+                [disabled]="messageForm.invalid || isSending || connectionStatus === 'disconnected'"
               >
                 <i *ngIf="!isSending" class="bi bi-send"></i>
                 <span *ngIf="isSending" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
               </button>
+            </div>
+            <div *ngIf="connectionStatus === 'disconnected'" class="text-danger mt-2 small">
+              <i class="bi bi-exclamation-triangle me-1"></i>
+              Connection lost. Please reconnect to continue messaging.
             </div>
             <div *ngIf="messageForm.get('content')?.invalid && messageForm.get('content')?.touched" class="invalid-feedback d-block">
               Message is required and cannot exceed 1000 characters

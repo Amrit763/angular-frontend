@@ -1,100 +1,164 @@
 /* src/app/shared/components/footer/footer.component.css */
 .footer {
-    background-color: #333;
-    color: #fff;
-    padding: 50px 0 20px;
-    margin-top: 50px;
+  background-color: #fff;
+  width: 100%;
+  position: relative;
+  bottom: 0;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 15px;
+}
+
+.footer-content {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  padding: 40px 0;
+}
+
+.footer-column {
+  flex: 1;
+  min-width: 200px;
+  margin-bottom: 20px;
+  padding: 0 15px;
+}
+
+.footer-logo {
+  display: flex;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.footer-logo img {
+  height: 45px; /* Increased from 30px to 45px */
+  width: auto;
+}
+
+.footer-logo h3 {
+  color: #333;
+  margin: 0;
+  font-size: 22px; /* Increased from 18px to 22px */
+  font-weight: 600;
+}
+
+.footer-column h3 {
+  color: #333;
+  margin-top: 0;
+  margin-bottom: 20px;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.footer-column p {
+  color: #666;
+  margin-bottom: 10px;
+  line-height: 1.5;
+}
+
+.footer-column ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.footer-column li {
+  margin-bottom: 10px;
+}
+
+.footer-column a {
+  color: #666;
+  text-decoration: none;
+  transition: color 0.3s;
+}
+
+.footer-column a:hover {
+  color: #333;
+}
+
+.social-icons {
+  display: flex;
+  gap: 15px;
+  margin-top: 15px;
+}
+
+.social-icons a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.3s;
+}
+
+.social-svg {
+  width: 20px;
+  height: 20px;
+  fill: #333;
+  transition: fill 0.3s;
+}
+
+.social-icon:hover {
+  transform: scale(1.2);
+}
+
+.social-icon:hover .social-svg {
+  fill: #007bff;
+}
+
+.social-icon.facebook:hover .social-svg {
+  fill: #1877F2;
+}
+
+.social-icon.instagram:hover .social-svg {
+  fill: #E4405F;
+}
+
+.social-icon.twitter:hover .social-svg {
+  fill: #1DA1F2;
+}
+
+.footer-bottom {
+  background-color: #0F3854;
+  color: white;
+  text-align: center;
+  padding: 15px 0;
+}
+
+.footer-bottom p {
+  margin: 0;
+  font-size: 14px;
+}
+
+/* Make the footer appear at the bottom of every page */
+html, body {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+main {
+  flex: 1;
+}
+
+/* Responsive design */
+@media (max-width: 991px) {
+  .footer-column {
+    flex: 0 0 calc(50% - 30px);
   }
-  
-  .container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 15px;
-  }
-  
+}
+
+@media (max-width: 767px) {
   .footer-content {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
-    margin-bottom: 30px;
+    flex-direction: column;
   }
   
-  .footer-logo {
-    flex: 0 0 30%;
+  .footer-column {
+    flex: 0 0 100%;
   }
-  
-  .footer-logo h2 {
-    color: #4CAF50;
-    margin-top: 0;
-    margin-bottom: 15px;
-  }
-  
-  .footer-logo p {
-    color: #bbb;
-    margin-bottom: 20px;
-  }
-  
-  .footer-links {
-    flex: 0 0 65%;
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
-  }
-  
-  .link-column {
-    flex: 0 0 48%;
-    margin-bottom: 20px;
-  }
-  
-  .link-column h3 {
-    color: #4CAF50;
-    margin-top: 0;
-    margin-bottom: 20px;
-    font-size: 18px;
-  }
-  
-  .link-column ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-  }
-  
-  .link-column li {
-    margin-bottom: 10px;
-  }
-  
-  .link-column a {
-    color: #bbb;
-    text-decoration: none;
-    transition: color 0.3s;
-  }
-  
-  .link-column a:hover {
-    color: #fff;
-  }
-  
-  .footer-bottom {
-    border-top: 1px solid #444;
-    padding-top: 20px;
-    text-align: center;
-    color: #888;
-    font-size: 14px;
-  }
-  
-  @media (max-width: 768px) {
-    .footer-content {
-      flex-direction: column;
-    }
-    
-    .footer-logo, .footer-links {
-      flex: 0 0 100%;
-    }
-    
-    .footer-links {
-      margin-top: 30px;
-    }
-    
-    .link-column {
-      flex: 0 0 100%;
-    }
-  }
+}

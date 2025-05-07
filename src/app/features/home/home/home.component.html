@@ -1,32 +1,47 @@
 <!-- src/app/features/home/home/home.component.html -->
 <div class="container-fluid p-0">
-  <!-- Hero Section with Light Blue Background -->
-  <section class="hero-section py-5" style="background-color: #c3e6f0;">
-    <div class="container">
-      <div class="row align-items-center">
-        <div class="col-lg-6 mb-4 mb-lg-0">
-          <h1 class="display-4 fw-bold mb-3">Empowering Home Chefs With a Secure & Scalable Marketplace</h1>
-          <p class="lead mb-4">Food Hub is a secure and scalable platform designed for small-scale, home-based food producers. It offers a cost-effective marketplace where home chefs can market their products, manage listings, take orders, and directly engage with buyers under one roof.</p>
-          <div class="d-grid gap-2 d-md-flex justify-content-md-start">
-            <a href="#browse-products" class="btn btn-primary btn-lg px-4 me-md-2">Get Started →</a>
+  <!-- Hero Section with Light Blue Background (Skew Effect) -->
+  <section class="skew-effect-section position-relative">
+    <div class="container content-container">
+      <div class="row align-items-center w-100 g-4">
+        <div class="col-lg-6 text-center text-lg-start mb-4 mb-lg-0">
+          <h1 class="mb-4 display-5 fw-bold">
+            <span>Empowering Home Sellers</span> With a Secure & Scalable Marketplace
+          </h1>
+          <p class="mb-4">
+            Food Hub is a secure and scalable platform designed for small-scale, home-based food producers.
+            It offers a cost-effective marketplace where home seller can market their products, manage listings,
+            take orders, and directly engage with buyers under one roof.
+          </p>
+          <a routerLink="/home/search" class="btn btn-primary custom-shadow-btn px-4 py-2">Get Started →</a>
+        </div>
+        <div class="col-lg-6 text-center">
+          <div class="image-container">
+            <img [src]="'assets/images/skeweffect.jpg'" alt="Food delivery" class="img-fluid rounded-3 shadow">
           </div>
         </div>
-        <div class="col-lg-6">
-          <img [src]="'assets/images/skeweffect.png'" alt="Food delivery" class="img-fluid rounded-3 shadow" >
-        </div>
       </div>
+    </div>
+    <div class="position-absolute bottom-0 start-0 w-100 overflow-hidden" style="height: 10vh">
+      <div class="position-absolute w-100 bg-white" style="transform: skewY(-3deg) translateY(90%); height: 100%"></div>
     </div>
   </section>
 
   <!-- Featured Products Section -->
-  <section class="py-5">
+  <section class="food-item-section py-5">
     <div class="container">
-      <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-          <h2 class="fw-bold">Savor Homemade Delights, Fresh & Secure!</h2>
-          <p class="text-muted">Discover authentic home-cooked meals made with love—delivered fresh, safe, and hassle free.</p>
+      <div class="row align-items-center mb-4">
+        <div class="col">
+          <h2 class="fw-bold">
+            Savor <span>Homemade</span> Delights, Fresh & Secure!
+          </h2>
+          <p class="text-muted">
+            Discover authentic home-cooked meals made with love—delivered fresh, safe, and hassle free.
+          </p>
         </div>
-        <a routerLink="/home/search" class="btn btn-primary px-4">View All →</a>
+        <div class="col text-end">
+          <a routerLink="/home/search" class="btn custom-shadow-btn px-4 py-2">View All →</a>
+        </div>
       </div>
 
       <!-- Loading indicator -->
@@ -50,12 +65,34 @@
     </div>
   </section>
 
-  <!-- Browse All Products Section with Light Background -->
-  <section id="browse-products" class="py-5 bg-light">
+  <!-- Join as Chef Section with Light Blue Background -->
+  <div class="chef-banner-container">
+    <section class="chef-banner">
+      <div class="container">
+        <div class="row align-items-center">
+          <div class="col-lg-9 col-md-8 col-sm-8">
+            <h1 class="banner-title">Bring Your Recipes to the World</h1>
+            <h2 class="banner-subtitle">Become a <span>Seller or Chef!</span></h2>
+          </div>
+          <div class="col-lg-3 col-md-4 col-sm-4 text-end">
+            <a routerLink="/user/chef-application" class="btn custom-shadow-btn px-4 py-2 ">Click me →</a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Top Rated Chefs Section -->
+  <section id="browse-products" class="top-rated-section">
     <div class="container">
       <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="fw-bold">Top Rated Homemade Chefs!</h2>
-        <a routerLink="/home/search" class="btn btn-primary px-4">View All →</a>
+        <div>
+          <h2 class="fw-bold">Top Rated <span>Homemade</span> Chefs!</h2>
+          <p class="text-muted">Discover talented home chefs in your area with exceptional culinary skills and top ratings</p>
+        </div>
+        <div>
+          <a routerLink="/home/search" class="btn custom-shadow-btn px-4 py-2">View All →</a>
+        </div>
       </div>
 
       <!-- Category pills -->
@@ -89,14 +126,14 @@
             <i class="bi bi-basket display-1 text-muted"></i>
             <h3 class="mt-3">No products found</h3>
             <p class="text-muted">Try selecting a different category or check back later</p>
-            <button class="btn btn-outline-primary mt-3" (click)="clearFilter()">Show All Products</button>
+            <button class="btn btn-outline-primary custom-shadow-btn mt-3" (click)="clearFilter()">Show All Products</button>
           </div>
         </div>
       </div>
       
       <!-- Pagination -->
       <nav *ngIf="getFilteredProducts().length > itemsPerPage" class="mt-5">
-        <ul class="pagination justify-content-center">
+        <ul class="pagination paginationBtn justify-content-center">
           <li class="page-item" [ngClass]="{'disabled': currentPage === 1}">
             <a class="page-link" href="javascript:void(0)" (click)="prevPage()" aria-label="Previous">
               <span aria-hidden="true">&laquo;</span>
@@ -115,69 +152,4 @@
     </div>
   </section>
 
-  <!-- Join as Chef Section with Light Blue Background -->
-  <section class="py-5" style="background-color: #c3e6f0;">
-    <div class="container">
-      <div class="row align-items-center">
-        <div class="col-lg-7">
-          <h2 class="display-5 fw-bold">Bring Your Recipes to the World</h2>
-          <h3 class="mb-4">Become a Seller or Chef!</h3>
-          <p class="lead mb-4">Share your culinary skills, earn money, and build your own food business</p>
-          <div class="d-grid gap-2 d-md-flex justify-content-md-start">
-            <a routerLink="/user/chef-application" class="btn btn-primary btn-lg px-4">Click me →</a>
-          </div>
-        </div>
-        <div class="col-lg-5 mt-4 mt-lg-0">
-          <img src="assets/images/chef.jpg" alt="Chef cooking" class="img-fluid rounded-3 shadow">
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- How It Works Section -->
-  <section class="py-5">
-    <div class="container">
-      <div class="row mb-5 text-center">
-        <div class="col-12">
-          <h2 class="fw-bold mb-2">How It Works</h2>
-          <p class="text-muted">Simple steps to get delicious homemade food delivered to your door</p>
-        </div>
-      </div>
-      <div class="row row-cols-1 row-cols-md-3 g-4">
-        <div class="col">
-          <div class="card h-100 text-center shadow-sm how-it-works-card border-0">
-            <div class="card-body">
-              <div class="icon-wrapper">
-                <i class="bi bi-search display-4"></i>
-              </div>
-              <h4 class="mt-4">Browse & Order</h4>
-              <p class="text-muted">Explore a wide variety of homemade dishes from local chefs and place your order online</p>
-            </div>
-          </div>
-        </div>
-        <div class="col">
-          <div class="card h-100 text-center shadow-sm how-it-works-card border-0">
-            <div class="card-body">
-              <div class="icon-wrapper">
-                <i class="bi bi-clock-history display-4"></i>
-              </div>
-              <h4 class="mt-4">Chef Prepares</h4>
-              <p class="text-muted">Your chosen chef prepares your meal with fresh ingredients and careful attention</p>
-            </div>
-          </div>
-        </div>
-        <div class="col">
-          <div class="card h-100 text-center shadow-sm how-it-works-card border-0">
-            <div class="card-body">
-              <div class="icon-wrapper">
-                <i class="bi bi-truck display-4"></i>
-              </div>
-              <h4 class="mt-4">Delivery</h4>
-              <p class="text-muted">We deliver your delicious homemade meal directly to your doorstep at the scheduled time</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
 </div>

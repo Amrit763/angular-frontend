@@ -1,4 +1,4 @@
-// src/app/features/user/user-reviews/user-reviews.component.ts (Final Fixed)
+// src/app/features/user/user-reviews/user-reviews.component.ts
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
@@ -36,7 +36,7 @@ export class UserReviewsComponent implements OnInit {
   error: string | null = null;
   currentPage = 1;
   totalPages = 1;
-  limit = 10;
+  limit = 6; // Changed from 10 to 6 for pagination (show pagination when more than 6 reviews)
   totalReviews = 0;
   
   isDeleteDialogOpen = false;
@@ -85,89 +85,87 @@ export class UserReviewsComponent implements OnInit {
     });
   }
   
-// Updated loadPendingReviews method for user-reviews.component.ts
-  
-loadPendingReviews(): void {
-  this.loadingPendingReviews = true;
-  this.pendingReviews = [];
-  
-  // Get all orders first
-  this.orderService.getUserOrders().pipe(
-    map(response => response.orders.filter(order => {
-      // Check if main order is delivered
-      if (order.status === 'delivered') return true;
-      
-      // Or check if any chef items are delivered
-      if (order.chefItems && order.chefItems.length > 0) {
-        return order.chefItems.some(chefGroup => chefGroup.status === 'delivered');
-      }
-      
-      return false;
-    })),
-    switchMap(deliveredOrders => {
-      if (deliveredOrders.length === 0) {
-        return of([]);
-      }
-      
-      // For each delivered order, check each product
-      const reviewCheckRequests: any[] = [];
-      
-      deliveredOrders.forEach(order => {
-        // Process chef items that are delivered
+  loadPendingReviews(): void {
+    this.loadingPendingReviews = true;
+    this.pendingReviews = [];
+    
+    // Get all orders first
+    this.orderService.getUserOrders().pipe(
+      map(response => response.orders.filter(order => {
+        // Check if main order is delivered
+        if (order.status === 'delivered') return true;
+        
+        // Or check if any chef items are delivered
         if (order.chefItems && order.chefItems.length > 0) {
-          order.chefItems.forEach(chefGroup => {
-            // Only process delivered chef groups
-            if (chefGroup.status === 'delivered') {
-              chefGroup.items.forEach(item => {
-                // Only add items with valid product info
-                if (item.product && item.product._id) {
-                  const productId = item.product._id;
-                  const product = item.product;
-                  
-                  reviewCheckRequests.push(
-                    this.reviewService.canReviewProduct(order._id, productId).pipe(
-                      map(response => ({
-                        orderId: order._id,
-                        productId: productId,
-                        product: product,
-                        orderDate: order.createdAt,
-                        canReview: response.canReview
-                      })),
-                      catchError(() => of(null))
-                    )
-                  );
-                }
-              });
-            }
-          });
+          return order.chefItems.some(chefGroup => chefGroup.status === 'delivered');
         }
-      });
-      
-      if (reviewCheckRequests.length === 0) {
-        return of([]);
+        
+        return false;
+      })),
+      switchMap(deliveredOrders => {
+        if (deliveredOrders.length === 0) {
+          return of([]);
+        }
+        
+        // For each delivered order, check each product
+        const reviewCheckRequests: any[] = [];
+        
+        deliveredOrders.forEach(order => {
+          // Process chef items that are delivered
+          if (order.chefItems && order.chefItems.length > 0) {
+            order.chefItems.forEach(chefGroup => {
+              // Only process delivered chef groups
+              if (chefGroup.status === 'delivered') {
+                chefGroup.items.forEach(item => {
+                  // Only add items with valid product info
+                  if (item.product && item.product._id) {
+                    const productId = item.product._id;
+                    const product = item.product;
+                    
+                    reviewCheckRequests.push(
+                      this.reviewService.canReviewProduct(order._id, productId).pipe(
+                        map(response => ({
+                          orderId: order._id,
+                          productId: productId,
+                          product: product,
+                          orderDate: order.createdAt,
+                          canReview: response.canReview
+                        })),
+                        catchError(() => of(null))
+                      )
+                    );
+                  }
+                });
+              }
+            });
+          }
+        });
+        
+        if (reviewCheckRequests.length === 0) {
+          return of([]);
+        }
+        
+        return forkJoin(reviewCheckRequests);
+      })
+    ).subscribe({
+      next: (results) => {
+        // Filter out null results and products that can't be reviewed
+        this.pendingReviews = results
+          .filter(result => result !== null && result.canReview)
+          .map(result => ({
+            orderId: result.orderId,
+            product: result.product,
+            orderDate: result.orderDate
+          }));
+        
+        this.loadingPendingReviews = false;
+      },
+      error: (err) => {
+        console.error('Error loading pending reviews:', err);
+        this.loadingPendingReviews = false;
       }
-      
-      return forkJoin(reviewCheckRequests);
-    })
-  ).subscribe({
-    next: (results) => {
-      // Filter out null results and products that can't be reviewed
-      this.pendingReviews = results
-        .filter(result => result !== null && result.canReview)
-        .map(result => ({
-          orderId: result.orderId,
-          product: result.product,
-          orderDate: result.orderDate
-        }));
-      
-      this.loadingPendingReviews = false;
-    },
-    error: (err) => {
-      console.error('Error loading pending reviews:', err);
-      this.loadingPendingReviews = false;
-    }
-  });
-}
+    });
+  }
 
   changePage(page: number): void {
     if (page < 1 || page > this.totalPages) {

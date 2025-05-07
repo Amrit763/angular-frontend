@@ -6,7 +6,7 @@ import { Subscription } from 'rxjs';
 import { ChatService } from '../../../../core/services/chat.service';
 import { ProductService } from '../../../../core/services/product.service';
 import { TokenService } from '../../../../core/auth/token.service';
-import { Chat } from '../../../../core/models/chat.model'; // Import from model instead of service
+import { Chat } from '../../../../core/models/chat.model';
 
 @Component({
   selector: 'app-chef-chat-list',
@@ -26,6 +26,10 @@ export class ChefChatListComponent implements OnInit, OnDestroy {
   
   // Filters
   activeFilter: 'all' | 'active' | 'read' | 'unread' = 'all';
+  
+  // Deletion tracking
+  deletingChatId: { [key: string]: boolean } = {};
+  isDeleting: { [key: string]: boolean } = {};
   
   private subscriptions: Subscription[] = [];
 
@@ -93,11 +97,49 @@ export class ChefChatListComponent implements OnInit, OnDestroy {
       case 'unread':
         return this.chats.filter(chat => (chat.unreadCount || 0) > 0);
       case 'read':
-        // Fixed the comparison issue
         return this.chats.filter(chat => !((chat.unreadCount || 0) > 0));
       default:
         return this.chats;
     }
+  }
+  
+  // Show delete confirmation for a chat
+  showDeleteConfirmation(chat: Chat): void {
+    // Reset all other delete confirmations
+    this.deletingChatId = {};
+    
+    // Set this chat to show delete confirmation
+    this.deletingChatId[chat._id] = true;
+  }
+  
+  // Cancel delete operation
+  cancelDeleteChat(chatId: string): void {
+    this.deletingChatId[chatId] = false;
+  }
+  
+  // Delete a chat (soft delete for current user only)
+  deleteChat(chatId: string): void {
+    this.isDeleting[chatId] = true;
+    
+    this.chatService.deleteChat(chatId).subscribe({
+      next: (response) => {
+        if (response.success) {
+          // The chat will be automatically removed from the list
+          // via the BehaviorSubject in the chat service
+          console.log('Chat deleted successfully');
+        } else {
+          this.error = response.message || 'Failed to delete chat';
+          // Reset the delete confirmation
+          this.deletingChatId[chatId] = false;
+        }
+        this.isDeleting[chatId] = false;
+      },
+      error: (err) => {
+        this.error = err.message || 'Failed to delete chat';
+        this.isDeleting[chatId] = false;
+        this.deletingChatId[chatId] = false;
+      }
+    });
   }
 
   // Get customer name for a chat
@@ -107,8 +149,7 @@ export class ChefChatListComponent implements OnInit, OnDestroy {
     }
     
     // Find the participant who is a regular user (not the chef/current user)
-    // Fixed the typings for parameter p
-    const customer = chat.participants.find((p: any) => 
+    const customer = chat.participants.find(p => 
       p._id !== this.currentUserId && p.role !== 'chef'
     );
     
@@ -122,8 +163,7 @@ export class ChefChatListComponent implements OnInit, OnDestroy {
     }
     
     // Find the customer participant
-    // Fixed the typings for parameter p
-    const customer = chat.participants.find((p: any) => 
+    const customer = chat.participants.find(p => 
       p._id !== this.currentUserId && p.role !== 'chef'
     );
     
@@ -162,7 +202,7 @@ export class ChefChatListComponent implements OnInit, OnDestroy {
     
     if (typeof chat.lastMessage.sender === 'string') {
       isSender = chat.lastMessage.sender === this.currentUserId;
-    } else {
+    } else if (chat.lastMessage.sender && typeof chat.lastMessage.sender === 'object' && '_id' in chat.lastMessage.sender) {
       isSender = chat.lastMessage.sender._id === this.currentUserId;
     }
     
