@@ -1,4 +1,4 @@
-// src/app/features/chef/chef-chat/chef-chat-list/chef-chat-list.component.ts
+// src/app/features/user/user-chat/user-chat-list/user-chat-list.component.ts
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
@@ -6,19 +6,19 @@ import { Subscription } from 'rxjs';
 import { ChatService } from '../../../../core/services/chat.service';
 import { ProductService } from '../../../../core/services/product.service';
 import { TokenService } from '../../../../core/auth/token.service';
-import { Chat } from '../../../../core/models/chat.model'; // Import from model instead of service
+import { Chat, ChatMessage } from '../../../../core/models/chat.model';
 
 @Component({
-  selector: 'app-chef-chat-list',
-  templateUrl: './chef-chat-list.component.html',
-  styleUrls: ['./chef-chat-list.component.css'],
+  selector: 'app-user-chat-list',
+  templateUrl: './user-chat-list.component.html',
+  styleUrls: ['./user-chat-list.component.css'],
   standalone: true,
   imports: [
     CommonModule,
     RouterModule
   ]
 })
-export class ChefChatListComponent implements OnInit, OnDestroy {
+export class UserChatListComponent implements OnInit, OnDestroy {
   chats: Chat[] = [];
   isLoading = true;
   error: string | null = null;
@@ -46,7 +46,7 @@ export class ChefChatListComponent implements OnInit, OnDestroy {
         this.isLoading = false;
       })
     );
-    
+
     // Initialize socket connection
     this.chatService.initializeSocket();
   }
@@ -93,41 +93,38 @@ export class ChefChatListComponent implements OnInit, OnDestroy {
       case 'unread':
         return this.chats.filter(chat => (chat.unreadCount || 0) > 0);
       case 'read':
-        // Fixed the comparison issue
         return this.chats.filter(chat => !((chat.unreadCount || 0) > 0));
       default:
         return this.chats;
     }
   }
 
-  // Get customer name for a chat
-  getCustomerName(chat: Chat): string {
+  // Get chef name for a chat
+  getChefName(chat: Chat): string {
     if (!chat.participants || chat.participants.length === 0) {
-      return 'Customer';
+      return 'Chef';
     }
     
-    // Find the participant who is a regular user (not the chef/current user)
-    // Fixed the typings for parameter p
-    const customer = chat.participants.find((p: any) => 
-      p._id !== this.currentUserId && p.role !== 'chef'
+    // Find the participant who is a chef (not the current user)
+    const chef = chat.participants.find(p => 
+      p._id !== this.currentUserId && p.role === 'chef'
     );
     
-    return customer ? customer.fullName : 'Customer';
+    return chef ? chef.fullName : 'Chef';
   }
 
-  // Get customer profile image
-  getCustomerImage(chat: Chat): string {
+  // Get chef profile image
+  getChefImage(chat: Chat): string {
     if (!chat.participants || chat.participants.length === 0) {
       return '';
     }
     
-    // Find the customer participant
-    // Fixed the typings for parameter p
-    const customer = chat.participants.find((p: any) => 
-      p._id !== this.currentUserId && p.role !== 'chef'
+    // Find the chef participant
+    const chef = chat.participants.find(p => 
+      p._id !== this.currentUserId && p.role === 'chef'
     );
     
-    return customer && customer.profileImage ? customer.profileImage : '';
+    return chef && chef.profileImage ? chef.profileImage : '';
   }
 
   // Format date for display (relative time)

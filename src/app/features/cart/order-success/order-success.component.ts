@@ -1,10 +1,11 @@
 // src/app/features/cart/order-success/order-success.component.ts
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { RouterModule, ActivatedRoute } from '@angular/router';
 import { OrderService } from '../../../core/services/order.service';
 import { ChatService } from '../../../core/services/chat.service';
-import { ToastService } from '../../../core/services/toast.service';
+import { Order } from '../../../core/models/order.model';
+import { Chat } from '../../../core/models/chat.model';
 
 @Component({
   selector: 'app-order-success',
@@ -18,17 +19,16 @@ import { ToastService } from '../../../core/services/toast.service';
 })
 export class OrderSuccessComponent implements OnInit {
   orderId: string = '';
-  isLoading: boolean = true;
+  order: Order | null = null;
+  chat: Chat | null = null;
+  isLoading = true;
+  isChatLoading = true;
   error: string | null = null;
-  chatCreated: boolean = false;
-  chatId: string | null = null;
 
   constructor(
     private route: ActivatedRoute,
-    private router: Router,
     private orderService: OrderService,
-    private chatService: ChatService,
-    private toastService: ToastService
+    private chatService: ChatService
   ) { }
 
   ngOnInit(): void {
@@ -36,78 +36,69 @@ export class OrderSuccessComponent implements OnInit {
       const id = params.get('id');
       if (id) {
         this.orderId = id;
-        this.checkChatStatus();
-      } else {
-        this.error = 'Order ID not found';
+        this.loadOrderDetails();
+        this.findOrderChat();
+      }
+    });
+  }
+
+  // Load order details
+  loadOrderDetails(): void {
+    this.isLoading = true;
+    this.orderService.getOrderById(this.orderId).subscribe({
+      next: (response) => {
+        this.order = response.order;
+        this.isLoading = false;
+      },
+      error: (err) => {
+        this.error = err.message || 'Failed to load order details';
         this.isLoading = false;
       }
     });
   }
 
-  checkChatStatus(): void {
-    // First check if chat already exists for this order
+  // Find chat for this order
+  findOrderChat(): void {
+    this.isChatLoading = true;
+    
+    // First get all chats
     this.chatService.getChats().subscribe({
       next: (response) => {
-        if (response.success) {
-          const existingChat = response.chats.find(chat => 
-            chat.order && chat.order._id === this.orderId
-          );
-          
-          if (existingChat) {
-            this.chatCreated = true;
-            this.chatId = existingChat._id;
-            this.isLoading = false;
-          } else {
-            this.createOrderChat();
+        // Filter chats to find one matching this order
+        const chatForOrder = response.chats.find(chat => {
+          // Check if chat.order is a string (ID) or object
+          if (typeof chat.order === 'string') {
+            return chat.order === this.orderId;
+          } else if (chat.order && chat.order._id) {
+            return chat.order._id === this.orderId;
           }
-        } else {
-          this.createOrderChat();
-        }
+          return false;
+        });
+        
+        this.chat = chatForOrder || null;
+        this.isChatLoading = false;
       },
       error: (err) => {
-        this.error = err.message || 'Failed to check chat status';
-        this.isLoading = false;
+        console.error('Failed to load chats:', err);
+        this.isChatLoading = false;
       }
     });
   }
 
-  createOrderChat(): void {
-    this.chatService.createOrderChat(this.orderId).subscribe({
-      next: (response) => {
-        if (response.success) {
-          this.chatCreated = true;
-          // Refresh chats to get the new chat ID
-          this.chatService.loadChats();
-          this.chatService.chats$.subscribe(chats => {
-            const newChat = chats.find(chat => 
-              chat.order && chat.order._id === this.orderId
-            );
-            if (newChat) {
-              this.chatId = newChat._id;
-            }
-            this.isLoading = false;
-          });
-        } else {
-          this.error = response.message || 'Failed to create chat';
-          this.isLoading = false;
-        }
-      },
-      error: (err) => {
-        this.error = err.message || 'Failed to create chat';
-        this.isLoading = false;
-      }
-    });
+  // Format timestamp for display
+  formatDate(dateString: string): string {
+    return new Date(dateString).toLocaleString();
   }
 
-  goToChat(): void {
-    if (this.chatId) {
-      this.router.navigate(['/user/chats', this.chatId]);
-    } else {
-      this.toastService.showError('Chat not found');
-    }
+  // Get status label
+  getOrderStatusLabel(): string {
+    if (!this.order) return 'Unknown';
+    return this.orderService.getStatusLabel(this.order.status);
   }
 
-  viewOrder(): void {
-    this.router.navigate(['/user/orders', this.orderId]);
+  // Get status badge class
+  getOrderStatusClass(): string {
+    if (!this.order) return 'bg-secondary';
+    return this.orderService.getStatusClass(this.order.status);
   }
 }

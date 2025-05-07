@@ -1,49 +1,121 @@
 <!-- src/app/features/cart/order-success/order-success.component.html -->
 <div class="container my-5 py-4">
-    <div class="row justify-content-center">
-      <div class="col-lg-8">
-        <!-- Loading state -->
-        <div *ngIf="isLoading" class="text-center my-5">
-          <div class="spinner-border text-primary" role="status">
-            <span class="visually-hidden">Loading...</span>
+  <div class="row">
+    <div class="col-12 col-lg-8 mx-auto">
+      <!-- Success message -->
+      <div class="card shadow-sm mb-4">
+        <div class="card-body text-center p-5">
+          <div class="success-icon mb-4">
+            <i class="bi bi-check-circle-fill text-success" style="font-size: 5rem;"></i>
           </div>
-          <p class="mt-3">Setting up your order...</p>
-        </div>
-        
-        <!-- Error message -->
-        <div *ngIf="error && !isLoading" class="alert alert-danger">
-          {{ error }}
-        </div>
-        
-        <!-- Success content -->
-        <div *ngIf="!isLoading && !error" class="card shadow-sm border-0">
-          <div class="card-body p-5 text-center">
-            <div class="success-icon mb-4">
-              <i class="bi bi-check-circle text-success" style="font-size: 5rem;"></i>
+          <h2 class="mb-3">Thank You for Your Order!</h2>
+          <p class="mb-0 lead">Your order has been successfully placed.</p>
+          <p class="text-muted">Order #{{ orderId.slice(-8) }}</p>
+          
+          <!-- Loading spinner -->
+          <div *ngIf="isLoading" class="my-4">
+            <div class="spinner-border text-primary" role="status">
+              <span class="visually-hidden">Loading...</span>
             </div>
-            <h2 class="mb-3">Thank You for Your Order!</h2>
-            <p class="lead mb-4">Your order has been successfully placed and is now being processed.</p>
-            <div class="order-details mb-4">
-              <div class="order-number mb-2">
-                <span class="fw-bold">Order #:</span> {{ orderId.slice(-8) }}
-              </div>
-            </div>
-            
-            <div class="alert alert-info mb-4">
-              <i class="bi bi-info-circle me-2"></i>
-              You can now communicate with your chef through our chat system. Ask questions, make special requests, or get updates about your order.
-            </div>
-            
-            <div class="d-grid gap-3 d-md-flex justify-content-md-center">
-              <button class="btn btn-lg btn-primary" (click)="goToChat()">
-                <i class="bi bi-chat-dots me-2"></i>Chat with Chef
-              </button>
-              <button class="btn btn-lg btn-outline-secondary" (click)="viewOrder()">
-                <i class="bi bi-receipt me-2"></i>View Order Details
-              </button>
-            </div>
+          </div>
+          
+          <!-- Order status -->
+          <div *ngIf="!isLoading && order" class="my-4">
+            <p>Your order status: 
+              <span class="badge" [ngClass]="getOrderStatusClass()">
+                {{ getOrderStatusLabel() }}
+              </span>
+            </p>
+            <p>Placed on: {{ formatDate(order.createdAt) }}</p>
+          </div>
+          
+          <!-- Chat with Chef button -->
+          <div *ngIf="!isChatLoading && chat" class="my-4 d-grid gap-2 col-md-6 mx-auto">
+            <a [routerLink]="['/chats', chat._id]" class="btn btn-primary btn-lg">
+              <i class="bi bi-chat-dots me-2"></i>Chat with Chef
+            </a>
+            <p class="text-muted small mt-2">Have questions about your order? Chat directly with the chef!</p>
           </div>
         </div>
       </div>
+      
+      <!-- Error message -->
+      <div *ngIf="error" class="alert alert-danger">
+        {{ error }}
+      </div>
+      
+      <!-- Order details summary -->
+      <div *ngIf="!isLoading && order" class="card shadow-sm mb-4">
+        <div class="card-header bg-white">
+          <h5 class="mb-0">Order Details</h5>
+        </div>
+        <div class="card-body">
+          <!-- Delivery information -->
+          <div class="mb-4">
+            <h6>Delivery Information</h6>
+            <p class="mb-1"><strong>Address:</strong> {{ order.deliveryAddress }}</p>
+            <p class="mb-1"><strong>Date:</strong> {{ order.deliveryDate | date:'EEEE, MMMM d, y' }}</p>
+            <p class="mb-1"><strong>Time:</strong> {{ order.deliveryTime }}</p>
+            <p *ngIf="order.deliveryNotes" class="mb-0"><strong>Notes:</strong> {{ order.deliveryNotes }}</p>
+          </div>
+          
+          <!-- Order items -->
+          <div class="mb-4">
+            <h6>Ordered Items</h6>
+            <div class="table-responsive">
+              <table class="table table-striped">
+                <thead>
+                  <tr>
+                    <th>Item</th>
+                    <th class="text-center">Quantity</th>
+                    <th class="text-end">Price</th>
+                    <th class="text-end">Subtotal</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let item of order.items">
+                    <td>{{ item.product?.name || 'Product' }}</td>
+                    <td class="text-center">{{ item.quantity }}</td>
+                    <td class="text-end">${{ item.price.toFixed(2) }}</td>
+                    <td class="text-end">${{ item.subtotal.toFixed(2) }}</td>
+                  </tr>
+                </tbody>
+                <tfoot>
+                  <tr>
+                    <th colspan="3" class="text-end">Subtotal:</th>
+                    <th class="text-end">${{ order.subtotal.toFixed(2) }}</th>
+                  </tr>
+                  <tr>
+                    <th colspan="3" class="text-end">Service Fee:</th>
+                    <th class="text-end">${{ order.serviceFee.toFixed(2) }}</th>
+                  </tr>
+                  <tr>
+                    <th colspan="3" class="text-end">Total:</th>
+                    <th class="text-end">${{ order.totalAmount.toFixed(2) }}</th>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          </div>
+          
+          <!-- Payment information -->
+          <div>
+            <h6>Payment Information</h6>
+            <p class="mb-1"><strong>Method:</strong> {{ order.paymentMethod }}</p>
+            <p class="mb-0"><strong>Status:</strong> {{ order.paymentStatus }}</p>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Action buttons -->
+      <div class="d-flex justify-content-between">
+        <a routerLink="/orders" class="btn btn-outline-primary">
+          <i class="bi bi-list-check me-2"></i>View All Orders
+        </a>
+        <a routerLink="/home" class="btn btn-outline-secondary">
+          <i class="bi bi-house me-2"></i>Back to Home
+        </a>
+      </div>
     </div>
   </div>
+</div>

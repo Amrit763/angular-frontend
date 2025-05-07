@@ -5,12 +5,8 @@ import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Subscription } from 'rxjs';
 import { ChatService } from '../../../core/services/chat.service';
-import { ProductService } from '../../../core/services/product.service';
-import { ToastService } from '../../../core/services/toast.service';
 import { TokenService } from '../../../core/auth/token.service';
 import { Chat, ChatMessage, User } from '../../../core/models/chat.model';
-import { ChatQuickRepliesComponent } from '../../../shared/components/chat-quick-replies/chat-quick-replies.component';
-import { ChatOrderSummaryComponent } from '../../../shared/components/chat-order-summary/chat-order-summary.component';
 
 @Component({
   selector: 'app-chat-detail',
@@ -20,9 +16,7 @@ import { ChatOrderSummaryComponent } from '../../../shared/components/chat-order
   imports: [
     CommonModule,
     RouterModule,
-    ReactiveFormsModule,
-    ChatQuickRepliesComponent,
-    ChatOrderSummaryComponent
+    ReactiveFormsModule
   ]
 })
 export class ChatDetailComponent implements OnInit, OnDestroy, AfterViewChecked {
@@ -38,28 +32,15 @@ export class ChatDetailComponent implements OnInit, OnDestroy, AfterViewChecked 
   sending = false;
   
   currentUserId = '';
-  isDeleteDialogOpen = false;
-  messageToDelete: string | null = null;
-  isDeleting = false;
-  
-  // Typing indicator properties
-  typingUsers: string[] = [];
-  private typingSubscription: Subscription | null = null;
-  
-  // Order summary property
-  showOrderSummary: boolean = false;
   
   private subscriptions: Subscription[] = [];
   private shouldScrollToBottom = true;
-  private lastMessageCount = 0;
 
   constructor(
     private route: ActivatedRoute,
     private router: Router,
     private fb: FormBuilder,
     private chatService: ChatService,
-    public productService: ProductService,
-    private toastService: ToastService,
     private tokenService: TokenService
   ) { }
 
@@ -75,42 +56,11 @@ export class ChatDetailComponent implements OnInit, OnDestroy, AfterViewChecked 
     // Subscribe to active chat observable
     this.subscriptions.push(
       this.chatService.activeChat$.subscribe(chat => {
-        // Determine if new messages have been added
-        const hadChat = !!this.chat;
-        const oldMessageCount = hadChat && this.chat ? this.chat.messages.length : 0;
-        
         this.chat = chat;
         this.isLoading = false;
-        
-        // Set scrollToBottom flag if:
-        // 1. First time loading the chat
-        // 2. New messages arrived and we were already at the bottom
-        // 3. We sent a message (lastMessageCount will be incremented when we send)
-        if (!hadChat || 
-            (chat && oldMessageCount < chat.messages.length && this.isScrolledToBottom()) || 
-            (chat && this.lastMessageCount < chat.messages.length && 
-              chat.messages.length > 0 && this.isOwnMessage(chat.messages[chat.messages.length - 1]))) {
-          this.shouldScrollToBottom = true;
-        }
-        
-        if (chat) {
-          this.lastMessageCount = chat.messages.length;
-        }
+        this.shouldScrollToBottom = true;
       })
     );
-    
-    // Subscribe to typing indicators
-    this.typingSubscription = this.chatService.typingUsers$.subscribe(typingUsers => {
-      if (this.chatId && typingUsers[this.chatId]) {
-        // Filter out current user from typing users list
-        const user = this.tokenService.getUser();
-        this.typingUsers = typingUsers[this.chatId].filter(userName => 
-          user && userName !== user.fullName
-        );
-      } else {
-        this.typingUsers = [];
-      }
-    });
     
     // Get chat ID from route
     this.route.paramMap.subscribe(params => {
@@ -130,6 +80,11 @@ export class ChatDetailComponent implements OnInit, OnDestroy, AfterViewChecked 
       this.scrollToBottom();
       this.shouldScrollToBottom = false;
     }
+    
+    // Auto-resize textarea if it exists
+    if (this.messageInput && this.messageInput.nativeElement) {
+      this.adjustTextareaHeight(this.messageInput.nativeElement);
+    }
   }
 
   ngOnDestroy(): void {
@@ -138,20 +93,20 @@ export class ChatDetailComponent implements OnInit, OnDestroy, AfterViewChecked 
     
     // Unsubscribe from all subscriptions
     this.subscriptions.forEach(sub => sub.unsubscribe());
-    
-    // Unsubscribe from typing indicators
-    if (this.typingSubscription) {
-      this.typingSubscription.unsubscribe();
-    }
   }
 
   // Auto-resize textarea as user types
   @HostListener('input', ['$event.target'])
   onInput(textArea: HTMLTextAreaElement): void {
     if (textArea && textArea.tagName.toLowerCase() === 'textarea') {
-      textArea.style.height = 'auto';
-      textArea.style.height = textArea.scrollHeight + 'px';
+      this.adjustTextareaHeight(textArea);
     }
+  }
+  
+  // Helper to adjust textarea height
+  private adjustTextareaHeight(textArea: HTMLTextAreaElement): void {
+    textArea.style.height = 'auto';
+    textArea.style.height = textArea.scrollHeight + 'px';
   }
 
   // Check if user has scrolled to bottom
@@ -189,39 +144,60 @@ export class ChatDetailComponent implements OnInit, OnDestroy, AfterViewChecked 
     const messageControl = this.messageForm.get('message');
     let message = messageControl?.value || '';
     
-    // Check for special commands
-    if (message === '/order') {
-      // Replace with a proper message and show order summary
-      message = 'Here is the order information:';
-      this.showOrderSummary = true;
+    // Trim message to remove whitespace
+    message = message.trim();
+    
+    if (!message) {
+      return; // Don't send empty messages
     }
     
     this.sending = true;
     
-    // Stop typing indicator
-    this.chatService.sendTypingIndicator(this.chatId, false);
+    // Add temporary message for immediate UI feedback
+    const tempMessage: any = {
+      _id: 'temp-' + new Date().getTime(),
+      content: message,
+      sender: {
+        _id: this.currentUserId,
+        fullName: this.tokenService.getUser()?.fullName || 'You'
+      },
+      readBy: [this.currentUserId],
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
     
-    // Update lastMessageCount to indicate we're adding a message
-    this.lastMessageCount++;
+    // Add message to UI immediately
+    if (this.chat) {
+      this.chat.messages = [...this.chat.messages, tempMessage];
+      this.shouldScrollToBottom = true;
+    }
+    
+    // Clear form before the API call completes
+    this.messageForm.reset();
+    
+    // Reset textarea height
+    if (this.messageInput) {
+      this.messageInput.nativeElement.style.height = 'auto';
+    }
     
     this.chatService.sendMessage(this.chatId, message).subscribe({
       next: (response) => {
-        // Successfully sent - clear form
-        this.messageForm.reset();
+        // Replace temp message with actual message
+        if (response && response.success && response.message && this.chat) {
+          this.chat.messages = this.chat.messages.filter(msg => msg._id !== tempMessage._id);
+          this.chat.messages.push(response.message);
+        }
+        
         this.sending = false;
         this.shouldScrollToBottom = true;
-        
-        // Reset textarea height
-        if (this.messageInput) {
-          this.messageInput.nativeElement.style.height = 'auto';
-        }
       },
       error: (err) => {
-        this.toastService.showError(err.message || 'Failed to send message');
-        this.sending = false;
+        // Remove the temp message on error
+        if (this.chat) {
+          this.chat.messages = this.chat.messages.filter(msg => msg._id !== tempMessage._id);
+        }
         
-        // Decrement since message wasn't actually added
-        this.lastMessageCount--;
+        this.sending = false;
       }
     });
   }
@@ -232,26 +208,22 @@ export class ChatDetailComponent implements OnInit, OnDestroy, AfterViewChecked 
       this.chatService.sendTypingIndicator(this.chatId, true);
     }
   }
-  
-  // Toggle order summary visibility
-  toggleOrderSummary(): void {
-    this.showOrderSummary = !this.showOrderSummary;
-  }
-  
-  // Handle quick reply selection
-  onQuickReplySelected(text: string): void {
-    // Set the text in the form
-    this.messageForm.get('message')?.setValue(text);
-    
-    // Focus the input to allow for editing before sending
-    if (this.messageInput) {
-      this.messageInput.nativeElement.focus();
-    }
-  }
 
   // Check if message is from current user
   isOwnMessage(message: ChatMessage): boolean {
     return message.sender._id === this.currentUserId;
+  }
+
+  // Get sender name for a message
+  getSenderName(message: ChatMessage): string {
+    // If it's the current user's message
+    if (this.isOwnMessage(message)) {
+      const user = this.tokenService.getUser();
+      return user?.fullName || 'You';
+    }
+    
+    // Otherwise return the sender's name
+    return message.sender?.fullName || 'Chef';
   }
 
   // Format date for display
@@ -288,83 +260,22 @@ export class ChatDetailComponent implements OnInit, OnDestroy, AfterViewChecked 
     return dateStr;
   }
 
-  // Get other participant(s) in the chat
+  // Get other participant(s) in the chat - Chef name
   getOtherParticipants(): string {
     if (!this.chat || !this.chat.participants || this.chat.participants.length === 0) {
-      return 'Chat';
-    }
-    
-    const others = this.chat.participants
-      .filter((p: User) => p._id !== this.currentUserId)
-      .map((p: User) => p.fullName);
-    
-    if (others.length === 0) {
-      return this.chat.participants[0].fullName; // Fallback to first participant
-    }
-    
-    return others.join(', ');
-  }
-
-  // Get participant avatar
-  getParticipantAvatar(): string {
-    if (!this.chat || !this.chat.participants || this.chat.participants.length === 0) {
-      return '';
-    }
-    
-    const other = this.chat.participants.find((p: User) => p._id !== this.currentUserId);
-    
-    if (other && other.profileImage) {
-      return other.profileImage;
-    }
-    
-    return '';
-  }
-
-  // Get participant ID for role determination
-  getParticipantId(): string {
-    if (!this.chat || !this.chat.participants || this.chat.participants.length === 0) {
-      return '';
-    }
-    
-    const other = this.chat.participants.find((p: User) => p._id !== this.currentUserId);
-    
-    if (other) {
-      return other._id;
-    }
-    
-    return '';
-  }
-
-  // Get participant role (e.g., "Chef" or "Customer")
-  getParticipantRole(participantId: string): string {
-    if (!this.chat || !participantId) return '';
-    
-    // Check if participant is related to the order's chef
-    if (this.chat.order && this.chat.order.chef && this.chat.order.chef._id === participantId) {
       return 'Chef';
     }
     
-    // Check if participant is the order's customer
-    if (this.chat.order && this.chat.order.user && this.chat.order.user._id === participantId) {
-      return 'Customer';
+    // Find participants who aren't the current user
+    const others = this.chat.participants
+      .filter((p: User) => p && p._id && p._id !== this.currentUserId)
+      .map((p: User) => p.fullName || 'Chef');
+    
+    if (others.length === 0) {
+      return 'Chef';
     }
     
-    return '';
-  }
-
-  // Get chef phone number if available
-  getChefPhone(): string | null {
-    if (!this.chat || !this.chat.participants) {
-      return null;
-    }
-    
-    const chef = this.chat.participants.find((p: User) => p._id !== this.currentUserId);
-    
-    if (chef && chef.phone) {
-      return chef.phone;
-    }
-    
-    return null;
+    return others.join(', ');
   }
 
   // Scroll to bottom of chat
@@ -375,67 +286,12 @@ export class ChatDetailComponent implements OnInit, OnDestroy, AfterViewChecked 
     }
   }
 
-  // Open delete dialog
-  openDeleteDialog(messageId: string): void {
-    this.messageToDelete = messageId;
-    this.isDeleteDialogOpen = true;
-  }
-
-  // Close delete dialog
-  closeDeleteDialog(): void {
-    this.messageToDelete = null;
-    this.isDeleteDialogOpen = false;
-  }
-
-  // Delete a message
-  deleteMessage(): void {
-    if (!this.messageToDelete || !this.chatId) {
-      return;
-    }
-    
-    this.isDeleting = true;
-    
-    this.chatService.deleteMessage(this.chatId, this.messageToDelete).subscribe({
-      next: (response) => {
-        if (response.success) {
-          this.toastService.showSuccess('Message deleted');
-          
-          // Update local chat if not updated by socket
-          if (this.chat) {
-            this.chat.messages = this.chat.messages.filter(msg => msg._id !== this.messageToDelete);
-          }
-        } else {
-          this.toastService.showError(response.message || 'Failed to delete message');
-        }
-        this.isDeleting = false;
-        this.closeDeleteDialog();
-      },
-      error: (err) => {
-        this.toastService.showError(err.message || 'Failed to delete message');
-        this.isDeleting = false;
-        this.closeDeleteDialog();
-      }
-    });
-  }
-
   // Handle enter key in textarea (send message)
   onKeydown(event: KeyboardEvent): void {
     // Send message on Enter (without shift)
     if (event.key === 'Enter' && !event.shiftKey) {
       event.preventDefault();
       this.sendMessage();
-    }
-  }
-
-  // Navigate back to chats list
-  backToChats(): void {
-    this.router.navigate(['/user/chats']);
-  }
-
-  // Navigate to order details
-  viewOrder(): void {
-    if (this.chat?.order) {
-      this.router.navigate(['/user/orders', this.chat.order._id]);
     }
   }
 }

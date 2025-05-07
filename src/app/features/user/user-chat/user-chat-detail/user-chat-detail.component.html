@@ -1,25 +1,18 @@
-<!-- src/app/features/chef/chef-chat/chef-chat-detail/chef-chat-detail.component.html -->
-<div class="container-fluid py-4">
-  <!-- Back button and title -->
-  <div class="row mb-4">
-    <div class="col-12">
-      <div class="d-flex justify-content-between align-items-center">
-        <div class="d-flex align-items-center">
-          <a routerLink="/chef/chats" class="btn btn-outline-secondary me-3">
-            <i class="bi bi-arrow-left"></i>
-          </a>
-          <h2 class="mb-0">Chat with {{ getCustomerName() }}</h2>
-        </div>
-        <a routerLink="/chef/dashboard" class="btn btn-outline-primary">
-          <i class="bi bi-grid me-2"></i>Dashboard
+<!-- src/app/features/user/user-chat/user-chat-detail/user-chat-detail.component.html -->
+<div class="container my-5 py-4">
+  <div class="row">
+    <!-- Back button and title -->
+    <div class="col-12 mb-4">
+      <div class="d-flex align-items-center">
+        <a routerLink="/user/chats" class="btn btn-outline-secondary me-3">
+          <i class="bi bi-arrow-left"></i>
         </a>
+        <h2 class="mb-0">Chat with {{ getChefName() }}</h2>
       </div>
     </div>
-  </div>
-  
-  <!-- Loading state -->
-  <div *ngIf="isLoading" class="row">
-    <div class="col-12">
+    
+    <!-- Loading state -->
+    <div *ngIf="isLoading" class="col-12">
       <div class="text-center my-5">
         <div class="spinner-border text-primary" role="status">
           <span class="visually-hidden">Loading...</span>
@@ -27,39 +20,35 @@
         <p class="mt-3">Loading conversation...</p>
       </div>
     </div>
-  </div>
-  
-  <!-- Error message -->
-  <div *ngIf="error && !isLoading" class="row">
-    <div class="col-12">
+    
+    <!-- Error message -->
+    <div *ngIf="error && !isLoading" class="col-12">
       <div class="alert alert-danger">
         {{ error }}
       </div>
     </div>
-  </div>
-  
-  <!-- Chat messages column -->
-  <div *ngIf="!isLoading && chat" class="row">
-    <div class="col-12">
+    
+    <!-- Chat section -->
+    <div *ngIf="!isLoading && chat" class="col-12">
       <div class="card shadow-sm">
         <!-- Chat header -->
         <div class="card-header bg-white py-3">
           <div class="d-flex align-items-center">
-            <!-- Customer profile image -->
-            <div *ngIf="getCustomerImage()" class="chat-avatar me-3">
-              <img [src]="productService.getImageUrl(getCustomerImage())" 
-                   alt="Customer" 
+            <!-- Chef profile image -->
+            <div *ngIf="getChefImage()" class="chat-avatar me-3">
+              <img [src]="productService.getImageUrl(getChefImage())" 
+                   alt="Chef" 
                    class="rounded-circle" 
                    style="width: 48px; height: 48px; object-fit: cover;">
             </div>
-            <div *ngIf="!getCustomerImage()" class="chat-avatar me-3 rounded-circle bg-light d-flex align-items-center justify-content-center text-primary"
+            <div *ngIf="!getChefImage()" class="chat-avatar me-3 rounded-circle bg-light d-flex align-items-center justify-content-center text-primary"
                  style="width: 48px; height: 48px;">
               <i class="bi bi-person"></i>
             </div>
             
-            <!-- Customer information -->
+            <!-- Chef information -->
             <div>
-              <h5 class="mb-0">{{ getCustomerName() }}</h5>
+              <h5 class="mb-0">{{ getChefName() }}</h5>
               <small class="text-muted">Order #{{ getOrderId() }}</small>
             </div>
           </div>
@@ -73,7 +62,7 @@
           </div>
           
           <div *ngFor="let message of messages" class="message-wrapper mb-3" [ngClass]="{'message-own': isOwnMessage(message), 'message-other': !isOwnMessage(message)}">
-            <!-- Chef message (own) -->
+            <!-- User message (own) -->
             <div *ngIf="isOwnMessage(message)" class="d-flex justify-content-end">
               <div class="message-content bg-primary text-white p-3 rounded-3 shadow-sm">
                 {{ message.content }}
@@ -83,16 +72,16 @@
               </div>
             </div>
             
-            <!-- Customer message (received) -->
+            <!-- Chef message (received) -->
             <div *ngIf="!isOwnMessage(message)" class="d-flex">
               <div class="message-avatar me-2" *ngIf="!isOwnMessage(message)">
-                <div *ngIf="getCustomerImage()" class="chat-avatar">
-                  <img [src]="productService.getImageUrl(getCustomerImage())" 
-                       alt="Customer" 
+                <div *ngIf="getChefImage()" class="chat-avatar">
+                  <img [src]="productService.getImageUrl(getChefImage())" 
+                       alt="Chef" 
                        class="rounded-circle" 
                        style="width: 36px; height: 36px; object-fit: cover;">
                 </div>
-                <div *ngIf="!getCustomerImage()" class="chat-avatar rounded-circle bg-light d-flex align-items-center justify-content-center text-primary"
+                <div *ngIf="!getChefImage()" class="chat-avatar rounded-circle bg-light d-flex align-items-center justify-content-center text-primary"
                      style="width: 36px; height: 36px; font-size: 0.8rem;">
                   <i class="bi bi-person"></i>
                 </div>

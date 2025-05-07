@@ -1,4 +1,4 @@
-// src/app/features/chef/chef-chat/chef-chat-detail/chef-chat-detail.component.ts
+// src/app/features/user/user-chat/user-chat-detail/user-chat-detail.component.ts
 import { Component, OnInit, OnDestroy, ViewChild, ElementRef, AfterViewChecked } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
@@ -10,9 +10,9 @@ import { TokenService } from '../../../../core/auth/token.service';
 import { Chat, ChatMessage } from '../../../../core/models/chat.model';
 
 @Component({
-  selector: 'app-chef-chat-detail',
-  templateUrl: './chef-chat-detail.component.html',
-  styleUrls: ['./chef-chat-detail.component.css'],
+  selector: 'app-user-chat-detail',
+  templateUrl: './user-chat-detail.component.html',
+  styleUrls: ['./user-chat-detail.component.css'],
   standalone: true,
   imports: [
     CommonModule,
@@ -20,7 +20,7 @@ import { Chat, ChatMessage } from '../../../../core/models/chat.model';
     ReactiveFormsModule
   ]
 })
-export class ChefChatDetailComponent implements OnInit, OnDestroy, AfterViewChecked {
+export class UserChatDetailComponent implements OnInit, OnDestroy, AfterViewChecked {
   @ViewChild('messageContainer') messageContainer!: ElementRef;
   
   chatId: string = '';
@@ -54,7 +54,7 @@ export class ChefChatDetailComponent implements OnInit, OnDestroy, AfterViewChec
         this.chatId = id;
         this.loadChatAndMessages();
       } else {
-        this.router.navigate(['/chef/chats']);
+        this.router.navigate(['/user/chats']);
       }
     });
     
@@ -209,33 +209,33 @@ export class ChefChatDetailComponent implements OnInit, OnDestroy, AfterViewChec
     return false;
   }
 
-  // Get the customer's name
-  getCustomerName(): string {
-    if (!this.chat) return 'Customer';
+  // Get the chef's name
+  getChefName(): string {
+    if (!this.chat) return 'Chef';
     
-    if (this.chat.customer && typeof this.chat.customer !== 'string') {
-      return this.chat.customer.fullName || 'Customer';
+    if (this.chat.chef && typeof this.chat.chef !== 'string') {
+      return this.chat.chef.fullName || 'Chef';
     }
     
     if (this.chat.participants) {
-      const customer = this.chat.participants.find(p => p._id !== this.currentUserId && p.role !== 'chef');
-      return customer ? customer.fullName : 'Customer';
+      const chef = this.chat.participants.find(p => p._id !== this.currentUserId && p.role === 'chef');
+      return chef ? chef.fullName : 'Chef';
     }
     
-    return 'Customer';
+    return 'Chef';
   }
 
-  // Get customer's profile image
-  getCustomerImage(): string {
+  // Get chef's profile image
+  getChefImage(): string {
     if (!this.chat) return '';
     
-    if (this.chat.customer && typeof this.chat.customer !== 'string' && this.chat.customer.profileImage) {
-      return this.chat.customer.profileImage;
+    if (this.chat.chef && typeof this.chat.chef !== 'string' && this.chat.chef.profileImage) {
+      return this.chat.chef.profileImage;
     }
     
     if (this.chat.participants) {
-      const customer = this.chat.participants.find(p => p._id !== this.currentUserId && p.role !== 'chef');
-      return customer && customer.profileImage ? customer.profileImage : '';
+      const chef = this.chat.participants.find(p => p._id !== this.currentUserId && p.role === 'chef');
+      return chef && chef.profileImage ? chef.profileImage : '';
     }
     
     return '';
@@ -247,7 +247,7 @@ export class ChefChatDetailComponent implements OnInit, OnDestroy, AfterViewChec
     const date = new Date(timestamp);
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   }
-  
+
   // Get the order ID from the chat
   getOrderId(): string {
     if (!this.chat) return 'N/A';

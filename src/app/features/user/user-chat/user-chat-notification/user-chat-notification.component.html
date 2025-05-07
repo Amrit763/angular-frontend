@@ -1,0 +1,8 @@
+<!-- src/app/features/user/user-chat/user-chat-notification/user-chat-notification.component.html -->
+<a routerLink="/chats" class="position-relative">
+    <i class="bi bi-chat-dots fs-5"></i>
+    <span *ngIf="unreadCount > 0" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+      {{ unreadCount > 9 ? '9+' : unreadCount }}
+      <span class="visually-hidden">unread messages</span>
+    </span>
+  </a>

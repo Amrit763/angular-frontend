@@ -1,78 +1,61 @@
 // src/app/core/models/chat.model.ts
-export interface User {
-  _id: string;
-  fullName: string;
-  profileImage?: string;
-  email?: string;
-  phone?: string;
-  role?: string;
-}
-
-export interface Order {
-  _id: string;
-  user?: User;
-  chef?: User;
-  status: string;
-  items: OrderItem[];
-  subtotal: number;
-  tax: number;
-  deliveryFee: number;
-  tip: number;
-  total: number;
-  deliveryAddress?: DeliveryAddress;
-  specialInstructions?: string;
-  paymentMethod: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface OrderItem {
-  name: string;
-  quantity: number;
-  price: number;
-  options?: {name: string, value?: string}[];
-}
-
-export interface DeliveryAddress {
-  street: string;
-  city: string;
-  state: string;
-  postalCode: string;
-  instructions?: string;
-}
+import { User } from '../auth/user.model';
+import { Order } from './order.model';
 
 export interface ChatMessage {
   _id: string;
-  chat: string;
-  sender: User;
+  sender: string | User; // Can be either a user ID or a User object when populated
   content: string;
-  readBy: string[];
+  readBy: string[]; // Array of user IDs who have read the message
+  deletedBy: string[]; // Array of user IDs who have deleted the message
   createdAt: string;
-  updatedAt: string;
 }
 
 export interface Chat {
   _id: string;
-  order: Order;
-  participants: User[];
+  order: string | Order; // Can be either an order ID or an Order object when populated
+  customer: string | User; // Can be either a user ID or a User object when populated
+  chef: string | User; // Can be either a user ID or a User object when populated
+  participants?: User[]; // Array of User objects with customer and chef info
   messages: ChatMessage[];
-  lastMessage?: ChatMessage;
-  unreadCount?: number;
+  lastActivity: string;
+  isActive: boolean;
+  deletedBy: string[];
   createdAt: string;
   updatedAt: string;
+  lastMessage?: ChatMessage; // Latest message for display in chat list
+  unreadCount?: number; // Count of unread messages
 }
+
+// API Response interfaces
 
 export interface ChatResponse {
   success: boolean;
+  message?: string;
   chat: Chat;
 }
 
 export interface ChatsResponse {
   success: boolean;
+  message?: string;
+  count: number;
   chats: Chat[];
 }
 
-export interface MessageResponse {
+export interface ChatMessagesResponse {
   success: boolean;
-  message: ChatMessage;
+  message?: string;
+  messages: ChatMessage[];
+}
+
+export interface SendMessageResponse {
+  success: boolean;
+  message?: string;
+  newMessage?: ChatMessage;
+  sentMessage?: ChatMessage; // Some API responses use a different property name
+}
+
+export interface MarkAsReadResponse {
+  success: boolean;
+  message?: string;
 }

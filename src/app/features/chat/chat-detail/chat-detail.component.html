@@ -8,22 +8,6 @@
     <p class="mt-3">Loading conversation...</p>
   </div>
   
-  <!-- Typing indicator -->
-  <div *ngIf="typingUsers.length > 0" class="typing-indicator-container">
-    <div class="container">
-      <div class="typing-indicator">
-        <div class="typing-animation">
-          <span></span>
-          <span></span>
-          <span></span>
-        </div>
-        <span class="typing-text">
-          {{ typingUsers.join(', ') }} {{ typingUsers.length === 1 ? 'is' : 'are' }} typing...
-        </span>
-      </div>
-    </div>
-  </div>
-  
   <!-- Error message -->
   <div *ngIf="error && !isLoading" class="alert alert-danger">
     {{ error }}
@@ -31,58 +15,19 @@
 
   <!-- Chat content -->
   <div *ngIf="!isLoading && chat" class="chat-content">
-    <!-- Chat header -->
+    <!-- Simple chat header -->
     <div class="chat-header">
       <div class="container">
         <div class="row align-items-center py-3">
           <div class="col-md-8 d-flex align-items-center">
-            <button class="btn btn-sm btn-outline-secondary me-3 d-md-none" (click)="backToChats()">
-              <i class="bi bi-arrow-left"></i>
-            </button>
-            <a class="btn btn-sm btn-outline-secondary me-3 d-none d-md-block" routerLink="/user/chats">
+            <a class="btn btn-sm btn-outline-secondary me-3" routerLink="/user/chats">
               <i class="bi bi-arrow-left"></i> Back
             </a>
-            <div class="chat-participant d-flex align-items-center">
-              <div class="participant-avatar me-3">
-                <img [src]="productService.getImageUrl(getParticipantAvatar())" 
-                     alt="Participant" 
-                     class="rounded-circle" 
-                     style="width: 40px; height: 40px; object-fit: cover;">
-              </div>
-              <div>
-                <h5 class="mb-0">{{ getOtherParticipants() }}</h5>
-                <small class="text-muted">
-                  <span class="badge bg-info me-2">{{ getParticipantRole(getParticipantId()) }}</span>
-                  <span *ngIf="getChefPhone()" class="me-2">
-                    <i class="bi bi-telephone"></i> {{ getChefPhone() }}
-                  </span>
-                  Order #{{ chat.order._id.slice(-8) }}
-                </small>
-              </div>
+            <div class="chat-participant">
+              <h5 class="mb-0">Chat with {{ getOtherParticipants() }}</h5>
             </div>
           </div>
-          <div class="col-md-4 text-end">
-            <button class="btn btn-sm btn-outline-primary" (click)="viewOrder()">
-              <i class="bi bi-bag"></i> View Order
-            </button>
-          </div>
         </div>
-      </div>
-    </div>
-
-    <!-- Order summary toggle button -->
-    <div class="container my-2">
-      <button class="btn btn-sm btn-outline-secondary w-100" (click)="toggleOrderSummary()">
-        <i class="bi" [ngClass]="showOrderSummary ? 'bi-receipt-cutoff' : 'bi-receipt'"></i>
-        {{ showOrderSummary ? 'Hide Order Details' : 'Show Order Details' }}
-      </button>
-      
-      <!-- Order summary component -->
-      <div *ngIf="showOrderSummary" class="mt-2">
-        <app-chat-order-summary
-          [order]="chat && chat.order || null"
-          [collapsed]="false">
-        </app-chat-order-summary>
       </div>
     </div>
 
@@ -102,17 +47,11 @@
           <!-- Messages -->
           <div *ngIf="chat.messages.length > 0">
             <div *ngFor="let message of chat.messages; let i = index">
-              <!-- Date separator -->
-              <div *ngIf="i === 0 || formatDate(message.createdAt, false) !== formatDate(chat.messages[i-1].createdAt, false)" 
-                   class="date-separator text-center my-3">
-                <span class="date-badge">{{ formatDate(message.createdAt, false) }}</span>
-              </div>
-
-              <!-- Message bubble - WhatsApp/Messenger style -->
+              <!-- Message bubble -->
               <div class="message-container" [ngClass]="{'own-message-container': isOwnMessage(message), 'other-message-container': !isOwnMessage(message)}">
-                <!-- Sender info for chef messages (only shown for first consecutive message) -->
-                <div *ngIf="!isOwnMessage(message) && (i === 0 || isOwnMessage(chat.messages[i-1]))" class="sender-info mb-1">
-                  {{ message.sender.fullName }}
+                <!-- Always show sender name -->
+                <div class="sender-info mb-1" [ngClass]="{'text-end': isOwnMessage(message), 'text-start': !isOwnMessage(message)}">
+                  {{ getSenderName(message) }}
                 </div>
                 
                 <!-- Message bubble -->
@@ -123,20 +62,8 @@
                   <div class="message-meta">
                     <small class="message-time">
                       {{ formatDate(message.createdAt).split(' at ')[1] }}
-                      <span *ngIf="isOwnMessage(message) && message.readBy.length > 1" class="ms-1">
-                        <i class="bi bi-check2-all"></i>
-                      </span>
                     </small>
                   </div>
-                </div>
-                
-                <!-- Delete option for own messages -->
-                <div *ngIf="isOwnMessage(message)" class="message-actions">
-                  <button class="btn btn-sm btn-link text-danger p-0" 
-                          (click)="openDeleteDialog(message._id)"
-                          title="Delete message">
-                    <i class="bi bi-trash"></i>
-                  </button>
                 </div>
               </div>
             </div>
@@ -158,7 +85,6 @@
               rows="1"
               (keydown)="onKeydown($event)"
               (input)="onTyping()"
-              [ngClass]="{'is-invalid': messageForm.get('message')?.invalid && messageForm.get('message')?.touched}"
             ></textarea>
             <button 
               type="submit" 
@@ -173,50 +99,8 @@
               </span>
             </button>
           </div>
-          <div *ngIf="messageForm.get('message')?.invalid && messageForm.get('message')?.touched" class="text-danger small mt-1">
-            <div *ngIf="messageForm.get('message')?.errors?.['required']">Message cannot be empty.</div>
-            <div *ngIf="messageForm.get('message')?.errors?.['maxlength']">Message is too long (max 500 characters).</div>
-          </div>
-          <div class="text-muted small mt-1">
-            {{ messageForm.get('message')?.value?.length || 0 }}/500 characters
-          </div>
         </form>
-        
-        <!-- Quick replies component -->
-        <app-chat-quick-replies
-          [role]="'user'"
-          [orderStatus]="chat && chat.order && chat.order.status || ''"
-          (replySelected)="onQuickReplySelected($event)">
-        </app-chat-quick-replies>
       </div>
     </div>
   </div>
-
-  <!-- Delete message confirmation modal -->
-  <div class="modal fade" [ngClass]="{'show d-block': isDeleteDialogOpen, 'd-none': !isDeleteDialogOpen}">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title">Delete Message</h5>
-          <button type="button" class="btn-close" (click)="closeDeleteDialog()"></button>
-        </div>
-        <div class="modal-body">
-          <p>Are you sure you want to delete this message? This action cannot be undone.</p>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" (click)="closeDeleteDialog()">Cancel</button>
-          <button type="button" class="btn btn-danger" [disabled]="isDeleting" (click)="deleteMessage()">
-            <span *ngIf="!isDeleting">Delete</span>
-            <span *ngIf="isDeleting">
-              <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-              Deleting...
-            </span>
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-  
-  <!-- Modal backdrop -->
-  <div *ngIf="isDeleteDialogOpen" class="modal-backdrop fade show"></div>
 </div>

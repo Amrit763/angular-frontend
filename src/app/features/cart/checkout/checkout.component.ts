@@ -9,6 +9,7 @@ import { CartService, CartResponse, CartItem } from '../../../core/services/cart
 import { ProductService } from '../../../core/services/product.service';
 import { TokenService } from '../../../core/auth/token.service';
 import { OrderService } from '../../../core/services/order.service';
+import { ChatService } from '../../../core/services/chat.service'; // Add ChatService import
 import { SelectedCondiment } from '../../../core/models/product.model';
 
 interface PaymentMethod {
@@ -51,7 +52,8 @@ export class CheckoutComponent implements OnInit, OnDestroy {
     private orderService: OrderService,
     public productService: ProductService, 
     private fb: FormBuilder,
-    private router: Router
+    private router: Router,
+    private chatService: ChatService // Add ChatService injection
   ) { }
 
   ngOnInit(): void {
@@ -171,7 +173,7 @@ export class CheckoutComponent implements OnInit, OnDestroy {
     });
   }
 
-  // Submit the order
+  // Submit the order - updated to create chat
   submitOrder(): void {
     this.submitted = true;
 
@@ -195,14 +197,48 @@ export class CheckoutComponent implements OnInit, OnDestroy {
     // Create order
     this.orderService.createOrder(orderData).subscribe({
       next: (response) => {
-        this.processing = false;
-
-        // Navigate to order success page instead of order details
-        this.router.navigate(['/cart/success', response.order._id]);
+        // Create a chat for the order
+        this.createChatForOrder(response.order._id);
       },
       error: (err) => {
         this.processing = false;
         this.error = err.message || 'Failed to create order';
+      }
+    });
+  }
+
+  // New method to create a chat for the order
+  private createChatForOrder(orderId: string): void {
+    this.chatService.createOrderChat(orderId).subscribe({
+      next: (chatResponse) => {
+        if (chatResponse.success && chatResponse.chat) {
+          // Send an initial welcome message
+          const initialMessage = "Hello! I've just placed my order. Please let me know if you have any questions!";
+          
+          this.chatService.sendMessage(chatResponse.chat._id, initialMessage).subscribe({
+            // We don't need to wait for this to complete
+            next: () => {
+              this.processing = false;
+              // Navigate to order success page
+              this.router.navigate(['/cart/success', orderId]);
+            },
+            error: () => {
+              // Even if message sending fails, continue to success page
+              this.processing = false;
+              this.router.navigate(['/cart/success', orderId]);
+            }
+          });
+        } else {
+          // If chat creation was successful but no chat was returned
+          this.processing = false;
+          this.router.navigate(['/cart/success', orderId]);
+        }
+      },
+      error: (err) => {
+        // Even if chat creation fails, we still consider the order successful
+        console.error('Failed to create chat:', err);
+        this.processing = false;
+        this.router.navigate(['/cart/success', orderId]);
       }
     });
   }

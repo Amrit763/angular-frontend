@@ -1,46 +1,21 @@
 // src/app/core/services/chat.service.ts
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { Observable, BehaviorSubject, of } from 'rxjs';
+import { tap, catchError } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
-import { io, Socket } from 'socket.io-client';
+import { 
+  ChatResponse, 
+  ChatsResponse, 
+  ChatMessagesResponse, 
+  SendMessageResponse, 
+  MarkAsReadResponse,
+  Chat,
+  ChatMessage
+} from '../models/chat.model';
+
 import { TokenService } from '../auth/token.service';
-
-export interface ChatMessage {
-  _id: string;
-  chat: string;
-  sender: any;
-  content: string;
-  readBy: string[];
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface Chat {
-  _id: string;
-  order: any;
-  participants: any[];
-  messages: ChatMessage[];
-  lastMessage?: ChatMessage;
-  unreadCount?: number;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface ChatResponse {
-  success: boolean;
-  chat: Chat;
-}
-
-export interface ChatsResponse {
-  success: boolean;
-  chats: Chat[];
-}
-
-export interface MessageResponse {
-  success: boolean;
-  message: ChatMessage;
-}
+import { io, Socket } from 'socket.io-client'; 
 
 @Injectable({
   providedIn: 'root'
@@ -48,379 +23,406 @@ export interface MessageResponse {
 export class ChatService {
   private apiUrl = `${environment.apiUrl}/chats`;
   private socket: Socket | null = null;
+  private _activeChats = new BehaviorSubject<Chat[]>([]);
+  private _currentChat = new BehaviorSubject<Chat | null>(null);
+  private _messages = new BehaviorSubject<ChatMessage[]>([]);
+  private _unreadCount = new BehaviorSubject<number>(0);
   
-  private _activeChat = new BehaviorSubject<Chat | null>(null);
-  private _chats = new BehaviorSubject<Chat[]>([]);
-  private _unreadTotal = new BehaviorSubject<number>(0);
-  private _typingUsers = new BehaviorSubject<{[chatId: string]: string[]}>({});
-  private typingTimeout: any = null;
-  
-  // Expose observables
-  public activeChat$ = this._activeChat.asObservable();
-  public chats$ = this._chats.asObservable();
-  public unreadTotal$ = this._unreadTotal.asObservable();
-  public typingUsers$ = this._typingUsers.asObservable();
+  // Expose as observables
+  public activeChats$ = this._activeChats.asObservable();
+  public currentChat$ = this._currentChat.asObservable();
+  public messages$ = this._messages.asObservable();
+  public unreadCount$ = this._unreadCount.asObservable();
+  public unreadTotal$ = this._unreadCount.asObservable(); // Alias for compatibility
 
-  constructor(
-    private http: HttpClient,
-    private tokenService: TokenService
-  ) { }
+  constructor(private http: HttpClient, private tokenService: TokenService) { }
 
-  // Initialize socket connection
-  initializeSocket(): void {
-    const token = this.tokenService.getToken();
-    
-    if (!token) {
-      console.error('Cannot initialize socket: No authentication token available');
-      return;
-    }
-    
-    // Use the base API URL instead of looking for socketUrl property
-    const socketUrl = environment.apiUrl.replace('/api', '');
-    
-    this.socket = io(socketUrl, {
-      auth: { token }
-    });
-    
-    this.setupSocketListeners();
+  // Get the socket instance
+  getSocket(): Socket | null {
+    return this.socket;
   }
 
-  // Set up listeners for socket events
-  private setupSocketListeners(): void {
+  // Initialize socket connection with auth token
+  initializeSocket(): void {
+    const token = this.tokenService.getToken();
+    if (token && !this.socket) {
+      this.socket = io(environment.apiUrl, {
+        auth: { token },
+        reconnection: true,
+        reconnectionDelay: 1000,
+        reconnectionAttempts: 5
+      });
+
+      // Set up socket event listeners
+      this.setupSocketEvents();
+      
+      // Handle connection events
+      this.socket.on('connect', () => {
+        console.log('Socket connected');
+      });
+      
+      this.socket.on('disconnect', (reason) => {
+        console.log(`Socket disconnected: ${reason}`);
+      });
+      
+      this.socket.on('connect_error', (error) => {
+        console.error('Socket connection error:', error);
+      });
+    }
+  }
+
+  // Set up socket event listeners
+  private setupSocketEvents(): void {
     if (!this.socket) return;
-    
-    // New message received
-    this.socket.on('newMessage', ({ message, chatId }) => {
-      // Update active chat if this message belongs to it
-      const activeChat = this._activeChat.value;
-      if (activeChat && activeChat._id === chatId) {
-        activeChat.messages = [...activeChat.messages, message];
-        activeChat.lastMessage = message;
-        this._activeChat.next(activeChat);
+
+    // Listen for new messages
+    this.socket.on('newMessage', (data: { message: ChatMessage, chatId: string }) => {
+      console.log('New message received via socket:', data);
+      
+      // Update messages if we're in the current chat
+      if (this._currentChat.value && this._currentChat.value._id === data.chatId) {
+        const currentMessages = [...this._messages.value];
+        currentMessages.push(data.message);
+        this._messages.next(currentMessages);
         
-        // If we're in the active chat, mark message as read immediately
-        this.markChatAsRead(chatId);
+        // Mark the message as read since we're in the chat
+        this.markChatAsRead(data.chatId).subscribe();
       }
       
-      // Update chat list
-      this.updateChatWithNewMessage(chatId, message);
+      // Update the chat list with the latest message
+      this.updateChatWithNewMessage(data.chatId, data.message);
     });
-    
-    // Notification of new message (when not in the chat room)
-    this.socket.on('messageNotification', ({ chatId, message, sender }) => {
-      // Update chat list with new unread message
-      this.updateChatWithNewMessage(chatId, message, true);
-    });
-    
-    // Messages marked as read
-    this.socket.on('messagesRead', ({ chatId, messageIds, userId }) => {
-      // Update read status for messages
-      const activeChat = this._activeChat.value;
-      if (activeChat && activeChat._id === chatId) {
-        const updatedMessages = activeChat.messages.map(msg => {
-          if (messageIds.includes(msg._id) && !msg.readBy.includes(userId)) {
-            return {
-              ...msg,
-              readBy: [...msg.readBy, userId]
-            };
+
+    // Listen for messages marked as read
+    this.socket.on('messagesRead', (data: { chatId: string, messageIds: string[], userId: string }) => {
+      if (this._currentChat.value && this._currentChat.value._id === data.chatId) {
+        // Update read status for messages in the current conversation
+        const updatedMessages = this._messages.value.map(msg => {
+          if (data.messageIds.includes(msg._id)) {
+            return { ...msg, readBy: [...(msg.readBy || []), data.userId] };
           }
           return msg;
         });
-        
-        activeChat.messages = updatedMessages;
-        this._activeChat.next(activeChat);
-      }
-    });
-    
-    // Message deleted
-    this.socket.on('messageDeleted', ({ chatId, messageId }) => {
-      // Remove message from UI
-      const activeChat = this._activeChat.value;
-      if (activeChat && activeChat._id === chatId) {
-        activeChat.messages = activeChat.messages.filter(msg => msg._id !== messageId);
-        this._activeChat.next(activeChat);
-      }
-    });
-    
-    // Errors
-    this.socket.on('error', ({ message }) => {
-      console.error('Socket error:', message);
-    });
-    
-    // Successfully joined a chat
-    this.socket.on('chatJoined', ({ chatId }) => {
-      console.log(`Successfully joined chat ${chatId}`);
-    });
-
-    // User typing indicator events
-    this.socket.on('userTyping', ({ chatId, userId, userName }) => {
-      const currentTyping = this._typingUsers.value;
-      
-      // Check if user is already in the typing list
-      if (!currentTyping[chatId]) {
-        currentTyping[chatId] = [];
+        this._messages.next(updatedMessages);
       }
       
-      if (!currentTyping[chatId].includes(userName)) {
-        currentTyping[chatId].push(userName);
-        this._typingUsers.next({ ...currentTyping });
-        
-        // Automatically remove user from typing after 3 seconds of inactivity
-        setTimeout(() => {
-          this.removeTypingUser(chatId, userName);
-        }, 3000);
+      // Update unread counts in chat list
+      this.refreshUnreadCounts();
+    });
+
+    // Listen for deleted messages
+    this.socket.on('messageDeleted', (data: { chatId: string, messageId: string }) => {
+      if (this._currentChat.value && this._currentChat.value._id === data.chatId) {
+        // Remove deleted message from current conversation
+        const updatedMessages = this._messages.value.filter(msg => msg._id !== data.messageId);
+        this._messages.next(updatedMessages);
       }
     });
-
-    this.socket.on('userStoppedTyping', ({ chatId, userId, userName }) => {
-      this.removeTypingUser(chatId, userName);
-    });
   }
 
-  // Update chat list with new message
-  private updateChatWithNewMessage(chatId: string, message: ChatMessage, isUnread: boolean = false): void {
-    const currentChats = this._chats.value;
-    const updatedChats = currentChats.map(chat => {
-      if (chat._id === chatId) {
-        const unreadCount = isUnread ? (chat.unreadCount || 0) + 1 : chat.unreadCount;
-        return {
-          ...chat,
-          lastMessage: message,
-          unreadCount
-        };
-      }
-      return chat;
-    });
-    
-    this._chats.next(updatedChats);
-    this.updateUnreadTotal();
+  // Join a chat room when entering a conversation
+  joinChat(chatId: string): void {
+    if (this.socket) {
+      console.log(`Joining chat room: ${chatId}`);
+      this.socket.emit('joinChat', chatId);
+    } else {
+      console.log('Socket not connected, waiting...');
+      // Try to reconnect and join
+      this.initializeSocket();
+      setTimeout(() => {
+        if (this.socket) {
+          this.socket.emit('joinChat', chatId);
+        }
+      }, 1000);
+    }
   }
 
-  // Calculate total unread messages
-  private updateUnreadTotal(): void {
-    const total = this._chats.value.reduce((sum, chat) => sum + (chat.unreadCount || 0), 0);
-    this._unreadTotal.next(total);
+  // Leave a chat room when leaving a conversation
+  leaveChat(chatId: string): void {
+    if (this.socket) {
+      console.log(`Leaving chat room: ${chatId}`);
+      this.socket.emit('leaveChat', chatId);
+    }
   }
 
-  // Get all chats for the current user
+  // Get all chats for current user
   getChats(active?: boolean): Observable<ChatsResponse> {
     let url = this.apiUrl;
     if (active !== undefined) {
       url += `?active=${active}`;
     }
-    return this.http.get<ChatsResponse>(url);
+    
+    return this.http.get<ChatsResponse>(url).pipe(
+      tap(response => {
+        if (response.success) {
+          this._activeChats.next(response.chats);
+          // Calculate total unread count
+          const unreadTotal = response.chats.reduce((sum, chat) => sum + (chat.unreadCount || 0), 0);
+          this._unreadCount.next(unreadTotal);
+        }
+      }),
+      catchError(error => {
+        console.error('Error fetching chats:', error);
+        return of({ success: false, message: 'Failed to load chats', chats: [], count: 0 });
+      })
+    );
   }
 
-  // Load and update chats in the BehaviorSubject
-  loadChats(active?: boolean): void {
-    this.getChats(active).subscribe({
-      next: (response) => {
-        if (response.success) {
-          this._chats.next(response.chats);
-          this.updateUnreadTotal();
-        }
-      },
-      error: (err) => {
-        console.error('Error loading chats:', err);
-      }
-    });
+  // Alias for getChats to maintain compatibility with existing code
+  loadChats(active?: boolean): Observable<ChatsResponse> {
+    return this.getChats(active);
   }
 
   // Get a specific chat with messages
   getChat(chatId: string): Observable<ChatResponse> {
-    return this.http.get<ChatResponse>(`${this.apiUrl}/${chatId}`);
-  }
-
-  // Set active chat
-  setActiveChat(chatId: string): void {
-    this.getChat(chatId).subscribe({
-      next: (response) => {
+    return this.http.get<ChatResponse>(`${this.apiUrl}/${chatId}`).pipe(
+      tap(response => {
         if (response.success) {
-          // Join the chat room
-          if (this.socket) {
-            this.socket.emit('joinChat', chatId);
+          this._currentChat.next(response.chat);
+          
+          // If the chat has messages, update the messages subject
+          if (response.chat.messages && response.chat.messages.length > 0) {
+            this._messages.next(response.chat.messages);
           }
-          
-          this._activeChat.next(response.chat);
-          
-          // Mark messages as read
-          this.markChatAsRead(chatId);
-          
-          // Update the chat in the list
-          const currentChats = this._chats.value;
-          const updatedChats = currentChats.map(chat => {
-            if (chat._id === chatId) {
-              return {
-                ...chat,
-                unreadCount: 0
-              };
-            }
-            return chat;
-          });
-          
-          this._chats.next(updatedChats);
-          this.updateUnreadTotal();
         }
-      },
-      error: (err) => {
-        console.error('Error setting active chat:', err);
-      }
-    });
+      }),
+      catchError(error => {
+        console.error(`Error fetching chat ${chatId}:`, error);
+        // Create empty chat object to satisfy type requirements
+        const emptyChat: Chat = {
+          _id: '',
+          order: '',
+          customer: '',
+          chef: '',
+          messages: [],
+          lastActivity: new Date().toISOString(),
+          isActive: false,
+          deletedBy: [],
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        };
+        return of({ success: false, message: 'Failed to load chat', chat: emptyChat });
+      })
+    );
   }
 
-  // Clear active chat
-  clearActiveChat(): void {
-    const activeChat = this._activeChat.value;
-    if (activeChat && this.socket) {
-      this.socket.emit('leaveChat', activeChat._id);
-    }
-    this._activeChat.next(null);
+  // Get messages for a specific chat
+  getMessages(chatId: string): Observable<ChatMessagesResponse> {
+    return this.http.get<ChatMessagesResponse>(`${this.apiUrl}/${chatId}/messages`).pipe(
+      tap(response => {
+        if (response.success) {
+          this._messages.next(response.messages || []);
+        }
+      }),
+      catchError(error => {
+        console.error(`Error fetching messages for chat ${chatId}:`, error);
+        // Return an empty successful response instead of throwing an error
+        this._messages.next([]); // Set empty messages
+        return of({ 
+          success: true, 
+          message: 'No messages available', 
+          messages: [] 
+        });
+      })
+    );
   }
 
-  // Send a message in a chat
-  sendMessage(chatId: string, content: string): Observable<MessageResponse> {
-    // Send via HTTP
-    const result = this.http.post<MessageResponse>(`${this.apiUrl}/${chatId}/messages`, { content });
-    
-    // Send via Socket
-    if (this.socket) {
-      this.socket.emit('sendMessage', { chatId, content });
-    }
-    
-    return result;
+  // Send a message
+  sendMessage(chatId: string, content: string): Observable<SendMessageResponse> {
+    return this.http.post<SendMessageResponse>(`${this.apiUrl}/${chatId}/messages`, { content }).pipe(
+      tap(response => {
+        if (response.success) {
+          // Add to messages list
+          const currentMessages = [...this._messages.value];
+          // Check if response has newMessage property
+          const messageToAdd = response.newMessage || response.sentMessage;
+          if (messageToAdd) {
+            currentMessages.push(messageToAdd);
+            this._messages.next(currentMessages);
+            
+            // Update chat with latest message
+            this.updateChatWithNewMessage(chatId, messageToAdd);
+            
+            // Emit the message through socket for real-time delivery
+            if (this.socket) {
+              this.socket.emit('sendMessage', { chatId, messageId: messageToAdd._id });
+            }
+          }
+        }
+      }),
+      catchError(error => {
+        console.error(`Error sending message to chat ${chatId}:`, error);
+        return of({ success: false, message: 'Failed to send message' });
+      })
+    );
   }
 
   // Mark all messages in a chat as read
-  markChatAsRead(chatId: string): void {
-    // Mark via HTTP
-    this.http.patch(`${this.apiUrl}/${chatId}/read`, {}).subscribe();
-    
-    // Mark via Socket
-    const activeChat = this._activeChat.value;
-    if (this.socket && activeChat) {
-      const unreadMessages = activeChat.messages
-        .filter(msg => !msg.readBy.includes(this.tokenService.getUserId()))
-        .map(msg => msg._id);
-      
-      if (unreadMessages.length > 0) {
-        this.socket.emit('markAsRead', { chatId, messageIds: unreadMessages });
-      }
-    }
-    
-    // Update chat in list to reflect read status
-    const currentChats = this._chats.value;
-    const updatedChats = currentChats.map(chat => {
-      if (chat._id === chatId) {
-        return {
-          ...chat,
-          unreadCount: 0
-        };
-      }
-      return chat;
-    });
-    
-    this._chats.next(updatedChats);
-    this.updateUnreadTotal();
+  markChatAsRead(chatId: string): Observable<MarkAsReadResponse> {
+    return this.http.patch<MarkAsReadResponse>(`${this.apiUrl}/${chatId}/read`, {}).pipe(
+      tap(response => {
+        if (response.success) {
+          // Update read status for all messages in current chat
+          const updatedMessages = this._messages.value.map(msg => {
+            const currentUserId = this.tokenService.getUser()?._id;
+            if (currentUserId && (!msg.readBy || !msg.readBy.includes(currentUserId))) {
+              return { 
+                ...msg, 
+                readBy: [...(msg.readBy || []), currentUserId]
+              };
+            }
+            return msg;
+          });
+          this._messages.next(updatedMessages);
+          
+          // Update unread count in active chats list
+          const updatedChats = this._activeChats.value.map(chat => {
+            if (chat._id === chatId) {
+              return { ...chat, unreadCount: 0 };
+            }
+            return chat;
+          });
+          this._activeChats.next(updatedChats);
+          
+          // Recalculate total unread count
+          this.refreshUnreadCounts();
+          
+          // Emit through socket that messages have been read
+          if (this.socket) {
+            const messageIds = this._messages.value
+              .filter(msg => {
+                const senderId = typeof msg.sender === 'string' ? msg.sender : msg.sender._id;
+                return senderId !== this.tokenService.getUser()?._id;
+              })
+              .map(msg => msg._id);
+              
+            if (messageIds.length > 0) {
+              this.socket.emit('markAsRead', { 
+                chatId, 
+                messageIds,
+                userId: this.tokenService.getUser()?._id
+              });
+            }
+          }
+        }
+      }),
+      catchError(error => {
+        console.error(`Error marking chat ${chatId} as read:`, error);
+        return of({ success: false, message: 'Failed to mark messages as read' });
+      })
+    );
   }
 
   // Delete a message
-  deleteMessage(chatId: string, messageId: string): Observable<{success: boolean, message: string}> {
-    // Delete via HTTP
-    const result = this.http.delete<{success: boolean, message: string}>(`${this.apiUrl}/${chatId}/messages/${messageId}`);
-    
-    // Delete via Socket
-    if (this.socket) {
-      this.socket.emit('deleteMessage', { chatId, messageId });
-    }
-    
-    return result;
+  deleteMessage(chatId: string, messageId: string): Observable<{ success: boolean }> {
+    return this.http.delete<{ success: boolean }>(`${this.apiUrl}/${chatId}/messages/${messageId}`).pipe(
+      tap(response => {
+        if (response.success) {
+          // Remove from messages list
+          const updatedMessages = this._messages.value.filter(msg => msg._id !== messageId);
+          this._messages.next(updatedMessages);
+          
+          // Emit through socket for real-time update
+          if (this.socket) {
+            this.socket.emit('deleteMessage', { 
+              chatId, 
+              messageId,
+              userId: this.tokenService.getUser()?._id
+            });
+          }
+        }
+      }),
+      catchError(error => {
+        console.error(`Error deleting message ${messageId} from chat ${chatId}:`, error);
+        return of({ success: false });
+      })
+    );
   }
 
-  // Delete/hide a chat for the current user
-  deleteChat(chatId: string): Observable<{success: boolean, message: string}> {
-    return this.http.delete<{success: boolean, message: string}>(`${this.apiUrl}/${chatId}`);
+  // Create a chat for an order (usually called after checkout)
+  createOrderChat(orderId: string): Observable<ChatResponse> {
+    return this.http.post<ChatResponse>(`${this.apiUrl}/order/${orderId}`, {}).pipe(
+      tap(response => {
+        if (response.success && response.chat) {
+          // Add to active chats list
+          const currentChats = [...this._activeChats.value];
+          currentChats.push(response.chat);
+          this._activeChats.next(currentChats);
+        }
+      }),
+      catchError(error => {
+        console.error(`Error creating chat for order ${orderId}:`, error);
+        // Create empty chat object to satisfy type requirements
+        const emptyChat: Chat = {
+          _id: '',
+          order: '',
+          customer: '',
+          chef: '',
+          messages: [],
+          lastActivity: new Date().toISOString(),
+          isActive: false,
+          deletedBy: [],
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        };
+        return of({ success: false, message: 'Failed to create chat', chat: emptyChat });
+      })
+    );
   }
 
-  // Create chat channels for an order
-  createOrderChat(orderId: string): Observable<{success: boolean, message: string}> {
-    return this.http.post<{success: boolean, message: string}>(`${this.apiUrl}/order/${orderId}`, {});
-  }
-
-  /**
-   * Send typing indicator to other users in chat
-   * @param chatId The ID of the chat
-   * @param isTyping Whether the user is typing or has stopped typing
-   */
-  // src/app/core/services/chat.service.ts
-
-// Fix the sendTypingIndicator method
-sendTypingIndicator(chatId: string, isTyping: boolean): void {
-  if (!this.socket) return;
-  
-  if (isTyping) {
-    // Send typing event
-    this.socket.emit('typing', { chatId });
+  // Update active chats when a new message is received
+  private updateChatWithNewMessage(chatId: string, message: ChatMessage): void {
+    const currentChats = [...this._activeChats.value];
+    const chatIndex = currentChats.findIndex(chat => chat._id === chatId);
     
-    // Clear existing timeout and set a new one
-    if (this.typingTimeout) {
-      clearTimeout(this.typingTimeout);
-    }
-    
-    // Stop typing after 3 seconds of inactivity
-    this.typingTimeout = setTimeout(() => {
-      if (this.socket) { // Add null check here
-        this.socket.emit('stopTyping', { chatId });
-      }
-      this.typingTimeout = null;
-    }, 3000);
-  } else if (!isTyping && this.typingTimeout) {
-    // Send stop typing event
-    if (this.socket) { // Add null check here
-      this.socket.emit('stopTyping', { chatId });
-    }
-    clearTimeout(this.typingTimeout);
-    this.typingTimeout = null;
-  }
-}
-  /**
-   * Get users currently typing in a specific chat
-   * @param chatId The ID of the chat
-   * @returns Array of user names who are typing
-   */
-  getTypingUsers(chatId: string): string[] {
-    const currentTyping = this._typingUsers.value;
-    return currentTyping[chatId] || [];
-  }
-
-  /**
-   * Remove a user from the typing list
-   * @param chatId The ID of the chat
-   * @param userName The name of the user to remove
-   */
-  private removeTypingUser(chatId: string, userName: string): void {
-    const currentTyping = this._typingUsers.value;
-    
-    if (currentTyping[chatId]) {
-      currentTyping[chatId] = currentTyping[chatId].filter(name => name !== userName);
+    if (chatIndex !== -1) {
+      // Update last message and unread count
+      const chat = currentChats[chatIndex];
+      const userId = this.tokenService.getUser()?._id;
       
-      // If no users are typing in this chat, remove the chat entry
-      if (currentTyping[chatId].length === 0) {
-        delete currentTyping[chatId];
+      // Increment unread count if message is from someone else
+      let senderId: string;
+      if (typeof message.sender === 'string') {
+        senderId = message.sender;
+      } else if (message.sender && typeof message.sender === 'object' && '_id' in message.sender) {
+        senderId = message.sender._id;
+      } else {
+        senderId = '';
       }
       
-      this._typingUsers.next({ ...currentTyping });
+      const unreadCount = chat.unreadCount || 0;
+      const newUnreadCount = senderId !== userId ? unreadCount + 1 : unreadCount;
+      
+      // Update chat with new message info
+      currentChats[chatIndex] = {
+        ...chat,
+        lastMessage: message,
+        unreadCount: newUnreadCount,
+        lastActivity: message.createdAt
+      };
+      
+      // Move this chat to the top of the list
+      const updatedChat = currentChats.splice(chatIndex, 1)[0];
+      currentChats.unshift(updatedChat);
+      
+      // Update chat list
+      this._activeChats.next(currentChats);
+      
+      // Recalculate total unread count
+      this.refreshUnreadCounts();
+    } else {
+      // Chat not in list, refresh chats from server
+      this.getChats().subscribe();
     }
   }
 
-  /**
-   * Get socket instance (for use in other services)
-   * @returns The socket instance
-   */
-  getSocket(): Socket | null {
-    return this.socket;
+  // Recalculate total unread messages count
+  private refreshUnreadCounts(): void {
+    const unreadTotal = this._activeChats.value.reduce((sum, chat) => sum + (chat.unreadCount || 0), 0);
+    this._unreadCount.next(unreadTotal);
   }
 
-  // Disconnect socket
+  // Clean up when service is destroyed
   disconnect(): void {
     if (this.socket) {
       this.socket.disconnect();

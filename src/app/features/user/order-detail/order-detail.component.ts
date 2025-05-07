@@ -9,6 +9,8 @@ import { ToastService } from '../../../core/services/toast.service';
 import { Order, OrderStatus } from '../../../core/models/order.model';
 import { Product, ChefInfo } from '../../../core/models/product.model';
 import { ChatService } from '../../../core/services/chat.service';
+import { Chat } from '../../../core/models/chat.model';
+
 
 @Component({
   selector: 'app-order-detail',
@@ -320,7 +322,8 @@ export class OrderDetailComponent implements OnInit {
       next: (response) => {
         if (response.success) {
           const chat = response.chats.find(c =>
-            c.order && c.order._id === this.order?._id
+            c.order && typeof c.order !== 'string' && c.order._id === this.order?._id
+
           );
 
           if (chat) {
@@ -346,9 +349,9 @@ export class OrderDetailComponent implements OnInit {
         if (response.success) {
           // Refresh chats to get the new chat ID
           this.chatService.loadChats();
-          this.chatService.chats$.subscribe(chats => {
-            const newChat = chats.find(chat =>
-              chat.order && chat.order._id === this.order?._id
+          this.chatService.activeChats$.subscribe((chats: Chat[]) => {
+              const newChat = chats.find((chat: Chat) =>
+                chat.order && typeof chat.order !== 'string' && chat.order._id === this.order?._id
             );
             if (newChat) {
               this.chatId = newChat._id;

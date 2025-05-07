@@ -1,4 +1,4 @@
-// src/app/features/user/user-routing.module.ts (Updated)
+// src/app/features/user/user-routing.module.ts
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { DashboardComponent } from './dashboard/dashboard.component';
@@ -11,9 +11,9 @@ import { OrderHistoryComponent } from './order-history/order-history.component';
 import { OrderDetailComponent } from './order-detail/order-detail.component';
 import { UserReviewsComponent } from './user-reviews/user-reviews.component';
 import { EditReviewComponent } from './edit-review/edit-review.component';
-import { ChatListComponent } from '../chat/chat-list/chat-list.component';
-import { ChatDetailComponent } from '../chat/chat-detail/chat-detail.component';
 import { ReviewPageComponent } from '../reviews/review-page/review-page.component';
+import { UserChatListComponent } from './user-chat/user-chat-list/user-chat-list.component';
+import { UserChatDetailComponent } from './user-chat/user-chat-detail/user-chat-detail.component';
 
 export const USER_ROUTES: Routes = [
   { path: 'dashboard', component: DashboardComponent, canActivate: [AuthGuard] },
@@ -24,24 +24,14 @@ export const USER_ROUTES: Routes = [
   { path: 'orders/:id', component: OrderDetailComponent, canActivate: [AuthGuard] },
   { path: 'reviews', component: UserReviewsComponent, canActivate: [AuthGuard] },
   { path: 'reviews/edit/:id', component: EditReviewComponent, canActivate: [AuthGuard] },
-  { path: 'reviews/write', component: ReviewPageComponent, canActivate: [AuthGuard] }, // New route
-  { path: 'chats', component: ChatListComponent, canActivate: [AuthGuard] },
-  { path: 'chats/:id', component: ChatDetailComponent, canActivate: [AuthGuard] },
+  { path: 'reviews/write', component: ReviewPageComponent, canActivate: [AuthGuard] },
   { path: 'chef-application', component: ChefApplicationComponent, canActivate: [AuthGuard] },
-  { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
-  {
-    path: 'chats',
-    component: ChatListComponent,
-    canActivate: [AuthGuard],
-    data: { role: 'user' }
-  },
-  {
-    path: 'chats/:id',
-    component: ChatDetailComponent,
-    canActivate: [AuthGuard],
-    data: { role: 'user' }
-  }
-
+  
+  // Add the chat routes directly to user module
+  { path: 'chats', component: UserChatListComponent, canActivate: [AuthGuard] },
+  { path: 'chats/:id', component: UserChatDetailComponent, canActivate: [AuthGuard] },
+  
+  { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
 ];
 
 @NgModule({

@@ -45,7 +45,9 @@ export class AppComponent implements OnInit {
     this.checkAuth();
     
     // Initialize socket connection for real-time messaging
-    this.chatService.initializeSocket();
+    if (this.tokenService.getToken()) {
+      this.chatService.initializeSocket();
+    }
     
     // Listen for route changes to scroll to top
     this.router.events.pipe(
@@ -68,6 +70,9 @@ export class AppComponent implements OnInit {
             // Remove the token from URL (replace state without query params)
             const url = this.router.url.split('?')[0];
             window.history.replaceState({}, '', url);
+            
+            // Initialize socket after successful auth
+            this.chatService.initializeSocket();
           },
           error: (error) => {
             console.error('Google authentication error:', error);
@@ -75,7 +80,14 @@ export class AppComponent implements OnInit {
         });
     } else {
       // Normal auth check
-      this.authService.getCurrentUser().subscribe();
+      this.authService.getCurrentUser().subscribe({
+        next: () => {
+          // Initialize socket if user is logged in
+          if (this.tokenService.getToken()) {
+            this.chatService.initializeSocket();
+          }
+        }
+      });
     }
   }
 }
