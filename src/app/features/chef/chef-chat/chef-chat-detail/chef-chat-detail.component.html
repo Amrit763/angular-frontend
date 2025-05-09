@@ -1,14 +1,14 @@
 <!-- src/app/features/chef/chef-chat/chef-chat-detail/chef-chat-detail.component.html -->
-<div class="container-fluid py-4">
+<div class="container chat-page-container">
   <!-- Back button and title -->
   <div class="row mb-4">
     <div class="col-12">
-      <div class="d-flex justify-content-between align-items-center">
+      <div class="d-flex align-items-center justify-content-between">
         <div class="d-flex align-items-center">
-          <a routerLink="/chef/chats" class="btn btn-outline-secondary me-3">
+          <a routerLink="/chef/chats" class="back-btn me-3">
             <i class="bi bi-arrow-left"></i>
           </a>
-          <h2 class="mb-0">Chat with {{ getCustomerName() }}</h2>
+          <h2 class="page-title">Chat with {{ getCustomerName() }}</h2>
         </div>
         
         <div class="d-flex align-items-center">
@@ -19,8 +19,8 @@
             </span>
             <span *ngIf="connectionStatus === 'disconnected'" class="badge bg-danger">
               <i class="bi bi-wifi-off me-1"></i> Disconnected
-              <button class="btn btn-sm btn-light ms-2" (click)="reconnectSocket()">
-                <i class="bi bi-arrow-clockwise"></i> Reconnect
+              <button class="reconnect-btn ms-2" (click)="reconnectSocket()">
+                <i class="bi bi-arrow-clockwise me-1"></i> Reconnect
               </button>
             </span>
             <span *ngIf="connectionStatus === 'connecting'" class="badge bg-warning text-dark">
@@ -28,7 +28,7 @@
             </span>
           </div>
           
-          <a routerLink="/chef/dashboard" class="btn btn-outline-primary">
+          <a routerLink="/chef/dashboard" class="dashboard-btn">
             <i class="bi bi-grid me-2"></i>Dashboard
           </a>
         </div>
@@ -39,11 +39,11 @@
   <!-- Loading state -->
   <div *ngIf="isLoading" class="row">
     <div class="col-12">
-      <div class="text-center my-5">
-        <div class="spinner-border text-primary" role="status">
+      <div class="loading-container">
+        <div class="spinner-border loading-spinner" role="status">
           <span class="visually-hidden">Loading...</span>
         </div>
-        <p class="mt-3">Loading conversation...</p>
+        <h4 class="loading-text">Loading conversation...</h4>
       </div>
     </div>
   </div>
@@ -52,17 +52,17 @@
   <div *ngIf="error && !isLoading" class="row">
     <div class="col-12">
       <div class="alert alert-danger">
-        {{ error }}
+        <i class="bi bi-exclamation-triangle me-2"></i>{{ error }}
       </div>
     </div>
   </div>
   
-  <!-- Chat messages column -->
+  <!-- Chat section -->
   <div *ngIf="!isLoading && chat" class="row">
     <div class="col-12">
-      <div class="card shadow-sm">
+      <div class="chat-card card">
         <!-- Chat header -->
-        <div class="card-header bg-white py-3">
+        <div class="chat-header">
           <div class="d-flex align-items-center">
             <!-- Customer profile image -->
             <div *ngIf="getCustomerImage()" class="chat-avatar me-3">
@@ -71,55 +71,59 @@
                    class="rounded-circle" 
                    style="width: 48px; height: 48px; object-fit: cover;">
             </div>
-            <div *ngIf="!getCustomerImage()" class="chat-avatar me-3 rounded-circle bg-light d-flex align-items-center justify-content-center text-primary"
+            <div *ngIf="!getCustomerImage()" class="chat-avatar me-3 rounded-circle d-flex align-items-center justify-content-center bg-light text-primary"
                  style="width: 48px; height: 48px;">
               <i class="bi bi-person"></i>
             </div>
             
             <!-- Customer information -->
             <div>
-              <h5 class="mb-0">{{ getCustomerName() }}</h5>
+              <h5 class="mb-0 fw-bold">{{ getCustomerName() }}</h5>
               <small class="text-muted">Order #{{ getOrderId() }}</small>
             </div>
           </div>
         </div>
         
         <!-- Messages container -->
-        <div #messageContainer class="card-body p-3 chat-messages-container" style="height: 500px; overflow-y: auto;">
-          <div *ngIf="messages.length === 0" class="text-center my-5 text-muted">
-            <i class="bi bi-chat-text mb-3" style="font-size: 3rem;"></i>
-            <p>No messages yet. Start the conversation!</p>
+        <div #messageContainer class="chat-messages-container">
+          <!-- Empty state -->
+          <div *ngIf="messages.length === 0" class="empty-messages">
+            <i class="bi bi-chat-square-text empty-icon"></i>
+            <p class="empty-text">No messages yet. Start the conversation!</p>
           </div>
           
-          <div *ngFor="let message of messages" class="message-wrapper mb-3" [ngClass]="{'message-own': isOwnMessage(message), 'message-other': !isOwnMessage(message)}">
-            <!-- Chef message (own) -->
-            <div *ngIf="isOwnMessage(message)" class="d-flex justify-content-end">
-              <div class="message-content bg-primary text-white p-3 rounded-3 shadow-sm">
-                {{ message.content }}
-                <div class="message-time text-end mt-1">
-                  <small class="text-white-50">{{ formatMessageTime(message.createdAt) }}</small>
+          <!-- Messages list -->
+          <div class="messages-list" *ngIf="messages.length > 0">
+            <div *ngFor="let message of messages" class="message-wrapper" [ngClass]="{'message-own': isOwnMessage(message), 'message-other': !isOwnMessage(message)}">
+              <!-- Chef message (own) -->
+              <div *ngIf="isOwnMessage(message)" class="d-flex justify-content-end">
+                <div class="message-content">
+                  {{ message.content }}
+                  <div class="message-time">
+                    <small>{{ formatMessageTime(message.createdAt) }}</small>
+                  </div>
                 </div>
               </div>
-            </div>
-            
-            <!-- Customer message (received) -->
-            <div *ngIf="!isOwnMessage(message)" class="d-flex">
-              <div class="message-avatar me-2" *ngIf="!isOwnMessage(message)">
-                <div *ngIf="getCustomerImage()" class="chat-avatar">
-                  <img [src]="productService.getImageUrl(getCustomerImage())" 
-                       alt="Customer" 
-                       class="rounded-circle" 
-                       style="width: 36px; height: 36px; object-fit: cover;">
+              
+              <!-- Customer message (received) -->
+              <div *ngIf="!isOwnMessage(message)" class="d-flex">
+                <div class="message-avatar me-2" *ngIf="!isOwnMessage(message)">
+                  <div *ngIf="getCustomerImage()" class="chat-avatar">
+                    <img [src]="productService.getImageUrl(getCustomerImage())" 
+                         alt="Customer" 
+                         class="rounded-circle" 
+                         style="width: 36px; height: 36px; object-fit: cover;">
+                  </div>
+                  <div *ngIf="!getCustomerImage()" class="chat-avatar rounded-circle d-flex align-items-center justify-content-center bg-light text-primary"
+                       style="width: 36px; height: 36px; font-size: 0.8rem;">
+                    <i class="bi bi-person"></i>
+                  </div>
                 </div>
-                <div *ngIf="!getCustomerImage()" class="chat-avatar rounded-circle bg-light d-flex align-items-center justify-content-center text-primary"
-                     style="width: 36px; height: 36px; font-size: 0.8rem;">
-                  <i class="bi bi-person"></i>
-                </div>
-              </div>
-              <div class="message-content bg-light p-3 rounded-3 shadow-sm">
-                {{ message.content }}
-                <div class="message-time text-end mt-1">
-                  <small class="text-muted">{{ formatMessageTime(message.createdAt) }}</small>
+                <div class="message-content">
+                  {{ message.content }}
+                  <div class="message-time">
+                    <small>{{ formatMessageTime(message.createdAt) }}</small>
+                  </div>
                 </div>
               </div>
             </div>
@@ -127,20 +131,19 @@
         </div>
         
         <!-- Message input form -->
-        <div class="card-footer bg-white py-3">
+        <div class="chat-footer">
           <form [formGroup]="messageForm" (ngSubmit)="sendMessage()">
-            <div class="input-group">
+            <div class="message-input-container">
               <input 
                 type="text" 
                 formControlName="content" 
-                class="form-control" 
+                class="form-control message-input" 
                 placeholder="Type your message..." 
-                [ngClass]="{'is-invalid': messageForm.get('content')?.invalid && messageForm.get('content')?.touched}"
                 [disabled]="connectionStatus === 'disconnected'"
               >
               <button 
                 type="submit" 
-                class="btn btn-primary" 
+                class="send-btn" 
                 [disabled]="messageForm.invalid || isSending || connectionStatus === 'disconnected'"
               >
                 <i *ngIf="!isSending" class="bi bi-send"></i>
@@ -150,9 +153,6 @@
             <div *ngIf="connectionStatus === 'disconnected'" class="text-danger mt-2 small">
               <i class="bi bi-exclamation-triangle me-1"></i>
               Connection lost. Please reconnect to continue messaging.
-            </div>
-            <div *ngIf="messageForm.get('content')?.invalid && messageForm.get('content')?.touched" class="invalid-feedback d-block">
-              Message is required and cannot exceed 1000 characters
             </div>
           </form>
         </div>

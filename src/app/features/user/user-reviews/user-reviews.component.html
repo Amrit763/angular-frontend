@@ -72,10 +72,21 @@
                                 <!-- Product sidebar -->
                                 <div class="col-lg-3">
                                     <div class="product-sidebar">
-                                        <img [src]="productService.getImageUrl(review.product.images && review.product.images.length > 0 ? review.product.images[0] : null)"
-                                            alt="{{ review.product.name || 'Product' }}"
-                                            class="product-image">
-                                        <div class="product-details">
+                                        <!-- Fixed image handling -->
+                                        <div class="product-image-container">
+                                            <img *ngIf="review.product && review.product.images && review.product.images.length > 0"
+                                                [src]="productService.getImageUrl(review.product.images[0])"
+                                                alt="{{ review.product.name || 'Product' }}"
+                                                class="product-thumb"
+                                                onerror="this.src='/assets/images/placeholder.jpg'; this.onerror='';">
+                                            
+                                            <!-- Fallback if no images array or empty array -->
+                                            <div *ngIf="!review.product || !review.product.images || review.product.images.length === 0" 
+                                                class="product-placeholder">
+                                                <i class="bi bi-image text-muted"></i>
+                                            </div>
+                                        </div>
+                                        <div class="product-details mt-3">
                                             <h5 class="product-name">{{ review.product.name || 'Product' }}</h5>
                                             <p class="product-category">{{ review.product.category || 'Category' }}</p>
                                             <a [routerLink]="['/home/products', review.product._id]" class="btn view-product-btn" style="background-color: #126195; color: white;">
@@ -123,7 +134,8 @@
                                                     <div class="review-image">
                                                         <img [src]="productService.getImageUrl(image)" 
                                                             alt="Review image" 
-                                                            class="img-fluid">
+                                                            class="img-fluid"
+                                                            onerror="this.src='/assets/images/placeholder.jpg'; this.onerror='';">
                                                     </div>
                                                 </div>
                                             </div>
@@ -185,7 +197,7 @@
                 </div>
             </div>
 
-            <!-- Pending reviews list -->
+            <!-- Pending reviews list - Fixed with robust data handling -->
             <div *ngIf="!loadingPendingReviews && pendingReviews.length > 0">
                 <div class="info-alert mb-4">
                     <div class="d-flex align-items-center">
@@ -197,35 +209,84 @@
                     </div>
                 </div>
 
-                <div class="row">
-                    <div class="col-md-6 col-lg-4 mb-4" *ngFor="let item of pendingReviews">
-                        <div class="pending-review-card card h-100">
-                            <div class="card-img-container">
-                                <img [src]="productService.getImageUrl(item.product.images && item.product.images.length > 0 ? item.product.images[0] : null)"
-                                    class="card-img-top" alt="{{ item.product.name }}">
-                                <span class="status-badge bg-success">
-                                    <i class="bi bi-check-circle me-1"></i> Delivered
-                                </span>
-                            </div>
-                            <div class="card-body d-flex flex-column">
-                                <h5 class="card-title text-accent">{{ item.product.name }}</h5>
-                                <div class="d-flex align-items-center mb-2">
-                                    <span class="badge bg-light text-dark me-2">{{ item.product.category }}</span>
-                                </div>
-                                <p class="card-text mb-3">
-                                    <small class="text-muted">
-                                        <i class="bi bi-box-seam me-1"></i> Delivered on {{ formatDate(item.orderDate) }}
-                                    </small>
-                                </p>
-                                <div class="mt-auto">
-                                    <button class="btn btn-primary w-100 mb-2" (click)="openReviewForm(item.orderId, item.product)">
-                                        <i class="bi bi-star-fill me-1"></i> Write a Review
-                                    </button>
-                                    <button class="btn btn-outline-secondary w-100" (click)="viewOrder(item.orderId)">
-                                        <i class="bi bi-eye me-1"></i> View Order Details
-                                    </button>
-                                </div>
-                            </div>
+                <!-- Standardized table for pending reviews -->
+                <div class="card shadow-sm">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0">Products You Can Review</h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th style="width: 100px">Product</th>
+                                        <th>Name</th>
+                                        <th>Category</th>
+                                        <th>Delivery Date</th>
+                                        <th class="text-end">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr *ngFor="let item of pendingReviews">
+                                        <!-- Product image with robust fallbacks -->
+                                        <td>
+                                            <div class="product-image-container">
+                                                <!-- Show image if available -->
+                                                <img *ngIf="hasProductImages(item)" 
+                                                    [src]="getProductImageUrl(item)" 
+                                                    alt="{{ getProductName(item) }}" 
+                                                    class="product-thumb"
+                                                    onerror="this.src='/assets/images/placeholder.jpg'; this.onerror='';">
+                                                
+                                                <!-- Show direct image URL if available -->
+                                                <img *ngIf="!hasProductImages(item) && hasProductImageUrl(item)" 
+                                                    [src]="getProductDirectImageUrl(item)" 
+                                                    alt="{{ getProductName(item) }}" 
+                                                    class="product-thumb"
+                                                    onerror="this.src='/assets/images/placeholder.jpg'; this.onerror='';">
+                                                
+                                                <!-- Fallback icon -->
+                                                <div *ngIf="!hasProductImages(item) && !hasProductImageUrl(item)" 
+                                                    class="product-placeholder">
+                                                    <i class="bi bi-image text-muted"></i>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        
+                                        <!-- Product name with fallback -->
+                                        <td>
+                                            <h6 class="mb-0">{{ getProductName(item) }}</h6>
+                                        </td>
+                                        
+                                        <!-- Product category with fallback -->
+                                        <td>
+                                            <span class="badge bg-light text-dark">{{ getProductCategory(item) }}</span>
+                                        </td>
+                                        
+                                        <!-- Order date with fallback -->
+                                        <td>
+                                            <small>
+                                                <i class="bi bi-box-seam me-1"></i> {{ getFormattedOrderDate(item) }}
+                                            </small>
+                                        </td>
+                                        
+                                        <!-- Action buttons -->
+                                        <td class="text-end">
+                                            <div class="btn-group">
+                                                <!-- Review button -->
+                                                <button class="btn btn-primary btn-sm" (click)="navigateToReviewPage(getOrderId(item), getProductObject(item))">
+                                                    <i class="bi bi-star-fill me-1"></i> Review
+                                                </button>
+                                                
+                                                <!-- View Order button -->
+                                                <button class="btn btn-outline-secondary btn-sm" (click)="viewOrder(getOrderId(item))">
+                                                    <i class="bi bi-eye me-1"></i> View Order
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
@@ -263,26 +324,4 @@
     
     <!-- Modal backdrop -->
     <div *ngIf="isDeleteDialogOpen" class="modal-backdrop fade show"></div>
-
-    <!-- Review Form Modal -->
-    <div *ngIf="showReviewForm" class="modal d-block">
-        <div class="modal-dialog modal-lg modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header custom-modal-header">
-                    <h5 class="modal-title"><i class="bi bi-pencil-square me-2"></i> Write Your Review</h5>
-                    <button type="button" class="btn-close btn-close-white" (click)="closeReviewForm()"></button>
-                </div>
-                <div class="modal-body">
-                    <app-review-form
-                        [orderId]="selectedOrderId"
-                        [productId]="selectedProductId"
-                        [product]="selectedProduct"
-                        (reviewSubmitted)="onReviewSubmitted($event)"
-                        (cancelled)="closeReviewForm()"
-                    ></app-review-form>
-                </div>
-            </div>
-        </div>
-        <div class="modal-backdrop fade show"></div>
-    </div>
 </div>

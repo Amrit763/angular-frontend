@@ -2,12 +2,13 @@
 import { Component, OnInit, AfterViewInit, OnDestroy, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { Router } from '@angular/router';
+import { Router, NavigationEnd } from '@angular/router';
 import { AuthService } from '../../../core/auth/auth.service';
 import { TokenService } from '../../../core/auth/token.service';
 import { CartService } from '../../../core/services/cart.service';
 import { User } from '../../../core/auth/user.model';
 import { Subscription } from 'rxjs';
+import { filter } from 'rxjs/operators';
 
 @Component({
   selector: 'app-header',
@@ -27,6 +28,7 @@ export class HeaderComponent implements OnInit, AfterViewInit, OnDestroy {
   pendingOrders = 0; // For orders badge
   isDropdownOpen = false; // Track dropdown state
   isMenuCollapsed = true; // Track mobile menu collapsed state
+  showHeader = true; // Control header visibility
   
   private subscriptions: Subscription[] = [];
 
@@ -60,7 +62,28 @@ export class HeaderComponent implements OnInit, AfterViewInit, OnDestroy {
     if (user) {
       this.currentUser = user;
       this.loadUserData();
+      
+      // Check if user is in chef mode already based on local storage
+      this.isChefMode = localStorage.getItem('chefMode') === 'true';
     }
+    
+    // Monitor route changes to determine header visibility
+    this.subscriptions.push(
+      this.router.events.pipe(
+        filter(event => event instanceof NavigationEnd)
+      ).subscribe((event: any) => {
+        // Hide header on chef routes
+        this.showHeader = !this.isChefRoute(event.url);
+      })
+    );
+    
+    // Check current route on init
+    this.showHeader = !this.isChefRoute(this.router.url);
+  }
+  
+  // Check if current route is a chef route
+  isChefRoute(url: string): boolean {
+    return url.startsWith('/chef');
   }
 
   // Load all user-related data including notifications
@@ -144,6 +167,9 @@ export class HeaderComponent implements OnInit, AfterViewInit, OnDestroy {
 
   toggleChefMode(): void {
     this.isChefMode = !this.isChefMode;
+    
+    // Store chef mode in localStorage directly (without modifying TokenService)
+    localStorage.setItem('chefMode', this.isChefMode ? 'true' : 'false');
     
     // Redirect to appropriate dashboard
     if (this.isChefMode) {

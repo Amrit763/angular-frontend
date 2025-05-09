@@ -1,104 +1,212 @@
 <!-- src/app/features/chef/product-list/product-list.component.html -->
-<div class="container-fluid py-4">
-    <div class="row mb-4">
-      <div class="col-12">
-        <div class="card shadow-sm">
-          <div class="card-body">
-            <div class="d-flex justify-content-between align-items-center">
-              <h2 class="card-title">My Products</h2>
+<div class="container-fluid py-3 py-md-4">
+  <!-- Top navigation bar -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card shadow-sm">
+        <div class="card-body p-3">
+          <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+              <li class="breadcrumb-item">
+                <a [routerLink]="['/chef/dashboard']" class="text-decoration-none">
+                  <i class="bi bi-house-door me-1"></i>Dashboard
+                </a>
+              </li>
+              <li class="breadcrumb-item active" aria-current="page">Products</li>
+            </ol>
+          </nav>
+        </div>
+      </div>
+    </div>
+  </div>
+    
+  <!-- Header section with title and add button -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card shadow-sm">
+        <div class="card-body p-3 p-md-4">
+          <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+            <div>
+              <h2 class="card-title h4 mb-1">My Products</h2>
+              <p class="text-muted mb-0 d-none d-md-block">Manage your menu items</p>
+            </div>
+            <div class="d-flex">
               <a routerLink="/chef/products/new" class="btn btn-primary">
-                <i class="bi bi-plus-circle me-2"></i>Add New Product
+                <i class="bi bi-plus-circle me-2"></i>Add Product
               </a>
             </div>
           </div>
         </div>
       </div>
     </div>
+  </div>
   
+  <!-- Notification area -->
+  <div class="notification-area">
     <!-- Success message -->
     <div *ngIf="successMessage" class="row mb-4">
       <div class="col-12">
         <div class="alert alert-success alert-dismissible fade show" role="alert">
-          {{ successMessage }}
+          <i class="bi bi-check-circle me-2"></i>{{ successMessage }}
           <button type="button" class="btn-close" (click)="successMessage = null"></button>
         </div>
       </div>
     </div>
-  
+    
     <!-- Error message -->
     <div *ngIf="error" class="row mb-4">
       <div class="col-12">
         <div class="alert alert-danger alert-dismissible fade show" role="alert">
-          {{ error }}
+          <i class="bi bi-exclamation-triangle me-2"></i>{{ error }}
           <button type="button" class="btn-close" (click)="error = null"></button>
         </div>
       </div>
     </div>
+  </div>
   
-    <!-- Filter section -->
-    <div class="row mb-4">
-      <div class="col-12">
-        <div class="card shadow-sm">
-          <div class="card-body">
-            <h5 class="card-title mb-3">Filters</h5>
+  <!-- Filter section -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card shadow-sm">
+        <div class="card-body p-3 p-md-4">
+          <div class="d-flex align-items-center mb-3">
+            <i class="bi bi-funnel me-2" style="color: #155475;"></i>
+            <h5 class="card-title mb-0">Filters</h5>
+          </div>
+          
+          <div class="row g-3">
+            <div class="col-12 col-md-4">
+              <label for="categoryFilter" class="form-label small text-muted">Category</label>
+              <select class="form-select" id="categoryFilter" [(ngModel)]="filterCategory">
+                <option value="">All Categories</option>
+                <option *ngFor="let category of categories" [value]="category">
+                  {{ category | titlecase }}
+                </option>
+              </select>
+            </div>
             
-            <div class="row g-3">
-              <div class="col-md-4">
-                <label for="categoryFilter" class="form-label">Category</label>
-                <select class="form-select" id="categoryFilter" [(ngModel)]="filterCategory">
-                  <option value="">All Categories</option>
-                  <option *ngFor="let category of categories" [value]="category">
-                    {{ category | titlecase }}
-                  </option>
-                </select>
-              </div>
-              
-              <div class="col-md-4">
-                <label for="availabilityFilter" class="form-label">Availability</label>
-                <select class="form-select" id="availabilityFilter" [(ngModel)]="filterAvailability">
-                  <option value="">All</option>
-                  <option value="available">Available</option>
-                  <option value="unavailable">Unavailable</option>
-                </select>
-              </div>
-              
-              <div class="col-md-4 d-flex align-items-end">
-                <button class="btn btn-outline-secondary" (click)="resetFilters()">
-                  <i class="bi bi-x-circle me-2"></i>Reset Filters
-                </button>
-              </div>
+            <div class="col-12 col-md-4">
+              <label for="statusFilter" class="form-label small text-muted">Availability Status</label>
+              <select class="form-select" id="statusFilter" [(ngModel)]="filterStatus">
+                <option value="">All Status</option>
+                <option value="available">Available</option>
+                <option value="unavailable">Unavailable</option>
+              </select>
+            </div>
+            
+            <div class="col-12 col-md-4 d-flex align-items-end">
+              <button class="btn btn-outline-secondary w-100" (click)="resetFilters()">
+                <i class="bi bi-x-circle me-2"></i>Reset Filters
+              </button>
             </div>
           </div>
         </div>
       </div>
     </div>
+  </div>
   
-    <!-- Products list -->
-    <div class="row">
-      <div class="col-12">
-        <div class="card shadow-sm">
-          <div class="card-body">
-            
-            <!-- Loading indicator -->
-            <div *ngIf="isLoading" class="text-center py-5">
-              <div class="spinner-border text-primary" role="status">
-                <span class="visually-hidden">Loading...</span>
-              </div>
-              <p class="mt-3">Loading your products...</p>
+  <!-- Products list -->
+  <div class="row">
+    <div class="col-12">
+      <div class="card shadow-sm">
+        <div class="card-body p-3 p-md-4">
+          <div class="d-flex align-items-center mb-3">
+            <i class="bi bi-basket me-2" style="color: #155475;"></i>
+            <h5 class="card-title mb-0">Products</h5>
+            <span class="ms-2 badge bg-primary rounded-pill" *ngIf="products.length > 0" style="background-color: #155475 !important;">
+              {{ products.length }}
+            </span>
+          </div>
+          
+          <!-- Loading indicator -->
+          <div *ngIf="isLoading" class="text-center py-5">
+            <div class="spinner-border text-primary" role="status">
+              <span class="visually-hidden">Loading...</span>
             </div>
-            
-            <!-- No products message -->
-            <div *ngIf="!isLoading && products.length === 0" class="text-center py-5">
+            <p class="mt-3">Loading your products...</p>
+          </div>
+          
+          <!-- No products message -->
+          <div *ngIf="!isLoading && products.length === 0" class="text-center py-5">
+            <div class="empty-state-icon mb-3">
               <i class="bi bi-basket display-1 text-muted"></i>
-              <h3 class="mt-3">You don't have any products yet</h3>
-              <p class="text-muted">Start creating delicious dishes to share with customers.</p>
-              <a routerLink="/chef/products/new" class="btn btn-primary mt-3">
-                <i class="bi bi-plus-circle me-2"></i>Add Your First Product
-              </a>
+            </div>
+            <h3 class="mt-3 h5">You don't have any products yet</h3>
+            <p class="text-muted">Start creating delicious dishes to share with customers.</p>
+            <a routerLink="/chef/products/new" class="btn btn-primary mt-3">
+              <i class="bi bi-plus-circle me-2"></i>Add Your First Product
+            </a>
+          </div>
+          
+          <!-- Products list for mobile view -->
+          <div *ngIf="!isLoading && products.length > 0" class="product-cards d-md-none">
+            <div class="product-count small text-muted mb-3" *ngIf="applyFilters().length > 0">
+              Showing {{ applyFilters().length }} of {{ products.length }} products
             </div>
             
-            <!-- Products table -->
-            <div *ngIf="!isLoading && products.length > 0" class="table-responsive">
+            <div class="row g-3">
+              <div class="col-12" *ngFor="let product of applyFilters(); trackBy: trackByProductId">
+                <div class="card product-card h-100" [ngClass]="{'unavailable': !product.isAvailable}">
+                  <div class="card-body">
+                    <div class="d-flex mb-3">
+                      <div class="product-image me-3">
+                        <img [src]="productService.getImageUrl(product.images && product.images.length > 0 ? product.images[0] : '')" 
+                             alt="{{ product.name }}" class="rounded">
+                      </div>
+                      <div class="product-details flex-grow-1">
+                        <h6 class="card-title mb-1">{{ product.name }}</h6>
+                        <p class="card-text small text-muted mb-1">{{ product.category | titlecase }}</p>
+                        <div class="price-tag mb-1">${{ product.price.toFixed(2) }}</div>
+                        <div class="rating mb-2">
+                          <span *ngIf="product.reviewCount > 0" class="small">
+                            <i class="bi bi-star-fill text-warning"></i> 
+                            {{ product.rating.toFixed(1) }} 
+                            <small>({{ product.reviewCount }})</small>
+                          </span>
+                          <span *ngIf="product.reviewCount === 0" class="text-muted small">No reviews</span>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <hr class="my-2">
+                    
+                    <div class="product-status mb-3">
+                      <label class="form-label small text-muted mb-1">Availability Status</label>
+                      <select class="form-select form-select-sm"
+                              [ngClass]="product.isAvailable ? 'border-success' : 'border-danger'"
+                              [ngModel]="product.isAvailable ? 'available' : 'unavailable'"
+                              (ngModelChange)="updateProductStatus(product, $event)">
+                        <option value="available">Available</option>
+                        <option value="unavailable">Unavailable</option>
+                      </select>
+                    </div>
+                    
+                    <div class="product-actions d-flex justify-content-between">
+                      <div class="btn-group" role="group">
+                        <a [routerLink]="['/chef/products', product._id]" class="btn btn-sm btn-outline-black">
+                          <i class="bi bi-eye"></i>
+                        </a>
+                        <a [routerLink]="['/chef/products/edit', product._id]" class="btn btn-sm btn-outline-black">
+                          <i class="bi bi-pencil"></i>
+                        </a>
+                      </div>
+                      <button (click)="deleteProduct(product._id)" class="btn btn-sm btn-outline-black">
+                        <i class="bi bi-trash"></i> Delete
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Products table for desktop view -->
+          <div *ngIf="!isLoading && products.length > 0" class="product-table d-none d-md-block">
+            <div class="product-count small text-muted mb-3" *ngIf="applyFilters().length > 0">
+              Showing {{ applyFilters().length }} of {{ products.length }} products
+            </div>
+            
+            <div class="table-responsive">
               <table class="table table-hover">
                 <thead>
                   <tr>
@@ -106,13 +214,14 @@
                     <th>Name</th>
                     <th>Category</th>
                     <th>Price</th>
-                    <th>Availability</th>
+                    <th>Status</th>
                     <th>Rating</th>
                     <th>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
-                  <tr *ngFor="let product of applyFilters(); trackBy: trackByProductId">
+                  <tr *ngFor="let product of applyFilters(); trackBy: trackByProductId" 
+                      [ngClass]="{'table-light': !product.isAvailable}">
                     <td>
                       <img [src]="productService.getImageUrl(product.images && product.images.length > 0 ? product.images[0] : '')" 
                            alt="{{ product.name }}" class="product-thumbnail">
@@ -121,21 +230,18 @@
                     <td>{{ product.category | titlecase }}</td>
                     <td>${{ product.price.toFixed(2) }}</td>
                     <td>
-                      <div class="form-check form-switch">
-                        <input 
-                          class="form-check-input" 
-                          type="checkbox" 
-                          [id]="'availability-' + product._id"
-                          [checked]="product.isAvailable"
-                          (change)="toggleAvailability(product)"
-                        >
-                        <label 
-                          class="form-check-label" 
-                          [for]="'availability-' + product._id"
-                          [ngClass]="product.isAvailable ? 'text-success' : 'text-danger'"
-                        >
+                      <div class="d-flex align-items-center">
+                        <div class="status-badge me-2" 
+                             [ngClass]="product.isAvailable ? 'status-available' : 'status-unavailable'">
                           {{ product.isAvailable ? 'Available' : 'Unavailable' }}
-                        </label>
+                        </div>
+                        <select class="form-select form-select-sm status-select"
+                                [ngClass]="product.isAvailable ? 'border-success' : 'border-danger'"
+                                [ngModel]="product.isAvailable ? 'available' : 'unavailable'"
+                                (ngModelChange)="updateProductStatus(product, $event)">
+                          <option value="available">Available</option>
+                          <option value="unavailable">Unavailable</option>
+                        </select>
                       </div>
                     </td>
                     <td>
@@ -150,13 +256,13 @@
                     </td>
                     <td>
                       <div class="btn-group" role="group">
-                        <a [routerLink]="['/chef/products', product._id]" class="btn btn-sm btn-outline-info">
+                        <a [routerLink]="['/chef/products', product._id]" class="btn btn-sm btn-outline-black">
                           <i class="bi bi-eye"></i>
                         </a>
-                        <a [routerLink]="['/chef/products/edit', product._id]" class="btn btn-sm btn-outline-primary">
+                        <a [routerLink]="['/chef/products/edit', product._id]" class="btn btn-sm btn-outline-black">
                           <i class="bi bi-pencil"></i>
                         </a>
-                        <button (click)="deleteProduct(product._id)" class="btn btn-sm btn-outline-danger">
+                        <button (click)="deleteProduct(product._id)" class="btn btn-sm btn-outline-black">
                           <i class="bi bi-trash"></i>
                         </button>
                       </div>
@@ -165,17 +271,21 @@
                 </tbody>
               </table>
             </div>
-            
-            <!-- No matching products after filtering -->
-            <div *ngIf="!isLoading && products.length > 0 && applyFilters().length === 0" class="text-center py-4">
-              <p class="text-muted">No products match your filter criteria.</p>
-              <button class="btn btn-outline-secondary" (click)="resetFilters()">
-                <i class="bi bi-x-circle me-2"></i>Reset Filters
-              </button>
+          </div>
+          
+          <!-- No matching products after filtering -->
+          <div *ngIf="!isLoading && products.length > 0 && applyFilters().length === 0" class="text-center py-4">
+            <div class="empty-state-icon mb-3">
+              <i class="bi bi-search display-4 text-muted"></i>
             </div>
-            
+            <h4 class="h5">No products match your filter criteria</h4>
+            <p class="text-muted">Try different filter options or reset your filters</p>
+            <button class="btn btn-outline-black mt-2" (click)="resetFilters()">
+              <i class="bi bi-arrow-repeat me-2"></i>Reset Filters
+            </button>
           </div>
         </div>
       </div>
     </div>
   </div>
+</div>

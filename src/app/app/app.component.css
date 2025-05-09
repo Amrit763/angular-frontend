@@ -4,15 +4,24 @@
   padding-top: 75px; /* Add padding to account for fixed header height */
 }
 
-/* When on admin routes (no header), remove the top padding */
+/* When on admin routes or chef routes (no header), remove the top padding */
 :host-context(html:has(router-outlet[name="admin"])) .main-content,
-:host(.admin-view) .main-content {
-  padding-top: 0;
+:host(.admin-view) .main-content,
+body.chef-mode .main-content,
+.main-content.chef-mode {
+  padding-top: 0 !important;
+  margin-top: 0 !important;
 }
 
 /* On smaller screens, adjust the top padding */
 @media (max-width: 992px) {
   .main-content {
     padding-top: 80px;
+  }
+  
+  body.chef-mode .main-content,
+  .main-content.chef-mode {
+    padding-top: 0 !important;
+    margin-top: 0 !important;
   }
 }

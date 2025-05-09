@@ -66,6 +66,18 @@
   color: #dee2e6;
 }
 
+.breadcrumb {
+  margin-bottom: 0;
+}
+
+.breadcrumb-item a {
+  color: #155479;
+}
+
+.breadcrumb-item.active {
+  color: #6c757d;
+}
+
 /* Responsive adjustments for mobile */
 @media (max-width: 768px) {
   .status-filter-container {

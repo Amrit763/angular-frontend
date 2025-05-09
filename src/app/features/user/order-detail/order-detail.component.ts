@@ -11,7 +11,6 @@ import { Product, ChefInfo } from '../../../core/models/product.model';
 import { ChatService } from '../../../core/services/chat.service';
 import { Chat } from '../../../core/models/chat.model';
 
-
 @Component({
   selector: 'app-order-detail',
   templateUrl: './order-detail.component.html',
@@ -32,6 +31,9 @@ export class OrderDetailComponent implements OnInit {
   // Cancel order
   isCancelDialogOpen = false;
   isCancelling = false;
+
+  // Review functionality
+  reviewableProducts: { [productId: string]: boolean } = {};
 
   // Debug functionality
   showDebug = false;
@@ -76,6 +78,9 @@ export class OrderDetailComponent implements OnInit {
         // Validate and fix product IDs when the order loads
         this.validateOrderProducts();
 
+        // Check which products can be reviewed
+        this.checkReviewableProducts();
+
         // Load the associated chat for this order
         this.loadOrderChat();
 
@@ -86,6 +91,123 @@ export class OrderDetailComponent implements OnInit {
         this.isLoading = false;
       }
     });
+  }
+
+  // Check which products from delivered orders can be reviewed
+  checkReviewableProducts(): void {
+    if (!this.order || this.order.status !== 'delivered' || !this.order.chefItems) {
+      return;
+    }
+
+    // Check each product in delivered chef groups
+    this.order.chefItems.forEach(chefGroup => {
+      if (chefGroup.status === 'delivered' && chefGroup.items) {
+        chefGroup.items.forEach(item => {
+          // Handle different formats of product data
+          if (item.product) {
+            let productId = this.getProductId(item.product);
+            
+            // Only proceed if we have a valid product ID
+            if (productId) {
+              this.checkCanReviewProduct(this.orderId, productId);
+            }
+          }
+        });
+      }
+    });
+  }
+
+  // Check if a specific product can be reviewed
+  checkCanReviewProduct(orderId: string, productId: string): void {
+    this.reviewService.canReviewProduct(orderId, productId).subscribe({
+      next: (response) => {
+        this.reviewableProducts[productId] = response.canReview;
+        console.log(`Product ${productId} can be reviewed: ${response.canReview}`);
+      },
+      error: (err) => {
+        console.error('Error checking if product can be reviewed:', err);
+        // On error, assume product cannot be reviewed
+        this.reviewableProducts[productId] = false;
+      }
+    });
+  }
+
+  // Check if a product can be reviewed
+  canReviewProduct(productId: string): boolean {
+    if (!productId) return false;
+    return this.reviewableProducts[productId] === true;
+  }
+
+  // NEW METHODS TO HANDLE PRODUCT PROPERTIES SAFELY
+
+  // Get product ID safely
+  getProductId(product: any): string {
+    if (!product) return '';
+    
+    if (typeof product === 'string') {
+      return product;
+    }
+    
+    if (typeof product === 'object' && product._id) {
+      return this.extractStringId(product._id);
+    }
+    
+    return '';
+  }
+
+  // Get product name safely
+  getProductName(product: any): string {
+    if (!product) return 'Product';
+    
+    if (typeof product === 'string') {
+      return 'Product';
+    }
+    
+    if (typeof product === 'object' && product.name) {
+      return product.name;
+    }
+    
+    return 'Product';
+  }
+
+  // Get product category safely
+  getProductCategory(product: any): string {
+    if (!product) return 'Category';
+    
+    if (typeof product === 'string') {
+      return 'Category';
+    }
+    
+    if (typeof product === 'object' && product.category) {
+      return product.category;
+    }
+    
+    return 'Category';
+  }
+
+  // Check if product has images
+  hasProductImage(product: any): boolean {
+    if (!product) return false;
+    
+    if (typeof product === 'string') {
+      return false;
+    }
+    
+    if (typeof product === 'object' && product.images && product.images.length > 0) {
+      return true;
+    }
+    
+    return false;
+  }
+
+  // Get product image URL safely
+  getProductImageUrl(product: any): string {
+    if (!this.hasProductImage(product)) {
+      return '';
+    }
+    
+    // Use first image from the product's images array
+    return this.productService.getImageUrl(product.images[0]);
   }
 
   /**
@@ -292,24 +414,31 @@ export class OrderDetailComponent implements OnInit {
     }
 
     // Extract product ID
-    let productId = '';
-
-    if (typeof product === 'string') {
-      productId = product;
-    } else if (typeof product === 'object' && product !== null) {
-      productId = product._id ? this.extractStringId(product._id) : '';
-    }
+    let productId = this.getProductId(product);
 
     if (!productId) {
       this.toastService.showError('Invalid product information: Product ID is missing');
       return;
     }
 
-    // Navigate to review page with query parameters
-    this.router.navigate(['/user/reviews/write'], {
-      queryParams: {
-        orderId: orderId,
-        productId: productId
+    // First check if product can be reviewed
+    this.reviewService.canReviewProduct(orderId, productId).subscribe({
+      next: (response) => {
+        if (response.canReview) {
+          // Navigate to review page with query parameters
+          this.router.navigate(['/user/reviews/write'], {
+            queryParams: {
+              orderId: orderId,
+              productId: productId
+            }
+          });
+        } else {
+          this.toastService.showInfo('You have already reviewed this product or it cannot be reviewed at this time.');
+        }
+      },
+      error: (err) => {
+        console.error('Error checking review eligibility:', err);
+        this.toastService.showError('Could not verify if product can be reviewed. Please try again.');
       }
     });
   }
@@ -373,4 +502,5 @@ export class OrderDetailComponent implements OnInit {
       this.toastService.showError('Chat not available yet. Please try again shortly.');
     }
   }
+
 }

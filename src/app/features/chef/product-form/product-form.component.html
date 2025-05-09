@@ -1,14 +1,42 @@
 <!-- src/app/features/chef/product-form/product-form.component.html -->
-<div class="container py-4">
+<div class="container-fluid py-3 py-md-4">
+  <!-- Top navigation bar -->
   <div class="row mb-4">
     <div class="col-12">
       <div class="card shadow-sm">
-        <div class="card-body">
-          <div class="d-flex justify-content-between align-items-center">
-            <h2 class="card-title">{{ isEditMode ? 'Edit Product' : 'Create New Product' }}</h2>
-            <a routerLink="/chef/products" class="btn btn-outline-secondary">
-              <i class="bi bi-arrow-left me-2"></i>Back to Products
-            </a>
+        <div class="card-body p-3">
+          <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+              <li class="breadcrumb-item">
+                <a [routerLink]="['/chef/dashboard']" class="text-decoration-none">
+                  <i class="bi bi-house-door me-1"></i>Dashboard
+                </a>
+              </li>
+              <li class="breadcrumb-item active" aria-current="page">
+                {{ isEditMode ? 'Edit Product' : 'Create Product' }}
+              </li>
+            </ol>
+          </nav>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Header section -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card shadow-sm">
+        <div class="card-body p-3 p-md-4">
+          <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+            <div>
+              <h2 class="card-title h4 mb-1">{{ isEditMode ? 'Edit Product' : 'Create New Product' }}</h2>
+              <p class="text-muted mb-0 d-none d-md-block">{{ isEditMode ? 'Update your product information' : 'Add a new product to your menu' }}</p>
+            </div>
+            <div class="d-flex">
+              <a [routerLink]="['/chef/products']" class="btn btn-outline-black me-2">
+                <i class="bi bi-arrow-left me-1"></i>Back to Products
+              </a>
+            </div>
           </div>
         </div>
       </div>
@@ -17,19 +45,24 @@
 
   <!-- Loading indicator -->
   <div *ngIf="isLoading" class="row">
-    <div class="col-12 text-center py-5">
-      <div class="spinner-border text-primary" role="status">
-        <span class="visually-hidden">Loading...</span>
+    <div class="col-12">
+      <div class="card shadow-sm">
+        <div class="card-body p-5 text-center">
+          <div class="spinner-border" style="color: #155475;" role="status">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+          <p class="mt-3">Loading product details...</p>
+        </div>
       </div>
-      <p class="mt-3">Loading product details...</p>
     </div>
   </div>
 
   <!-- Error message -->
   <div *ngIf="error" class="row mb-4">
     <div class="col-12">
-      <div class="alert alert-danger">
-        {{ error }}
+      <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-triangle me-2"></i>{{ error }}
+        <button type="button" class="btn-close" aria-label="Close"></button>
       </div>
     </div>
   </div>
@@ -38,133 +71,160 @@
   <div *ngIf="!isLoading" class="row">
     <div class="col-12">
       <div class="card shadow-sm">
-        <div class="card-body">
+        <div class="card-body p-3 p-md-4">
           <form [formGroup]="productForm" (ngSubmit)="onSubmit()">
             
             <!-- Basic Information -->
-            <div class="row mb-4">
-              <div class="col-12">
-                <h4 class="form-section-title">Basic Information</h4>
-              </div>
-              
-              <div class="col-md-6 mb-3">
-                <label for="name" class="form-label">Product Name*</label>
-                <input 
-                  type="text" 
-                  class="form-control" 
-                  id="name" 
-                  formControlName="name"
-                  [ngClass]="{'is-invalid': nameControl?.invalid && nameControl?.touched}"
-                >
-                <div *ngIf="nameControl?.invalid && nameControl?.touched" class="invalid-feedback">
-                  <div *ngIf="nameControl?.errors?.['required']">Name is required</div>
-                  <div *ngIf="nameControl?.errors?.['minlength']">Name must be at least 3 characters</div>
-                  <div *ngIf="nameControl?.errors?.['maxlength']">Name cannot exceed 100 characters</div>
+            <div class="form-section mb-5">
+              <div class="form-section-header d-flex align-items-center mb-4">
+                <div class="icon-container me-3">
+                  <i class="bi bi-info-circle"></i>
                 </div>
+                <h4 class="form-section-title mb-0">Basic Information</h4>
               </div>
               
-              <div class="col-md-6 mb-3">
-                <label for="category" class="form-label">Category*</label>
-                <select 
-                  class="form-select" 
-                  id="category" 
-                  formControlName="category"
-                  [ngClass]="{'is-invalid': categoryControl?.invalid && categoryControl?.touched}"
-                >
-                  <option value="" disabled>Select a category</option>
-                  <option *ngFor="let category of categories" [value]="category">
-                    {{ category | titlecase }}
-                  </option>
-                </select>
-                <div *ngIf="categoryControl?.invalid && categoryControl?.touched" class="invalid-feedback">
-                  Category is required
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <label for="name" class="form-label">Product Name<span class="text-danger">*</span></label>
+                  <input 
+                    type="text" 
+                    class="form-control" 
+                    id="name" 
+                    formControlName="name"
+                    placeholder="Enter product name"
+                    [ngClass]="{'is-invalid': nameControl?.invalid && nameControl?.touched}"
+                  >
+                  <div *ngIf="nameControl?.invalid && nameControl?.touched" class="invalid-feedback">
+                    <div *ngIf="nameControl?.errors?.['required']">Name is required</div>
+                    <div *ngIf="nameControl?.errors?.['minlength']">Name must be at least 3 characters</div>
+                    <div *ngIf="nameControl?.errors?.['maxlength']">Name cannot exceed 100 characters</div>
+                  </div>
                 </div>
-              </div>
-              
-              <div class="col-12 mb-3">
-                <label for="description" class="form-label">Description*</label>
-                <textarea 
-                  class="form-control" 
-                  id="description" 
-                  formControlName="description" 
-                  rows="3"
-                  [ngClass]="{'is-invalid': descriptionControl?.invalid && descriptionControl?.touched}"
-                ></textarea>
-                <div *ngIf="descriptionControl?.invalid && descriptionControl?.touched" class="invalid-feedback">
-                  <div *ngIf="descriptionControl?.errors?.['required']">Description is required</div>
-                  <div *ngIf="descriptionControl?.errors?.['minlength']">Description must be at least 10 characters</div>
-                  <div *ngIf="descriptionControl?.errors?.['maxlength']">Description cannot exceed 500 characters</div>
+                
+                <div class="col-md-6">
+                  <label for="category" class="form-label">Category<span class="text-danger">*</span></label>
+                  <select 
+                    class="form-select" 
+                    id="category" 
+                    formControlName="category"
+                    [ngClass]="{'is-invalid': categoryControl?.invalid && categoryControl?.touched}"
+                  >
+                    <option value="" disabled>Select a category</option>
+                    <option *ngFor="let category of categories" [value]="category">
+                      {{ category | titlecase }}
+                    </option>
+                  </select>
+                  <div *ngIf="categoryControl?.invalid && categoryControl?.touched" class="invalid-feedback">
+                    Category is required
+                  </div>
+                </div>
+                
+                <div class="col-12">
+                  <label for="description" class="form-label">Description<span class="text-danger">*</span></label>
+                  <textarea 
+                    class="form-control" 
+                    id="description" 
+                    formControlName="description" 
+                    rows="3"
+                    placeholder="Describe your product in detail"
+                    [ngClass]="{'is-invalid': descriptionControl?.invalid && descriptionControl?.touched}"
+                  ></textarea>
+                  <div *ngIf="descriptionControl?.invalid && descriptionControl?.touched" class="invalid-feedback">
+                    <div *ngIf="descriptionControl?.errors?.['required']">Description is required</div>
+                    <div *ngIf="descriptionControl?.errors?.['minlength']">Description must be at least 10 characters</div>
+                    <div *ngIf="descriptionControl?.errors?.['maxlength']">Description cannot exceed 500 characters</div>
+                  </div>
                 </div>
               </div>
             </div>
             
             <!-- Pricing and Serving Information -->
-            <div class="row mb-4">
-              <div class="col-12">
-                <h4 class="form-section-title">Pricing and Serving Information</h4>
-              </div>
-              
-              <div class="col-md-4 mb-3">
-                <label for="price" class="form-label">Price ($)*</label>
-                <input 
-                  type="number" 
-                  class="form-control" 
-                  id="price" 
-                  formControlName="price" 
-                  min="0.01" 
-                  step="0.01"
-                  [ngClass]="{'is-invalid': priceControl?.invalid && priceControl?.touched}"
-                >
-                <div *ngIf="priceControl?.invalid && priceControl?.touched" class="invalid-feedback">
-                  <div *ngIf="priceControl?.errors?.['required']">Price is required</div>
-                  <div *ngIf="priceControl?.errors?.['min']">Price must be at least $0.01</div>
+            <div class="form-section mb-5">
+              <div class="form-section-header d-flex align-items-center mb-4">
+                <div class="icon-container me-3">
+                  <i class="bi bi-cash-coin"></i>
                 </div>
+                <h4 class="form-section-title mb-0">Pricing and Serving Information</h4>
               </div>
               
-              <div class="col-md-4 mb-3">
-                <label for="preparationTime" class="form-label">Preparation Time (minutes)*</label>
-                <input 
-                  type="number" 
-                  class="form-control" 
-                  id="preparationTime" 
-                  formControlName="preparationTime" 
-                  min="1"
-                  [ngClass]="{'is-invalid': preparationTimeControl?.invalid && preparationTimeControl?.touched}"
-                >
-                <div *ngIf="preparationTimeControl?.invalid && preparationTimeControl?.touched" class="invalid-feedback">
-                  <div *ngIf="preparationTimeControl?.errors?.['required']">Preparation time is required</div>
-                  <div *ngIf="preparationTimeControl?.errors?.['min']">Preparation time must be at least 1 minute</div>
+              <div class="row g-3">
+                <div class="col-md-4">
+                  <label for="price" class="form-label">Price ($)<span class="text-danger">*</span></label>
+                  <div class="input-group">
+                    <span class="input-group-text">$</span>
+                    <input 
+                      type="number" 
+                      class="form-control" 
+                      id="price" 
+                      formControlName="price" 
+                      min="0.01" 
+                      step="0.01"
+                      placeholder="0.00"
+                      [ngClass]="{'is-invalid': priceControl?.invalid && priceControl?.touched}"
+                    >
+                    <div *ngIf="priceControl?.invalid && priceControl?.touched" class="invalid-feedback">
+                      <div *ngIf="priceControl?.errors?.['required']">Price is required</div>
+                      <div *ngIf="priceControl?.errors?.['min']">Price must be at least $0.01</div>
+                    </div>
+                  </div>
                 </div>
-              </div>
-              
-              <div class="col-md-4 mb-3">
-                <label for="servingSize" class="form-label">Serving Size*</label>
-                <input 
-                  type="text" 
-                  class="form-control" 
-                  id="servingSize" 
-                  formControlName="servingSize"
-                  [ngClass]="{'is-invalid': servingSizeControl?.invalid && servingSizeControl?.touched}"
-                  placeholder="e.g., 1 person, 2-3 people"
-                >
-                <div *ngIf="servingSizeControl?.invalid && servingSizeControl?.touched" class="invalid-feedback">
-                  Serving size is required
+                
+                <div class="col-md-4">
+                  <label for="preparationTime" class="form-label">Preparation Time<span class="text-danger">*</span></label>
+                  <div class="input-group">
+                    <input 
+                      type="number" 
+                      class="form-control" 
+                      id="preparationTime" 
+                      formControlName="preparationTime" 
+                      min="1"
+                      placeholder="30"
+                      [ngClass]="{'is-invalid': preparationTimeControl?.invalid && preparationTimeControl?.touched}"
+                    >
+                    <span class="input-group-text">minutes</span>
+                    <div *ngIf="preparationTimeControl?.invalid && preparationTimeControl?.touched" class="invalid-feedback">
+                      <div *ngIf="preparationTimeControl?.errors?.['required']">Preparation time is required</div>
+                      <div *ngIf="preparationTimeControl?.errors?.['min']">Preparation time must be at least 1 minute</div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="col-md-4">
+                  <label for="servingSize" class="form-label">Serving Size<span class="text-danger">*</span></label>
+                  <input 
+                    type="text" 
+                    class="form-control" 
+                    id="servingSize" 
+                    formControlName="servingSize"
+                    [ngClass]="{'is-invalid': servingSizeControl?.invalid && servingSizeControl?.touched}"
+                    placeholder="e.g., 1 person, 2-3 people"
+                  >
+                  <div *ngIf="servingSizeControl?.invalid && servingSizeControl?.touched" class="invalid-feedback">
+                    Serving size is required
+                  </div>
                 </div>
               </div>
             </div>
             
-            <!-- Condiments Section - NEW -->
-            <div class="row mb-4">
-              <div class="col-12">
-                <h4 class="form-section-title">Condiments & Add-ons</h4>
-                <p class="text-muted">Add optional condiments or additions that customers can select for an additional price.</p>
+            <!-- Condiments Section -->
+            <div class="form-section mb-5">
+              <div class="form-section-header d-flex align-items-center mb-4">
+                <div class="icon-container me-3">
+                  <i class="bi bi-plus-circle"></i>
+                </div>
+                <h4 class="form-section-title mb-0">Condiments & Add-ons</h4>
               </div>
               
-              <div class="col-12">
-                <div formArrayName="condiments">
-                  <div *ngFor="let condiment of condiments.controls; let i = index" [formGroupName]="i" class="row mb-3">
+              <div class="info-box mb-3">
+                <i class="bi bi-info-circle me-2"></i>
+                Add optional condiments or additions that customers can select for an additional price.
+              </div>
+              
+              <div formArrayName="condiments">
+                <div *ngFor="let condiment of condiments.controls; let i = index" [formGroupName]="i" class="condiment-item mb-3">
+                  <div class="row g-2 align-items-center">
                     <div class="col-md-5">
-                      <label [for]="'condimentName' + i" class="form-label">Name</label>
+                      <label [for]="'condimentName' + i" class="form-label small">Name</label>
                       <input 
                         type="text" 
                         class="form-control" 
@@ -174,19 +234,22 @@
                       >
                     </div>
                     <div class="col-md-3">
-                      <label [for]="'condimentPrice' + i" class="form-label">Price ($)</label>
-                      <input 
-                        type="number" 
-                        class="form-control" 
-                        [id]="'condimentPrice' + i" 
-                        formControlName="price" 
-                        min="0" 
-                        step="0.01"
-                        placeholder="0.00"
-                      >
+                      <label [for]="'condimentPrice' + i" class="form-label small">Price ($)</label>
+                      <div class="input-group">
+                        <span class="input-group-text">$</span>
+                        <input 
+                          type="number" 
+                          class="form-control" 
+                          [id]="'condimentPrice' + i" 
+                          formControlName="price" 
+                          min="0" 
+                          step="0.01"
+                          placeholder="0.00"
+                        >
+                      </div>
                     </div>
-                    <div class="col-md-2">
-                      <div class="form-check mt-4">
+                    <div class="col-md-3">
+                      <div class="form-check mt-2">
                         <input 
                           class="form-check-input" 
                           type="checkbox" 
@@ -198,10 +261,10 @@
                         </label>
                       </div>
                     </div>
-                    <div class="col-md-2">
+                    <div class="col-md-1 text-end">
                       <button 
                         type="button" 
-                        class="btn btn-outline-danger mt-4" 
+                        class="btn btn-outline-black btn-sm mt-2" 
                         (click)="removeCondiment(i)"
                       >
                         <i class="bi bi-trash"></i>
@@ -209,152 +272,202 @@
                     </div>
                   </div>
                 </div>
-                
-                <button type="button" class="btn btn-outline-primary mt-2" (click)="addCondiment()">
-                  <i class="bi bi-plus-circle me-2"></i>Add Condiment Option
-                </button>
               </div>
+              
+              <button type="button" class="btn btn-outline-black mt-3" (click)="addCondiment()">
+                <i class="bi bi-plus-circle me-2"></i>Add Condiment Option
+              </button>
             </div>
             
             <!-- Ingredients and Allergens -->
-            <div class="row mb-4">
-              <div class="col-12">
-                <h4 class="form-section-title">Ingredients and Allergens</h4>
+            <div class="form-section mb-5">
+              <div class="form-section-header d-flex align-items-center mb-4">
+                <div class="icon-container me-3">
+                  <i class="bi bi-list-check"></i>
+                </div>
+                <h4 class="form-section-title mb-0">Ingredients and Allergens</h4>
               </div>
               
-              <div class="col-md-6 mb-3">
-                <label class="form-label">Ingredients*</label>
-                
-                <div formArrayName="ingredients">
-                  <div class="input-group mb-2" *ngFor="let ingredient of ingredients.controls; let i = index">
-                    <input 
-                      type="text" 
-                      class="form-control" 
-                      [formControlName]="i" 
-                      placeholder="Enter ingredient"
-                      [ngClass]="{'is-invalid': ingredient.invalid && ingredient.touched}"
-                    >
-                    <button 
-                      type="button" 
-                      class="btn btn-outline-danger" 
-                      (click)="removeIngredient(i)"
-                      [disabled]="ingredients.length === 1"
-                    >
-                      <i class="bi bi-trash"></i>
-                    </button>
-                    <div *ngIf="ingredient.invalid && ingredient.touched" class="invalid-feedback">
-                      Ingredient name is required
+              <div class="row g-4">
+                <div class="col-md-6">
+                  <label class="form-label">Ingredients<span class="text-danger">*</span></label>
+                  
+                  <div formArrayName="ingredients" class="ingredients-container">
+                    <div class="input-group mb-2" *ngFor="let ingredient of ingredients.controls; let i = index">
+                      <input 
+                        type="text" 
+                        class="form-control" 
+                        [formControlName]="i" 
+                        placeholder="Enter ingredient"
+                        [ngClass]="{'is-invalid': ingredient.invalid && ingredient.touched}"
+                      >
+                      <button 
+                        type="button" 
+                        class="btn btn-outline-black" 
+                        (click)="removeIngredient(i)"
+                        [disabled]="ingredients.length === 1"
+                      >
+                        <i class="bi bi-trash"></i>
+                      </button>
+                      <div *ngIf="ingredient.invalid && ingredient.touched" class="invalid-feedback">
+                        Ingredient name is required
+                      </div>
                     </div>
                   </div>
+                  
+                  <button type="button" class="btn btn-outline-black mt-3" (click)="addIngredient()">
+                    <i class="bi bi-plus-circle me-2"></i>Add Ingredient
+                  </button>
                 </div>
                 
-                <button type="button" class="btn btn-outline-primary" (click)="addIngredient()">
-                  <i class="bi bi-plus-circle me-2"></i>Add Ingredient
-                </button>
-              </div>
-              
-              <div class="col-md-6 mb-3">
-                <label class="form-label">Allergens</label>
-                <div class="allergens-container">
-                  <div class="form-check" *ngFor="let allergen of commonAllergens">
-                    <input 
-                      class="form-check-input" 
-                      type="checkbox"
-                      [id]="'allergen-' + allergen"
-                      [checked]="isAllergenSelected(allergen)"
-                      (change)="toggleAllergen(allergen)"
-                    >
-                    <label class="form-check-label" [for]="'allergen-' + allergen">
-                      {{ allergen }}
-                    </label>
+                <div class="col-md-6">
+                  <label class="form-label">Allergens</label>
+                  <div class="allergens-container">
+                    <div class="row">
+                      <div class="col-6" *ngFor="let allergen of commonAllergens">
+                        <div class="form-check allergen-check">
+                          <input 
+                            class="form-check-input" 
+                            type="checkbox"
+                            [id]="'allergen-' + allergen"
+                            [checked]="isAllergenSelected(allergen)"
+                            (change)="toggleAllergen(allergen)"
+                          >
+                          <label class="form-check-label" [for]="'allergen-' + allergen">
+                            {{ allergen }}
+                          </label>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
             
             <!-- Dietary Options -->
-            <div class="row mb-4">
-              <div class="col-12">
-                <h4 class="form-section-title">Dietary Options</h4>
-              </div>
-              
-              <div class="col-md-4 mb-3">
-                <div class="form-check form-switch">
-                  <input class="form-check-input" type="checkbox" id="isVegetarian" formControlName="isVegetarian">
-                  <label class="form-check-label" for="isVegetarian">Vegetarian</label>
+            <div class="form-section mb-5">
+              <div class="form-section-header d-flex align-items-center mb-4">
+                <div class="icon-container me-3">
+                  <i class="bi bi-flower1"></i>
                 </div>
+                <h4 class="form-section-title mb-0">Dietary Options</h4>
               </div>
               
-              <div class="col-md-4 mb-3">
-                <div class="form-check form-switch">
-                  <input class="form-check-input" type="checkbox" id="isVegan" formControlName="isVegan">
-                  <label class="form-check-label" for="isVegan">Vegan</label>
+              <div class="row g-3">
+                <div class="col-lg-4 col-md-6">
+                  <div class="dietary-option-card">
+                    <div class="form-check form-switch">
+                      <input class="form-check-input" type="checkbox" id="isVegetarian" formControlName="isVegetarian">
+                      <label class="form-check-label" for="isVegetarian">
+                        <i class="bi bi-egg-fried me-2 text-success"></i>Vegetarian
+                      </label>
+                    </div>
+                  </div>
                 </div>
-              </div>
-              
-              <div class="col-md-4 mb-3">
-                <div class="form-check form-switch">
-                  <input class="form-check-input" type="checkbox" id="isGlutenFree" formControlName="isGlutenFree">
-                  <label class="form-check-label" for="isGlutenFree">Gluten-Free</label>
+                
+                <div class="col-lg-4 col-md-6">
+                  <div class="dietary-option-card">
+                    <div class="form-check form-switch">
+                      <input class="form-check-input" type="checkbox" id="isVegan" formControlName="isVegan">
+                      <label class="form-check-label" for="isVegan">
+                        <i class="bi bi-flower2 me-2 text-success"></i>Vegan
+                      </label>
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="col-lg-4 col-md-6">
+                  <div class="dietary-option-card">
+                    <div class="form-check form-switch">
+                      <input class="form-check-input" type="checkbox" id="isGlutenFree" formControlName="isGlutenFree">
+                      <label class="form-check-label" for="isGlutenFree">
+                        <i class="bi bi-patch-check me-2 text-success"></i>Gluten-Free
+                      </label>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
             
             <!-- Images -->
-            <div class="row mb-4">
-              <div class="col-12">
-                <h4 class="form-section-title">Product Images</h4>
+            <div class="form-section mb-5">
+              <div class="form-section-header d-flex align-items-center mb-4">
+                <div class="icon-container me-3">
+                  <i class="bi bi-image"></i>
+                </div>
+                <h4 class="form-section-title mb-0">Product Images</h4>
               </div>
               
-              <div class="col-12 mb-3">
-                <div class="custom-file-input">
-                  <input 
-                    type="file" 
-                    class="form-control" 
-                    id="productImages" 
-                    accept="image/*" 
-                    multiple
-                    (change)="onImageChange($event)"
-                  >
+              <div class="upload-container mb-4">
+                <input 
+                  type="file" 
+                  class="form-control" 
+                  id="productImages" 
+                  accept="image/*" 
+                  multiple
+                  (change)="onImageChange($event)"
+                >
+                <div class="upload-instruction mt-2 small text-muted">
+                  <i class="bi bi-info-circle me-1"></i>
+                  Upload high-quality images of your product. You can select multiple images.
                 </div>
               </div>
               
               <!-- Image previews -->
-              <div class="col-12 mb-3" *ngIf="imagePreviewUrls.length > 0">
+              <div *ngIf="imagePreviewUrls.length > 0" class="image-preview-section">
                 <div class="image-preview-container">
-                  <div class="image-preview" *ngFor="let imageUrl of imagePreviewUrls">
+                  <div class="image-preview" *ngFor="let imageUrl of imagePreviewUrls; let i = index">
                     <img [src]="imageUrl" alt="Product image preview" class="img-thumbnail">
+                    <div class="image-actions">
+                      <button type="button" class="btn btn-outline-danger btn-sm" title="Remove image">
+                        <i class="bi bi-x-lg"></i>
+                      </button>
+                    </div>
+                    <div class="image-number">{{ i + 1 }}</div>
                   </div>
                 </div>
               </div>
             </div>
             
             <!-- Availability -->
-            <div class="row mb-4">
-              <div class="col-12">
-                <h4 class="form-section-title">Availability</h4>
+            <div class="form-section mb-5">
+              <div class="form-section-header d-flex align-items-center mb-4">
+                <div class="icon-container me-3">
+                  <i class="bi bi-toggle-on"></i>
+                </div>
+                <h4 class="form-section-title mb-0">Availability</h4>
               </div>
               
-              <div class="col-12 mb-3">
+              <div class="availability-card">
                 <div class="form-check form-switch">
                   <input class="form-check-input" type="checkbox" id="isAvailable" formControlName="isAvailable">
                   <label class="form-check-label" for="isAvailable">
-                    Product is available for ordering
+                    <span class="availability-status">
+                      {{ productForm.get('isAvailable')?.value ? 'Available for ordering' : 'Not available' }}
+                    </span>
                   </label>
+                </div>
+                <div class="availability-description text-muted mt-2">
+                  <i class="bi bi-info-circle me-2"></i>
+                  Toggle this switch to make your product available or unavailable for customers to order.
                 </div>
               </div>
             </div>
             
             <!-- Submit Button -->
             <div class="row">
-              <div class="col-12 text-center">
+              <div class="col-12 d-flex justify-content-between">
+                <a [routerLink]="['/chef/products']" class="btn btn-outline-black btn-lg px-4">
+                  <i class="bi bi-arrow-left me-2"></i>Cancel
+                </a>
                 <button 
                   type="submit" 
                   class="btn btn-primary btn-lg px-5"
-                  [disabled]="isSubmitting"
+                  [disabled]="isSubmitting || productForm.invalid"
                 >
                   <span *ngIf="isSubmitting" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                  {{ isEditMode ? 'Update Product' : 'Create Product' }}
+                  <i *ngIf="!isSubmitting" class="bi" [ngClass]="isEditMode ? 'bi-save' : 'bi-plus-circle'"></i>
+                  <span class="ms-2">{{ isEditMode ? 'Update Product' : 'Create Product' }}</span>
                 </button>
               </div>
             </div>

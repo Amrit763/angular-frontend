@@ -1,1 +1,24 @@
-/* You can add global styles to this file, and also import other style files */
+/* Add to your global styles.css */
+
+/* Fix padding for chef routes */
+body.chef-mode {
+    padding-top: 0 !important;
+    margin-top: 0 !important;
+  }
+  
+  /* Apply this class to the html element as well for extra specificity */
+  html.chef-mode body {
+    padding-top: 0 !important;
+    margin-top: 0 !important;
+  }
+  
+  /* Custom chef styles */
+  .chef-route {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+  }
+  
+  /* Ensure main-content padding is removed for chef routes */
+  body.chef-mode .main-content {
+    padding-top: 0 !important;
+  }

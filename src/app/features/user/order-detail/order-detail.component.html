@@ -17,13 +17,11 @@
     </div>
   </div>
 
-<!-- Add this button in the order details page -->
-<button class="btn btn-primary" (click)="openChat()" *ngIf="order && chatId">
-  <i class="bi bi-chat-dots me-2"></i>
-  Chat with Chef
-</button>
-
-
+  <!-- Add this button in the order details page -->
+  <button class="btn btn-primary mb-4" (click)="openChat()" *ngIf="order && chatId">
+    <i class="bi bi-chat-dots me-2"></i>
+    Chat with Chef
+  </button>
 
   <!-- Debug info (only visible when debug is enabled) -->
   <div *ngIf="showDebug && order" class="alert alert-info mb-4">
@@ -137,78 +135,95 @@
       </div>
       <div class="card-body">
         <div class="table-responsive">
-          <table class="table table-hover align-middle">
-            <thead>
-              <tr>
-                <th>Product</th>
-                <th>Price</th>
-                <th>Quantity</th>
-                <th>Total</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let item of chefGroup.items; let i = index">
-                <td>
-                  <div class="d-flex align-items-center">
-                    <ng-container *ngIf="item.product">
-                      <img *ngIf="item.product.images && item.product.images.length > 0"
-                          [src]="productService.getImageUrl(item.product.images[0])" 
-                          alt="{{ item.product.name || 'Product' }}" 
-                          class="img-thumbnail me-3" 
-                          style="width: 60px; height: 60px; object-fit: cover;">
-                      <div>
-                        <h6 class="mb-0">{{ item.product.name || 'Product' }}</h6>
-                        <small class="text-muted">{{ item.product.category || 'Category' }}</small>
-                        <!-- Add debug info for product ID -->
-                        <small *ngIf="showDebug" class="d-block" [ngClass]="item.product._id ? 'text-success' : 'text-danger'">
-                          ID: {{ item.product._id || 'Missing' }}
-                        </small>
-                      </div>
-                    </ng-container>
-                    <ng-container *ngIf="!item.product">
-                      <div class="img-thumbnail me-3 d-flex align-items-center justify-content-center" 
-                          style="width: 60px; height: 60px;">
-                        <i class="bi bi-image text-muted"></i>
-                      </div>
-                      <div>
-                        <h6 class="mb-0">Product</h6>
-                        <small class="text-muted">Category</small>
-                        <small *ngIf="showDebug" class="d-block text-danger">Product data missing</small>
-                      </div>
-                    </ng-container>
-                  </div>
-                </td>
-                <td>${{ item.price.toFixed(2) }}</td>
-                <td>{{ item.quantity }}</td>
-                <td>${{ item.subtotal.toFixed(2) }}</td>
-                <td>
-                  <div class="btn-group">
-                    <!-- View product button -->
-                    <a *ngIf="item.product && item.product._id" 
-                       [routerLink]="['/products', item.product._id]" 
-                       class="btn btn-sm btn-outline-primary">
-                      <i class="bi bi-eye me-1"></i> View
-                    </a>
-                    
-                    <!-- Debug button to show product content -->
-                    <button *ngIf="showDebug && item.product" 
-                            class="btn btn-sm btn-outline-warning"
-                            (click)="showProductDebug(item.product)">
-                      <i class="bi bi-bug me-1"></i> Inspect
-                    </button>
-                    
-                    <!-- Review button - now navigates to review page -->
-                    <button *ngIf="item.product && order.status === 'delivered'"
-                            class="btn btn-sm btn-outline-primary" 
-                            (click)="navigateToReviewPage(order._id, item.product)">
-                      <i class="bi bi-star me-1"></i> Review
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+            <table class="table table-hover align-middle">
+              <thead>
+                <tr>
+                  <th>Product</th>
+                  <th>Price</th>
+                  <th>Quantity</th>
+                  <th>Total</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let item of chefGroup.items; let i = index">
+                  <td>
+                    <div class="d-flex align-items-center">
+                      <ng-container *ngIf="item.product">
+                        <!-- FIXED: Improved image handling with better checks -->
+                        <div class="img-thumbnail me-3 d-flex align-items-center justify-content-center" 
+                             style="width: 60px; height: 60px; overflow: hidden;">
+                          <ng-container *ngIf="hasProductImage(item.product); else noImageTemplate">
+                            <img [src]="getProductImageUrl(item.product)" 
+                                 alt="{{ getProductName(item.product) }}" 
+                                 style="width: 100%; height: 100%; object-fit: cover;">
+                          </ng-container>
+                          <ng-template #noImageTemplate>
+                            <i class="bi bi-image text-muted" style="font-size: 1.5rem;"></i>
+                          </ng-template>
+                        </div>
+                        <div>
+                          <h6 class="mb-0">{{ getProductName(item.product) }}</h6>
+                          <small class="text-muted">{{ getProductCategory(item.product) }}</small>
+                          <!-- Add debug info for product ID -->
+                          <small *ngIf="showDebug" class="d-block" [ngClass]="getProductId(item.product) ? 'text-success' : 'text-danger'">
+                            ID: {{ getProductId(item.product) || 'Missing' }}
+                          </small>
+                        </div>
+                      </ng-container>
+                      <ng-container *ngIf="!item.product">
+                        <div class="img-thumbnail me-3 d-flex align-items-center justify-content-center" 
+                            style="width: 60px; height: 60px;">
+                          <i class="bi bi-image text-muted"></i>
+                        </div>
+                        <div>
+                          <h6 class="mb-0">Product</h6>
+                          <small class="text-muted">Category</small>
+                          <small *ngIf="showDebug" class="d-block text-danger">Product data missing</small>
+                        </div>
+                      </ng-container>
+                    </div>
+                  </td>
+                  <td>${{ item.price.toFixed(2) }}</td>
+                  <td>{{ item.quantity }}</td>
+                  <td>${{ item.subtotal.toFixed(2) }}</td>
+                  <td>
+                    <div class="btn-group">
+                      <!-- View product button -->
+                      <a *ngIf="getProductId(item.product)" 
+                        [routerLink]="['/products', getProductId(item.product)]" 
+                        class="btn btn-sm btn-outline-primary">
+                        <i class="bi bi-eye me-1"></i> View
+                      </a>
+                      
+                      <!-- Debug button to show product content -->
+                      <button *ngIf="showDebug && item.product" 
+                              class="btn btn-sm btn-outline-warning"
+                              (click)="showProductDebug(item.product)">
+                        <i class="bi bi-bug me-1"></i> Inspect
+                      </button>
+                      
+                      <!-- Review button - now with more inclusive conditions -->
+                      <button *ngIf="getProductId(item.product) && 
+                              ((chefGroup.status === 'delivered' || order.status === 'delivered') && 
+                              canReviewProduct(getProductId(item.product)))"
+                              class="btn btn-sm btn-primary" 
+                              (click)="navigateToReviewPage(order._id, item.product)">
+                        <i class="bi bi-star me-1"></i> Review
+                      </button>
+                      
+                      <!-- Already reviewed indicator -->
+                      <span *ngIf="getProductId(item.product) && 
+                              (chefGroup.status === 'delivered' || order.status === 'delivered') && 
+                              !canReviewProduct(getProductId(item.product))"
+                            class="badge bg-secondary ms-2">
+                        <i class="bi bi-check-circle me-1"></i> Reviewed
+                      </span>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
         </div>
       </div>
     </div>
@@ -303,6 +318,9 @@
                   <td>
                     <span *ngIf="!debugProduct.images">MISSING</span>
                     <span *ngIf="debugProduct.images">Array with {{ debugProduct.images?.length || 0 }} items</span>
+                    <div *ngIf="hasProductImage(debugProduct)" class="mt-2">
+                      <strong>First Image:</strong> {{ getProductImageUrl(debugProduct) }}
+                    </div>
                   </td>
                 </tr>
                 <tr>
@@ -319,5 +337,12 @@
       </div>
     </div>
     <div class="modal-backdrop fade show"></div>
+  </div>
+
+  <!-- Add floating chat button -->
+  <div class="floating-chat-button" *ngIf="order && chatId">
+    <button class="btn btn-primary rounded-circle shadow" (click)="openChat()">
+      <i class="bi bi-chat-dots"></i>
+    </button>
   </div>
 </div>

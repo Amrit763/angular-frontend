@@ -1,5 +1,5 @@
 <!-- src/app/shared/components/header/header.component.html -->
-<header class="fixed-top">
+<header class="fixed-top" *ngIf="showHeader">
   <nav class="navbar navbar-expand-lg navbar-light bg-light">
     <div class="container">
       <!-- Left side content -->
@@ -35,20 +35,20 @@
               </a>
             </li>
             
-
-                  <!-- Chat Icon -->
-                  <li class="nav-item me-3">
-                    <a class="nav-link cart-icon" routerLink="/user/chats" title="Messages">
-                      <i class="bi bi-chat-dots"></i>
-                    </a>
-                  </li>
-                  
-                  <!-- Orders Icon -->
-                  <li class="nav-item me-3">
-                    <a class="nav-link cart-icon" routerLink="/user/orders" title="Orders">
-                      <i class="bi bi-bag"></i>
-                    </a>
-                  </li>
+            <!-- Chat Icon - Only show if NOT in chef mode -->
+            <li class="nav-item me-3" *ngIf="!isChefMode">
+              <a class="nav-link cart-icon" routerLink="/user/chats" title="Messages">
+                <i class="bi bi-chat-dots"></i>
+              </a>
+            </li>
+            
+            <!-- Orders Icon - Show in both modes, but route differently based on mode -->
+            <li class="nav-item me-3">
+              <a class="nav-link cart-icon" [routerLink]="isChefMode ? '/chef/orders' : '/user/orders'" title="Orders">
+                <i class="bi bi-bag"></i>
+              </a>
+            </li>
+            
             <!-- User dropdown -->
             <li class="nav-item dropdown">
               <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" 

@@ -177,6 +177,19 @@ export class ChefDashboardComponent implements OnInit, OnDestroy {
     return this.orderService.getStatusClass(status);
   }
 
+  getStatusIconClass(order: Order): string {
+    const status = this.orderService.getChefStatus(order);
+    const iconMap: {[key: string]: string} = {
+      'pending': 'bi-hourglass-split',
+      'received': 'bi-envelope-open-fill',
+      'in_progress': 'bi-tools',
+      'ready': 'bi-bag-check-fill',
+      'delivered': 'bi-check-circle-fill',
+      'cancelled': 'bi-x-circle-fill'
+    };
+    return iconMap[status] || 'bi-question-circle';
+  }
+
   canUpdateOrderStatus(order: Order): boolean {
     const status = this.orderService.getChefStatus(order);
     return status !== 'delivered' && status !== 'cancelled';
@@ -207,6 +220,17 @@ export class ChefDashboardComponent implements OnInit, OnDestroy {
       case 'delivered': return 'Deliver';
       default: return 'Update';
     }
+  }
+
+  getNextActionIconClass(order: Order): string {
+    const nextStatus = this.getNextStatus(order);
+    const iconMap: {[key: string]: string} = {
+      'received': 'bi-check-lg',
+      'in_progress': 'bi-tools',
+      'ready': 'bi-bag-check',
+      'delivered': 'bi-truck',
+    };
+    return iconMap[nextStatus as string] || 'bi-arrow-right';
   }
 
   updateOrderStatus(order: Order): void {
@@ -361,8 +385,18 @@ export class ChefDashboardComponent implements OnInit, OnDestroy {
   }
   
   // Get the count of unread messages
-  getUnreadCount(chat: Chat): string {
-    const count = chat.unreadCount || 0;
-    return count > 9 ? '9+' : count.toString();
+  getUnreadCount(chat: Chat): number {
+    return chat.unreadCount || 0;
+  }
+  
+  // Get total unread messages across all chats
+  getTotalUnreadCount(): number {
+    if (!this.recentChats || this.recentChats.length === 0) {
+      return 0;
+    }
+    
+    return this.recentChats.reduce((total, chat) => {
+      return total + (this.hasUnreadMessages(chat) ? this.getUnreadCount(chat) : 0);
+    }, 0);
   }
 }

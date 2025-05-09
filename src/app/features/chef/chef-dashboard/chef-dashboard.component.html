@@ -1,102 +1,129 @@
 <!-- src/app/features/chef/chef-dashboard/chef-dashboard.component.html -->
-<div class="container-fluid py-4">
-  <!-- Chef welcome header -->
+<div class="container-fluid">
+  <!-- Chef welcome header with professional gradient background -->
   <div class="row mb-4">
     <div class="col-12">
-      <div class="card shadow-sm">
+      <div class="card shadow-lg bg-gradient">
         <div class="card-body p-4">
-          <div class="d-flex align-items-center">
-            <div *ngIf="chef?.profileImage" class="me-4">
+          <div class="d-flex align-items-center flex-column flex-md-row">
+            <div *ngIf="chef?.profileImage" class="me-md-4 mb-3 mb-md-0">
               <img [src]="productService.getImageUrl(chef?.profileImage)" alt="Chef Profile" 
-                   class="rounded-circle" style="width: 80px; height: 80px; object-fit: cover;">
+                   class="rounded-circle border border-3 border-white shadow-lg" 
+                   style="width: 100px; height: 100px; object-fit: cover;">
             </div>
-            <div *ngIf="!chef?.profileImage" class="me-4 rounded-circle bg-light d-flex align-items-center justify-content-center text-primary"
-                 style="width: 80px; height: 80px; font-size: 2rem;">
+            <div *ngIf="!chef?.profileImage" class="me-md-4 mb-3 mb-md-0 rounded-circle bg-white d-flex align-items-center justify-content-center text-primary shadow-lg"
+                 style="width: 100px; height: 100px; font-size: 2.5rem;">
               <i class="bi bi-person"></i>
             </div>
-            <div>
-              <h1 class="mb-1">Welcome, {{ chef?.fullName }}</h1>
-              <p class="text-muted mb-0">{{ today | date:'EEEE, MMMM d, y' }}</p>
-              <div class="mt-1">
-                <span class="badge bg-primary me-2">
+            <div class="text-center text-md-start mb-3 mb-md-0">
+              <h1 class="mb-1 text-white display-5 fw-bold">Welcome, {{ chef?.fullName }}</h1>
+              <p class="text-white-50 mb-0">{{ today | date:'EEEE, MMMM d, y' }}</p>
+              <div class="mt-2">
+                <span class="badge rounded-pill bg-white text-primary me-2 px-3 py-2">
                   <i class="bi bi-star-fill me-1"></i>
                   {{ getChefRating() }}
                 </span>
-                <span class="badge bg-success">
+                <span class="badge rounded-pill bg-success px-3 py-2">
                   <i class="bi bi-check-circle-fill me-1"></i>
                   Chef
                 </span>
               </div>
             </div>
-            <div class="ms-auto">
-              <a routerLink="/chef/profile" class="btn btn-outline-primary">
-                <i class="bi bi-gear me-2"></i>Profile Settings
-              </a>
+            <div class="ms-md-auto mt-3 mt-md-0">
+                <a routerLink="/home" class="btn btn-light rounded-pill btn-lg shadow-sm">Go to User Mode →</a>
             </div>
           </div>
         </div>
       </div>
     </div>
   </div>
+
+  <!-- Main action buttons - NEW SECTION -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card shadow-sm action-buttons-card">
+        <div class="card-body py-3">
+          <div class="d-flex flex-wrap justify-content-center justify-content-md-between">
+            <a routerLink="/chef/orders" class="btn btn-action me-2 mb-2">
+              <div class="action-icon bg-primary-light">
+                <i class="bi bi-clipboard-check"></i>
+              </div>
+              <span>Orders</span>
+            </a>
+            <a routerLink="/chef/products" class="btn btn-action me-2 mb-2">
+              <div class="action-icon bg-success-light">
+                <i class="bi bi-grid-3x3-gap"></i>
+              </div>
+              <span>Products</span>
+            </a>
+            <a routerLink="/chef/products/new" class="btn btn-action me-2 mb-2">
+              <div class="action-icon bg-info-light">
+                <i class="bi bi-plus-circle"></i>
+              </div>
+              <span>Add Product</span>
+            </a>
+            <a routerLink="/chef/chats" class="btn btn-action me-2 mb-2">
+              <div class="action-icon bg-warning-light">
+                <i class="bi bi-chat-dots"></i>
+              </div>
+              <span>Messages</span>
+              <span *ngIf="getTotalUnreadCount() > 0" class="notification-badge">{{ getTotalUnreadCount() }}</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
   
-  <!-- Key metrics -->
+  <!-- Key metrics - Professionally styled stat cards -->
   <div class="row mb-4">
     <!-- Active orders -->
     <div class="col-md-4 mb-3 mb-md-0">
-      <div class="card shadow-sm h-100">
-        <div class="card-body">
-          <div class="d-flex align-items-center">
-            <div class="stat-icon bg-primary-light text-primary me-3">
-              <i class="bi bi-bell"></i>
-            </div>
-            <div>
-              <h5 class="stat-value mb-0">{{ getActiveOrdersCount() }}</h5>
-              <div class="stat-label">Active Orders</div>
-            </div>
-            <div class="ms-auto">
-              <a routerLink="/chef/orders" class="btn btn-sm btn-outline-primary">View All</a>
-            </div>
+      <div class="card shadow-sm h-100 order-card">
+        <div class="card-body dashboard-stat-card">
+          <div class="stat-icon">
+            <i class="bi bi-bell-fill"></i>
           </div>
+          <h5 class="stat-title mt-3">Active Orders</h5>
+          <div class="stat-value mb-2">{{ getActiveOrdersCount() }}</div>
+          <p class="text-muted small mb-3">Orders currently in progress</p>
+          <a routerLink="/chef/orders" class="btn btn-sm btn-outline-primary rounded-pill px-4">
+            View All <i class="bi bi-arrow-right ms-1"></i>
+          </a>
         </div>
       </div>
     </div>
     
     <!-- Completed orders -->
     <div class="col-md-4 mb-3 mb-md-0">
-      <div class="card shadow-sm h-100">
-        <div class="card-body">
-          <div class="d-flex align-items-center">
-            <div class="stat-icon bg-success-light text-success me-3">
-              <i class="bi bi-check-circle"></i>
-            </div>
-            <div>
-              <h5 class="stat-value mb-0">{{ getCompletedOrdersCount() }}</h5>
-              <div class="stat-label">Completed Orders</div>
-            </div>
-            <div class="ms-auto">
-              <a routerLink="/chef/orders" class="btn btn-sm btn-outline-success">View All</a>
-            </div>
+      <div class="card shadow-sm h-100 order-card">
+        <div class="card-body dashboard-stat-card">
+          <div class="stat-icon">
+            <i class="bi bi-check-circle-fill"></i>
           </div>
+          <h5 class="stat-title mt-3">Completed Orders</h5>
+          <div class="stat-value mb-2">{{ getCompletedOrdersCount() }}</div>
+          <p class="text-muted small mb-3">Successfully delivered orders</p>
+          <a routerLink="/chef/orders" class="btn btn-sm btn-outline-primary rounded-pill px-4">
+            View All <i class="bi bi-arrow-right ms-1"></i>
+          </a>
         </div>
       </div>
     </div>
     
     <!-- Active products -->
     <div class="col-md-4">
-      <div class="card shadow-sm h-100">
-        <div class="card-body">
-          <div class="d-flex align-items-center">
-            <div class="stat-icon bg-info-light text-info me-3">
-              <i class="bi bi-box-seam"></i>
-            </div>
-            <div>
-              <h5 class="stat-value mb-0">{{ getActiveProductsCount() }}</h5>
-              <div class="stat-label">Active Products</div>
-            </div>
-            <div class="ms-auto">
-              <a routerLink="/chef/products" class="btn btn-sm btn-outline-info">View All</a>
-            </div>
+      <div class="card shadow-sm h-100 order-card">
+        <div class="card-body dashboard-stat-card">
+          <div class="stat-icon">
+            <i class="bi bi-box-seam-fill"></i>
           </div>
+          <h5 class="stat-title mt-3">Active Products</h5>
+          <div class="stat-value mb-2">{{ getActiveProductsCount() }}</div>
+          <p class="text-muted small mb-3">Products available for order</p>
+          <a routerLink="/chef/products" class="btn btn-sm btn-outline-primary rounded-pill px-4">
+            View All <i class="bi bi-arrow-right ms-1"></i>
+          </a>
         </div>
       </div>
     </div>
@@ -104,14 +131,16 @@
   
   <!-- Main content grid -->
   <div class="row">
-    <!-- Recent orders -->
+    <!-- Recent orders - Enhanced with better spacing and styling -->
     <div class="col-lg-7 mb-4">
       <div class="card shadow-sm h-100">
         <div class="card-header bg-white py-3">
           <div class="d-flex justify-content-between align-items-center">
-            <h5 class="mb-0">Recent Orders</h5>
-            <a routerLink="/chef/orders" class="btn btn-sm btn-outline-primary">
-              View All Orders
+            <h5 class="card-title mb-0">
+              <i class="bi bi-clipboard-check me-2 text-primary"></i>Recent Orders
+            </h5>
+            <a routerLink="/chef/orders" class="btn btn-sm btn-primary rounded-pill px-3">
+              View All Orders <i class="bi bi-arrow-right ms-1"></i>
             </a>
           </div>
         </div>
@@ -131,22 +160,30 @@
           
           <!-- No orders message -->
           <div *ngIf="recentOrders.length === 0 && !isLoading && !error" class="text-center py-5">
-            <i class="bi bi-inbox text-muted" style="font-size: 3rem;"></i>
-            <p class="mt-3 mb-0">No orders yet</p>
+            <div class="empty-state-icon bg-light rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3"
+                 style="width: 80px; height: 80px;">
+              <i class="bi bi-inbox text-primary" style="font-size: 2.5rem;"></i>
+            </div>
+            <h5 class="mb-1">No orders yet</h5>
+            <p class="text-muted">New orders will appear here</p>
           </div>
           
           <!-- Orders list -->
           <div *ngIf="recentOrders.length > 0 && !isLoading" class="list-group list-group-flush">
-            <div *ngFor="let order of recentOrders" class="list-group-item p-3">
+            <div *ngFor="let order of recentOrders" class="list-group-item p-3 border-start-0 border-end-0 hover-item">
               <div class="row align-items-center">
                 <!-- Order summary -->
                 <div class="col-md-7">
-                  <h6 class="mb-1">
-                    <a [routerLink]="['/chef/orders', order._id]" class="text-decoration-none">
+                  <h6 class="mb-1 d-flex align-items-center">
+                    <span class="me-2 bg-light rounded-circle d-flex align-items-center justify-content-center"
+                          style="width: 32px; height: 32px;">
+                      <i class="bi bi-bag text-primary"></i>
+                    </span>
+                    <a [routerLink]="['/chef/orders', order._id]" class="text-decoration-none text-dark stretched-link">
                       Order #{{ order._id.slice(-8) }}
                     </a>
                   </h6>
-                  <div class="d-flex flex-wrap">
+                  <div class="d-flex flex-wrap mt-2">
                     <span class="text-muted me-3">
                       <i class="bi bi-calendar-date me-1"></i>
                       {{ order.createdAt | date:'MMM d, h:mm a' }}
@@ -155,7 +192,7 @@
                       <i class="bi bi-box me-1"></i>
                       {{ getOrderItemCount(order) }}
                     </span>
-                    <span class="text-muted">
+                    <span class="text-muted fw-bold">
                       <i class="bi bi-cash me-1"></i>
                       ${{ getOrderTotal(order).toFixed(2) }}
                     </span>
@@ -163,22 +200,26 @@
                 </div>
                 
                 <!-- Status and actions -->
-                <div class="col-md-5 text-md-end mt-2 mt-md-0">
-                  <div class="d-flex justify-content-md-end align-items-center">
-                    <span class="badge me-3" [ngClass]="getStatusBadgeClass(order)">
+                <div class="col-md-5 text-md-end mt-3 mt-md-0">
+                  <div class="d-flex justify-content-md-end align-items-center flex-wrap">
+                    <span class="badge me-3 py-2 px-3" [ngClass]="getStatusBadgeClass(order)">
+                      <i class="bi me-1" [ngClass]="getStatusIconClass(order)"></i>
                       {{ getStatusLabel(order) }}
                     </span>
                     
                     <button *ngIf="canUpdateOrderStatus(order)" 
-                            class="btn btn-sm btn-success"
+                            class="btn btn-sm btn-success rounded-pill mb-2 mb-md-0"
                             [disabled]="updatingStatus[order._id]"
                             (click)="updateOrderStatus(order)">
                       <span *ngIf="updatingStatus[order._id]" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-                      <span *ngIf="!updatingStatus[order._id]">{{ getNextActionLabel(order) }}</span>
+                      <span *ngIf="!updatingStatus[order._id]">
+                        <i class="bi me-1" [ngClass]="getNextActionIconClass(order)"></i>
+                        {{ getNextActionLabel(order) }}
+                      </span>
                     </button>
                     
-                    <a [routerLink]="['/chef/orders', order._id]" class="btn btn-sm btn-outline-secondary ms-2">
-                      Details
+                    <a [routerLink]="['/chef/orders', order._id]" class="btn btn-sm btn-outline-secondary ms-md-2 rounded-pill mb-2 mb-md-0">
+                      <i class="bi bi-eye me-1"></i> Details
                     </a>
                   </div>
                 </div>
@@ -195,37 +236,43 @@
       <div class="card shadow-sm mb-4">
         <div class="card-header bg-white py-3">
           <div class="d-flex justify-content-between align-items-center">
-            <h5 class="mb-0">Recent Conversations</h5>
-            <a routerLink="/chef/chats" class="btn btn-sm btn-outline-primary">
-              View All Chats
+            <h5 class="card-title mb-0">
+              <i class="bi bi-chat-dots me-2 text-primary"></i>Recent Conversations
+            </h5>
+            <a routerLink="/chef/chats" class="btn btn-sm btn-primary rounded-pill px-3">
+              View All Chats <i class="bi bi-arrow-right ms-1"></i>
             </a>
           </div>
         </div>
         <div class="card-body p-0">
           <!-- No chats message -->
           <div *ngIf="recentChats.length === 0" class="text-center py-4">
-            <i class="bi bi-chat-dots text-muted" style="font-size: 2rem;"></i>
-            <p class="mt-2 mb-0">No recent conversations</p>
+            <div class="empty-state-icon bg-light rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3"
+                 style="width: 80px; height: 80px;">
+              <i class="bi bi-chat-dots text-primary" style="font-size: 2.5rem;"></i>
+            </div>
+            <h5 class="mb-1">No recent conversations</h5>
+            <p class="text-muted">Chat with customers to coordinate orders</p>
           </div>
           
           <!-- Recent chats list -->
           <div *ngIf="recentChats.length > 0" class="list-group list-group-flush">
             <a *ngFor="let chat of recentChats" 
                [routerLink]="['/chef/chats', chat._id]" 
-               class="list-group-item list-group-item-action p-3"
+               class="list-group-item list-group-item-action p-3 border-start-0 border-end-0 hover-item"
                [ngClass]="{'bg-light': hasUnreadMessages(chat)}">
               <div class="d-flex">
                 <!-- Customer avatar -->
                 <div class="position-relative me-3">
-                  <div *ngIf="getParticipantAvatar(chat)" class="rounded-circle">
+                  <div *ngIf="getParticipantAvatar(chat)" class="rounded-circle shadow-sm">
                     <img [src]="productService.getImageUrl(getParticipantAvatar(chat))" 
                          alt="Customer" 
                          class="rounded-circle" 
-                         style="width: 48px; height: 48px; object-fit: cover;">
+                         style="width: 50px; height: 50px; object-fit: cover;">
                   </div>
                   <div *ngIf="!getParticipantAvatar(chat)" 
-                       class="rounded-circle bg-light d-flex align-items-center justify-content-center text-primary" 
-                       style="width: 48px; height: 48px; font-size: 1.25rem;">
+                       class="rounded-circle bg-light d-flex align-items-center justify-content-center text-primary shadow-sm" 
+                       style="width: 50px; height: 50px; font-size: 1.25rem;">
                     <i class="bi bi-person"></i>
                   </div>
                   
@@ -234,6 +281,7 @@
                         class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
                         style="margin-left: -8px;">
                     {{ getUnreadCount(chat) }}
+                    <span class="visually-hidden">unread messages</span>
                   </span>
                 </div>
                 
@@ -245,12 +293,12 @@
                       {{ formatChatDate(chat.lastMessage?.createdAt || chat.createdAt) }}
                     </small>
                   </div>
-                  <div class="d-flex justify-content-between align-items-center">
+                  <div class="d-flex justify-content-between align-items-center mt-1">
                     <p class="mb-0 text-truncate text-muted small" 
                        [ngClass]="{'fw-bold': hasUnreadMessages(chat)}">
                       {{ getMessagePreview(chat) }}
                     </p>
-                    <small class="text-muted ms-2 flex-shrink-0">
+                    <small class="badge bg-light text-dark ms-2 flex-shrink-0">
                       Order #{{ getOrderIdSuffix(chat) }}
                     </small>
                   </div>
@@ -264,14 +312,16 @@
       <!-- Products quick access -->
       <div class="card shadow-sm">
         <div class="card-header bg-white py-3">
-          <div class="d-flex justify-content-between align-items-center">
-            <h5 class="mb-0">My Products</h5>
-            <div>
-              <a routerLink="/chef/products/new" class="btn btn-sm btn-success me-2">
+          <div class="d-flex justify-content-between align-items-center flex-wrap">
+            <h5 class="card-title mb-0">
+              <i class="bi bi-grid me-2 text-primary"></i>My Products
+            </h5>
+            <div class="mt-2 mt-sm-0">
+              <a routerLink="/chef/products/new" class="btn btn-sm btn-success rounded-pill me-2">
                 <i class="bi bi-plus-lg me-1"></i>New
               </a>
-              <a routerLink="/chef/products" class="btn btn-sm btn-outline-primary">
-                View All
+              <a routerLink="/chef/products" class="btn btn-sm btn-primary rounded-pill">
+                <i class="bi bi-grid-3x3-gap me-1"></i>View All
               </a>
             </div>
           </div>
@@ -287,41 +337,48 @@
           
           <!-- No products message -->
           <div *ngIf="products.length === 0 && !isLoading" class="text-center py-4">
-            <i class="bi bi-box2 text-muted" style="font-size: 2rem;"></i>
-            <p class="mt-2 mb-0">No products yet</p>
-            <a routerLink="/chef/products/new" class="btn btn-sm btn-primary mt-2">
-              Create Your First Product
+            <div class="empty-state-icon bg-light rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3"
+                 style="width: 80px; height: 80px;">
+              <i class="bi bi-box2 text-primary" style="font-size: 2.5rem;"></i>
+            </div>
+            <h5 class="mb-1">No products yet</h5>
+            <p class="text-muted mb-3">Start by creating your first product</p>
+            <a routerLink="/chef/products/new" class="btn btn-primary rounded-pill px-4">
+              <i class="bi bi-plus-lg me-2"></i>Create Your First Product
             </a>
           </div>
           
           <!-- Products list -->
           <div *ngIf="products.length > 0 && !isLoading" class="list-group list-group-flush">
-            <div *ngFor="let product of products.slice(0, 3)" class="list-group-item p-3">
-              <div class="d-flex align-items-center">
+            <div *ngFor="let product of products.slice(0, 3)" class="list-group-item p-3 border-start-0 border-end-0 hover-item">
+              <div class="d-flex flex-column flex-md-row align-items-center">
                 <!-- Product image -->
-                <div class="me-3">
-                  <img *ngIf="getProductFirstImage(product)" 
-                       [src]="productService.getImageUrl(getProductFirstImage(product))" 
-                       alt="{{ product.name }}" 
-                       class="rounded" 
-                       style="width: 60px; height: 60px; object-fit: cover;">
-                  <div *ngIf="!getProductFirstImage(product)" 
-                       class="rounded bg-light d-flex align-items-center justify-content-center text-muted" 
-                       style="width: 60px; height: 60px;">
-                    <i class="bi bi-image" style="font-size: 1.5rem;"></i>
+                <div class="me-md-3 mb-3 mb-md-0">
+                  <div class="product-card">
+                    <div *ngIf="getProductFirstImage(product)" class="bg-light rounded">
+                      <img [src]="productService.getImageUrl(getProductFirstImage(product))" 
+                           alt="{{ product.name }}" 
+                           class="rounded shadow-sm" 
+                           style="width: 70px; height: 70px; object-fit: cover;">
+                    </div>
+                    <div *ngIf="!getProductFirstImage(product)" 
+                         class="rounded bg-light d-flex align-items-center justify-content-center text-muted shadow-sm" 
+                         style="width: 70px; height: 70px;">
+                      <i class="bi bi-image" style="font-size: 1.5rem;"></i>
+                    </div>
                   </div>
                 </div>
                 
                 <!-- Product info -->
-                <div class="flex-grow-1">
+                <div class="flex-grow-1 text-center text-md-start mb-3 mb-md-0">
                   <h6 class="mb-1">
-                    <a [routerLink]="['/chef/products', product._id]" class="text-decoration-none">
+                    <a [routerLink]="['/chef/products', product._id]" class="text-decoration-none text-dark">
                       {{ product.name }}
                     </a>
                   </h6>
-                  <div class="d-flex align-items-center">
-                    <span class="text-primary me-3">${{ product.price.toFixed(2) }}</span>
-                    <div class="form-check form-switch mb-0 d-flex align-items-center">
+                  <div class="d-flex align-items-center justify-content-center justify-content-md-start flex-wrap">
+                    <span class="badge bg-light text-primary me-md-3 px-3 py-2">${{ product.price.toFixed(2) }}</span>
+                    <div class="form-check form-switch mt-2 mt-md-0 d-flex align-items-center">
                       <input 
                         class="form-check-input me-2" 
                         type="checkbox" 
@@ -330,7 +387,9 @@
                         [checked]="product.isAvailable"
                         [disabled]="updatingAvailability[product._id]"
                         (change)="toggleProductAvailability(product._id, $event)">
-                      <label class="form-check-label small text-muted" [for]="'availabilitySwitch' + product._id">
+                      <label class="form-check-label small" [for]="'availabilitySwitch' + product._id"
+                             [ngClass]="{'text-success': product.isAvailable, 'text-muted': !product.isAvailable}">
+                        <i class="bi me-1" [ngClass]="product.isAvailable ? 'bi-check-circle-fill' : 'bi-x-circle-fill'"></i>
                         {{ product.isAvailable ? 'Available' : 'Unavailable' }}
                         <span *ngIf="updatingAvailability[product._id]" class="spinner-border spinner-border-sm ms-1" role="status" aria-hidden="true"></span>
                       </label>
@@ -339,12 +398,12 @@
                 </div>
                 
                 <!-- Actions -->
-                <div class="ms-2">
-                  <a [routerLink]="['/chef/products/edit', product._id]" class="btn btn-sm btn-outline-primary me-1">
-                    Edit
+                <div class="d-flex">
+                  <a [routerLink]="['/chef/products/edit', product._id]" class="btn btn-sm btn-outline-primary me-2 rounded-pill">
+                    <i class="bi bi-pencil-fill me-1"></i>Edit
                   </a>
-                  <a [routerLink]="['/chef/products', product._id]" class="btn btn-sm btn-outline-secondary">
-                    View
+                  <a [routerLink]="['/chef/products', product._id]" class="btn btn-sm btn-outline-secondary rounded-pill">
+                    <i class="bi bi-eye me-1"></i>View
                   </a>
                 </div>
               </div>
@@ -353,8 +412,8 @@
           
           <!-- View more link -->
           <div *ngIf="products.length > 3 && !isLoading" class="text-center py-3">
-            <a routerLink="/chef/products" class="btn btn-outline-primary btn-sm">
-              View All {{ products.length }} Products
+            <a routerLink="/chef/products" class="btn btn-outline-primary rounded-pill">
+              <i class="bi bi-grid-3x3-gap me-1"></i>View All {{ products.length }} Products
             </a>
           </div>
         </div>

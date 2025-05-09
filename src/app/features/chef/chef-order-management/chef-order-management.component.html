@@ -1,5 +1,27 @@
 <!-- src/app/features/chef/chef-order-management/chef-order-management.component.html -->
 <div class="container-fluid py-4">
+  <!-- Breadcrumb navigation -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card shadow-sm">
+        <div class="card-body p-3">
+          <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+              <li class="breadcrumb-item">
+                <a [routerLink]="['/chef/dashboard']" class="text-decoration-none">
+                  <i class="bi bi-house-door me-1"></i>Dashboard
+                </a>
+              </li>
+              <li class="breadcrumb-item active" aria-current="page">
+                Order history
+              </li>
+            </ol>
+          </nav>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div class="row mb-4">
     <div class="col-12">
       <div class="card shadow-sm">
@@ -7,9 +29,6 @@
           <div class="d-flex justify-content-between align-items-center">
             <div>
               <h2 class="card-title">Order Management</h2>
-              <a routerLink="/chef/dashboard" class="btn btn-outline-secondary mt-2">
-                <i class="bi bi-grid me-2"></i>Back to Dashboard
-              </a>
             </div>
             <button class="btn btn-outline-primary" (click)="loadOrders()">
               <i class="bi bi-arrow-clockwise me-2"></i>Refresh
@@ -135,7 +154,7 @@
                       </span>
                       <span *ngIf="updatingOrderStatus[order._id]" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
                     </button>
-                    <button *ngIf="orderService.canDeleteChefOrder(order)" 
+                    <button *ngIf="orderService.getChefStatus(order) === 'delivered'" 
                             class="btn btn-sm btn-danger me-2"
                             [disabled]="deletingOrder[order._id]"
                             (click)="deleteOrder(order._id)">
@@ -211,7 +230,7 @@
               </span>
               <span *ngIf="updatingOrderStatus[order._id]" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
             </button>
-            <button *ngIf="orderService.canDeleteChefOrder(order)" 
+            <button *ngIf="orderService.getChefStatus(order) === 'delivered'" 
                     class="btn btn-sm btn-danger me-2"
                     [disabled]="deletingOrder[order._id]"
                     (click)="deleteOrder(order._id)">

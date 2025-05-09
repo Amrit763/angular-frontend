@@ -1,9 +1,22 @@
 /* src/app/features/chef/chef-dashboard/chef-dashboard.component.css */
-/* General card styling */
+/* Fix for the empty space at the top - now with some padding */
+:host {
+  display: block;
+  margin-top: 0; /* Remove negative margin */
+}
+
+.container-fluid {
+  padding-top: 20px !important; /* Add a comfortable padding at the top */
+  margin-top: 0 !important;
+}
+
+/* General card styling with improved shadows and transitions */
 .card {
   border-radius: 12px;
   border: none;
   transition: transform 0.3s, box-shadow 0.3s;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
 .card:hover {
@@ -12,7 +25,7 @@
 }
 
 .card-title {
-  color: #333;
+  color: #155475;
   font-weight: 600;
 }
 
@@ -21,43 +34,46 @@
   padding: 1.25rem;
 }
 
-/* Stats cards styling */
+/* Stats cards styling with improved visual effects */
 .dashboard-stat-card {
   text-align: center;
-  padding: 0.5rem;
+  padding: 1.5rem 1rem;
 }
 
 .stat-icon {
   font-size: 2.5rem;
   color: #155475;
-  height: 60px;
-  width: 60px;
+  height: 80px;
+  width: 80px;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 50%;
   background-color: rgba(21, 84, 117, 0.1);
   margin: 0 auto;
+  transition: all 0.3s ease;
 }
 
 .stat-title {
-  font-size: 1rem;
+  font-size: 1.1rem;
   color: #6c757d;
   margin-bottom: 0.5rem;
   font-weight: 500;
 }
 
 .stat-value {
-  font-size: 2rem;
+  font-size: 2.5rem;
   font-weight: 700;
   color: #155475;
+  transition: all 0.3s ease;
 }
 
-/* Order card specific styling */
+/* Order card specific styling with sleek hover effects */
 .order-card {
   cursor: pointer;
   position: relative;
   overflow: hidden;
+  transition: all 0.3s ease;
 }
 
 .order-card::before {
@@ -80,7 +96,14 @@
 
 .order-card:hover .stat-title, 
 .order-card:hover .stat-icon, 
-.order-card:hover p {
+.order-card:hover p,
+.order-card:hover .btn-outline-primary {
+  color: white !important;
+  position: relative;
+  z-index: 1;
+}
+
+.order-card:hover .stat-value {
   color: white !important;
   position: relative;
   z-index: 1;
@@ -88,6 +111,11 @@
 
 .order-card:hover .stat-icon {
   background-color: rgba(255, 255, 255, 0.2);
+  transform: scale(1.1);
+}
+
+.order-card:hover .btn-outline-primary {
+  border-color: white;
 }
 
 .order-card .card-body {
@@ -95,7 +123,7 @@
   position: relative;
 }
 
-/* Table styling */
+/* Table styling with better spacing */
 .table th {
   font-weight: 600;
   color: #555;
@@ -113,7 +141,7 @@
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
 }
 
-/* Status badge colors */
+/* Status badge colors with improved contrast */
 .badge.bg-warning {
   background-color: #ffc107 !important;
   color: #212529;
@@ -141,61 +169,71 @@
   border: 1px solid #e9ecef;
 }
 
-/* Button styling */
+/* Button styling with enhanced interactive effects */
 .btn-primary {
   background-color: #155475;
   border-color: #155475;
+  transition: all 0.3s ease;
 }
 
 .btn-primary:hover {
   background-color: #0f3c54;
   border-color: #0f3c54;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .btn-outline-primary {
   color: #155475;
   border-color: #155475;
+  transition: all 0.3s ease;
 }
 
 .btn-outline-primary:hover {
   background-color: #155475;
   border-color: #155475;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .btn-success {
   background-color: #29cc97;
   border-color: #29cc97;
+  transition: all 0.3s ease;
 }
 
 .btn-success:hover {
   background-color: #22a67c;
   border-color: #22a67c;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .rounded-pill {
   border-radius: 50rem !important;
 }
 
-/* Product card styling */
+/* Product card styling with image zoom effect */
 .product-card {
   overflow: hidden;
   border-radius: 12px;
 }
 
 .product-card img {
-  transition: transform 0.3s;
+  transition: transform 0.5s ease;
 }
 
 .product-card:hover img {
   transform: scale(1.05);
 }
 
-/* Form switch styling */
+/* Form switch styling with smoother transitions */
 .form-check-input {
   width: 3rem;
   height: 1.5rem;
   margin-left: 0;
   cursor: pointer;
+  transition: all 0.3s ease;
 }
 
 .form-check-input:checked {
@@ -214,22 +252,273 @@
 
 /* Background gradient for header card */
 .bg-gradient {
-  background: linear-gradient(to right, #f8f9fa, #e9ecef);
+  background: linear-gradient(to right, #155475, #1e88e5) !important;
+  color: white;
 }
 
-/* Responsive adjustments */
+/* Empty state icon styling */
+.empty-state-icon {
+  transition: all 0.3s ease;
+}
+
+.empty-state-icon:hover {
+  transform: scale(1.1);
+}
+
+/* Custom animations */
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.animate-pulse {
+  animation: pulse 2s infinite;
+}
+
+/* List group item hover effects */
+.list-group-item {
+  transition: all 0.3s ease;
+  border-left: 0;
+  border-right: 0;
+}
+
+.list-group-item-action:hover {
+  background-color: rgba(21, 84, 117, 0.05);
+  transform: translateX(5px);
+}
+
+/* Chat unread styling with highlight indicator */
+.list-group-item.bg-light {
+  background-color: rgba(21, 84, 117, 0.05) !important;
+  position: relative;
+}
+
+.list-group-item.bg-light::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background-color: #155475;
+}
+
+/* Responsive adjustments with mobile optimizations */
 @media (max-width: 768px) {
   .stat-icon {
     font-size: 2rem;
-    height: 50px;
-    width: 50px;
+    height: 60px;
+    width: 60px;
   }
   
   .stat-value {
-    font-size: 1.5rem;
+    font-size: 1.8rem;
   }
   
   .card-title {
     font-size: 1.25rem;
   }
+
+  /* Improve mobile spacing */
+  .dashboard-stat-card {
+    padding: 1rem 0.5rem;
+  }
+  
+  .card-body {
+    padding: 1rem;
+  }
+  
+  .list-group-item {
+    padding: 0.75rem;
+  }
+  
+  /* Smaller buttons on mobile */
+  .btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+  }
+  
+  /* Better header spacing on mobile */
+  .card-header {
+    padding: 0.75rem 1rem;
+  }
+}
+
+/* Mobile-first improvements */
+.list-group-item .row {
+  margin-left: -0.5rem;
+  margin-right: -0.5rem;
+}
+
+.list-group-item .col-md-7,
+.list-group-item .col-md-5 {
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+}
+
+/* Badge enhancements */
+.badge {
+  font-weight: 500;
+  letter-spacing: 0.3px;
+}
+
+/* Improved spacing for button groups */
+.btn + .btn {
+  margin-left: 0.5rem;
+}
+
+/* Custom color enhancements */
+.text-primary {
+  color: #155475 !important;
+}
+
+.text-success {
+  color: #29cc97 !important;
+}
+
+/* Ensure focus states are visible for accessibility */
+.btn:focus, 
+.form-check-input:focus {
+  box-shadow: 0 0 0 0.25rem rgba(21, 84, 117, 0.25);
+}
+
+/* Additional animations */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.fade-in {
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+/* Enhanced hover effects for buttons */
+.btn.rounded-pill:hover {
+  padding-right: 1.2rem;
+}
+
+.btn-outline-primary.rounded-pill:hover i,
+.btn-primary.rounded-pill:hover i {
+  transform: translateX(3px);
+}
+
+.btn i {
+  transition: transform 0.3s ease;
+}
+
+/* Improved table responsiveness */
+@media (max-width: 576px) {
+  .d-flex.flex-wrap {
+    justify-content: center;
+  }
+  
+  .d-flex.flex-wrap > span {
+    margin-bottom: 0.5rem;
+  }
+  
+  .justify-content-md-end {
+    justify-content: center !important;
+  }
+  
+  .text-md-end {
+    text-align: center !important;
+  }
+}
+
+/* Add subtle dividers between items */
+.list-group-item:not(:last-child) {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+/* Custom scrollbar for better UX */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1; 
+  border-radius: 10px;
+}
+ 
+::-webkit-scrollbar-thumb {
+  background: rgba(21, 84, 117, 0.5); 
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #155475; 
+}
+
+/* Action buttons styling for the dashboard */
+.btn-action {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1rem;
+  background-color: white;
+  border: 1px solid #e9ecef;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+  color: #333;
+  text-decoration: none;
+  position: relative;
+}
+
+.btn-action:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08);
+}
+
+.action-icon {
+  width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  margin-bottom: 0.5rem;
+  font-size: 1.5rem;
+}
+
+.bg-primary-light {
+  background-color: rgba(21, 84, 117, 0.1);
+  color: #155475;
+}
+
+.bg-success-light {
+  background-color: rgba(41, 204, 151, 0.1);
+  color: #29cc97;
+}
+
+.bg-info-light {
+  background-color: rgba(13, 202, 240, 0.1);
+  color: #0dcaf0;
+}
+
+.bg-warning-light {
+  background-color: rgba(255, 193, 7, 0.1);
+  color: #ffc107;
+}
+
+.notification-badge {
+  position: absolute;
+  top: 0;
+  right: 0;
+  background-color: #fe5461;
+  color: white;
+  font-size: 0.7rem;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }

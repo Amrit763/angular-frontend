@@ -1,7 +1,7 @@
 // src/app/features/user/user-reviews/user-reviews.component.ts
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule, Router } from '@angular/router';
+import { RouterModule, Router, NavigationEnd } from '@angular/router';
 import { OrderService } from '../../../core/services/order.service';
 import { ReviewService } from '../../../core/services/review.service';
 import { ProductService } from '../../../core/services/product.service';
@@ -10,8 +10,7 @@ import { Review } from '../../../core/models/review.model';
 import { Order } from '../../../core/models/order.model';
 import { Product } from '../../../core/models/product.model';
 import { forkJoin, of } from 'rxjs';
-import { switchMap, catchError, map } from 'rxjs/operators';
-import { ReviewFormComponent } from '../../reviews/review-form/review-form.component';
+import { switchMap, catchError, map, filter } from 'rxjs/operators';
 
 interface ReviewableProduct {
   orderId: string;
@@ -26,8 +25,7 @@ interface ReviewableProduct {
   standalone: true,
   imports: [
     CommonModule,
-    RouterModule,
-    ReviewFormComponent
+    RouterModule
   ]
 })
 export class UserReviewsComponent implements OnInit {
@@ -36,7 +34,7 @@ export class UserReviewsComponent implements OnInit {
   error: string | null = null;
   currentPage = 1;
   totalPages = 1;
-  limit = 6; // Changed from 10 to 6 for pagination (show pagination when more than 6 reviews)
+  limit = 6;
   totalReviews = 0;
   
   isDeleteDialogOpen = false;
@@ -47,11 +45,6 @@ export class UserReviewsComponent implements OnInit {
   pendingReviews: ReviewableProduct[] = [];
   loadingPendingReviews = false;
   
-  // Review form
-  showReviewForm = false;
-  selectedOrderId = '';
-  selectedProductId = '';
-  selectedProduct: Product | null = null;
   activeTabIndex = 0; // 0 = My Reviews, 1 = Pending Reviews
 
   constructor(
@@ -62,9 +55,21 @@ export class UserReviewsComponent implements OnInit {
     private router: Router
   ) { }
 
+  // Handle router events to detect when a review is completed
   ngOnInit(): void {
     this.loadReviews();
     this.loadPendingReviews();
+    
+    // Check for completed reviews when navigating back to this page
+    this.router.events.pipe(
+      filter(event => event instanceof NavigationEnd),
+      filter((event: NavigationEnd) => event.url.includes('/user/reviews'))
+    ).subscribe(() => {
+      console.log('Navigated back to reviews page - refreshing data');
+      // Refresh both reviews and pending reviews
+      this.loadReviews();
+      this.loadPendingReviews();
+    });
   }
 
   loadReviews(): void {
@@ -89,57 +94,102 @@ export class UserReviewsComponent implements OnInit {
     this.loadingPendingReviews = true;
     this.pendingReviews = [];
     
-    // Get all orders first
+    // Get all orders
     this.orderService.getUserOrders().pipe(
-      map(response => response.orders.filter(order => {
-        // Check if main order is delivered
-        if (order.status === 'delivered') return true;
+      switchMap(response => {
+        const allOrders = response.orders;
+        console.log(`Found ${allOrders.length} total orders`);
         
-        // Or check if any chef items are delivered
-        if (order.chefItems && order.chefItems.length > 0) {
-          return order.chefItems.some(chefGroup => chefGroup.status === 'delivered');
-        }
-        
-        return false;
-      })),
-      switchMap(deliveredOrders => {
-        if (deliveredOrders.length === 0) {
+        if (allOrders.length === 0) {
           return of([]);
         }
         
-        // For each delivered order, check each product
+        // For each order, check all products that might be reviewable
         const reviewCheckRequests: any[] = [];
         
-        deliveredOrders.forEach(order => {
-          // Process chef items that are delivered
-          if (order.chefItems && order.chefItems.length > 0) {
-            order.chefItems.forEach(chefGroup => {
-              // Only process delivered chef groups
-              if (chefGroup.status === 'delivered') {
-                chefGroup.items.forEach(item => {
-                  // Only add items with valid product info
-                  if (item.product && item.product._id) {
-                    const productId = item.product._id;
-                    const product = item.product;
-                    
-                    reviewCheckRequests.push(
-                      this.reviewService.canReviewProduct(order._id, productId).pipe(
-                        map(response => ({
-                          orderId: order._id,
-                          productId: productId,
-                          product: product,
-                          orderDate: order.createdAt,
-                          canReview: response.canReview
-                        })),
-                        catchError(() => of(null))
-                      )
-                    );
-                  }
-                });
-              }
-            });
+        allOrders.forEach(order => {
+          // Only process orders with chef items
+          if (!order.chefItems || order.chefItems.length === 0) {
+            return;
           }
+          
+          // Check both the main order status and individual chef item status
+          const isOrderDelivered = order.status === 'delivered';
+          console.log(`Order ${order._id} status: ${order.status}, isDelivered: ${isOrderDelivered}`);
+          
+          // Process each chef group
+          order.chefItems.forEach(chefGroup => {
+            const isChefGroupDelivered = chefGroup.status === 'delivered';
+            console.log(`  Chef group status: ${chefGroup.status}, isDelivered: ${isChefGroupDelivered}`);
+            
+            // Only process delivered chef groups OR if the main order is delivered
+            if (isOrderDelivered || isChefGroupDelivered) {
+              if (!chefGroup.items || chefGroup.items.length === 0) {
+                return;
+              }
+              
+              // Process each item in the chef group
+              chefGroup.items.forEach(item => {
+                // Skip items without product info
+                if (!item.product) {
+                  return;
+                }
+                
+                // Extract product ID safely
+                let productId = '';
+                let product = null;
+                
+                if (typeof item.product === 'string') {
+                  productId = item.product;
+                  product = { _id: productId, name: 'Product' };
+                } else if (typeof item.product === 'object' && item.product._id) {
+                  if (typeof item.product._id === 'string') {
+                    productId = item.product._id;
+                  } else {
+                    try {
+                      productId = String(item.product._id);
+                    } catch (e) {
+                      console.error('Error converting product ID to string:', e);
+                      return;
+                    }
+                  }
+                  product = item.product;
+                } else {
+                  console.warn('Invalid product format:', item.product);
+                  return;
+                }
+                
+                if (!productId) {
+                  return;
+                }
+                
+                console.log(`    Checking if product ${productId} can be reviewed`);
+                
+                // Check if this product can be reviewed
+                reviewCheckRequests.push(
+                  this.reviewService.canReviewProduct(order._id, productId).pipe(
+                    map(response => {
+                      console.log(`    Product ${productId} can be reviewed: ${response.canReview}`);
+                      return {
+                        orderId: order._id,
+                        productId: productId,
+                        product: product,
+                        orderDate: order.createdAt,
+                        canReview: response.canReview
+                      };
+                    }),
+                    catchError(error => {
+                      console.error('Error checking if product can be reviewed:', error);
+                      return of(null);
+                    })
+                  )
+                );
+              });
+            }
+          });
         });
+        
+        console.log(`Total review check requests: ${reviewCheckRequests.length}`);
         
         if (reviewCheckRequests.length === 0) {
           return of([]);
@@ -158,6 +208,7 @@ export class UserReviewsComponent implements OnInit {
             orderDate: result.orderDate
           }));
         
+        console.log(`Loaded ${this.pendingReviews.length} pending reviews:`, this.pendingReviews);
         this.loadingPendingReviews = false;
       },
       error: (err) => {
@@ -182,9 +233,16 @@ export class UserReviewsComponent implements OnInit {
 
   // Format date for display
   formatDate(dateString: string): string {
-    const date = new Date(dateString);
-    const options: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'long', day: 'numeric' };
-    return date.toLocaleDateString(undefined, options);
+    if (!dateString) return 'N/A';
+    
+    try {
+      const date = new Date(dateString);
+      const options: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'long', day: 'numeric' };
+      return date.toLocaleDateString(undefined, options);
+    } catch (e) {
+      console.error('Error formatting date:', e);
+      return dateString || 'N/A';
+    }
   }
 
   // Open delete confirmation dialog
@@ -236,42 +294,201 @@ export class UserReviewsComponent implements OnInit {
     });
   }
   
-  // Open review form for a pending review
-  openReviewForm(orderId: string, product: Product): void {
-    if (!product || !product._id) {
-      this.toastService.showError('Invalid product information');
+  // HELPER METHODS FOR ROBUST DATA HANDLING
+  
+  // Get object keys for debugging
+  getObjectKeys(obj: any): string[] {
+    if (!obj) return ['null'];
+    return Object.keys(obj);
+  }
+  
+  // Get product object keys for debugging
+  getProductObjectKeys(item: any): string[] {
+    if (!item || !item.product) return ['no_product'];
+    return Object.keys(item.product);
+  }
+  
+  // Get product debug info
+  getProductDebugInfo(item: any): string {
+    if (!item) return 'Item is null';
+    if (!item.product) return 'No product property';
+    return JSON.stringify(item.product);
+  }
+  
+  // Check if product has images array
+  hasProductImages(item: any): boolean {
+    return item && 
+           item.product && 
+           item.product.images && 
+           Array.isArray(item.product.images) && 
+           item.product.images.length > 0;
+  }
+  
+  // Check if product has direct imageUrl property
+  hasProductImageUrl(item: any): boolean {
+    return item && 
+           item.product && 
+           (item.product.imageUrl || item.product.image || item.product.thumbnail);
+  }
+  
+  // Get product image URL safely
+  getProductImageUrl(item: any): string {
+    if (!this.hasProductImages(item)) return '/assets/images/placeholder.jpg';
+    return this.productService.getImageUrl(item.product.images[0]);
+  }
+  
+  // Get direct image URL if available
+  getProductDirectImageUrl(item: any): string {
+    if (!item || !item.product) return '/assets/images/placeholder.jpg';
+    const url = item.product.imageUrl || item.product.image || item.product.thumbnail;
+    return this.productService.getImageUrl(url);
+  }
+  
+  // Get product name safely
+  getProductName(item: any): string {
+    if (!item) return 'Unknown Product';
+    if (!item.product) return 'Unknown Product';
+    
+    // Try different possible property names
+    return item.product.name || 
+           item.product.productName || 
+           item.product.title || 
+           'Product';
+  }
+  
+  // Get product category safely
+  getProductCategory(item: any): string {
+    if (!item || !item.product) return 'Category';
+    
+    // Try different possible property names
+    return item.product.category || 
+           item.product.productCategory || 
+           item.product.type || 
+           'Category';
+  }
+  
+  // Get formatted order date safely
+  getFormattedOrderDate(item: any): string {
+    if (!item) return 'N/A';
+    
+    // Try different possible date properties
+    const dateString = item.orderDate || 
+                      (item.order && item.order.createdAt) || 
+                      'N/A';
+    
+    return this.formatDate(dateString);
+  }
+  
+  // Get order ID safely
+  getOrderId(item: any): string {
+    if (!item) return '';
+    return item.orderId || 
+          (item.order && (
+            typeof item.order === 'string' ? item.order : 
+            (item.order._id || '')
+          )) || 
+          '';
+  }
+  
+  // Get product object safely
+  getProductObject(item: any): any {
+    if (!item) return null;
+    return item.product || null;
+  }
+
+  // Navigate to review form - using the same approach as in order-detail component
+  navigateToReviewPage(orderId: string, product: any): void {
+    console.log('Navigating to review page with product:', product);
+
+    // Check if product exists
+    if (!product) {
+      this.toastService.showError('Invalid product information: Product is missing');
       return;
     }
-    
-    this.selectedOrderId = orderId;
-    this.selectedProductId = product._id;
-    this.selectedProduct = product;
-    this.showReviewForm = true;
-  }
-  
-  // Close review form
-  closeReviewForm(): void {
-    this.showReviewForm = false;
-  }
-  
-  // Handle review submission
-  onReviewSubmitted(success: boolean): void {
-    if (success) {
-      this.toastService.showSuccess('Review submitted successfully!');
-      this.closeReviewForm();
-      
-      // Remove the product from pending reviews
-      if (this.selectedOrderId && this.selectedProductId) {
-        this.pendingReviews = this.pendingReviews.filter(
-          item => !(item.orderId === this.selectedOrderId && 
-                   item.product && 
-                   item.product._id === this.selectedProductId)
-        );
-      }
-      
-      // Refresh the reviews list to include the new review
-      this.loadReviews();
+
+    // Extract product ID
+    let productId = '';
+
+    if (typeof product === 'string') {
+      productId = product;
+    } else if (typeof product === 'object' && product !== null) {
+      productId = product._id ? this.extractStringId(product._id) : '';
     }
+
+    if (!productId) {
+      this.toastService.showError('Invalid product information: Product ID is missing');
+      return;
+    }
+
+    // Check if product can be reviewed
+    this.reviewService.canReviewProduct(orderId, productId).subscribe({
+      next: (response) => {
+        if (response.canReview) {
+          // Navigate to review page with query parameters
+          this.router.navigate(['/user/reviews/write'], {
+            queryParams: {
+              orderId: orderId,
+              productId: productId
+            }
+          });
+        } else {
+          this.toastService.showInfo('You have already reviewed this product or it cannot be reviewed at this time.');
+        }
+      },
+      error: (err) => {
+        console.error('Error checking review eligibility:', err);
+        this.toastService.showError('Could not verify if product can be reviewed. Please try again.');
+      }
+    });
+  }
+  
+  /**
+   * Helper to safely extract a string ID from various ID formats
+   * Copied from OrderDetailComponent to ensure consistent behavior
+   */
+  extractStringId(id: any): string {
+    // Handle undefined or null
+    if (id === undefined || id === null) {
+      return '';
+    }
+
+    // If already a string, return it
+    if (typeof id === 'string') {
+      return id;
+    }
+
+    // If it's a number, convert to string
+    if (typeof id === 'number') {
+      return String(id);
+    }
+
+    // If it's an object (potentially a MongoDB ObjectId)
+    if (typeof id === 'object') {
+      // Handle MongoDB ObjectId in various formats
+      if (id.toString && typeof id.toString === 'function') {
+        return id.toString();
+      }
+
+      // Handle serialized ObjectId
+      if (id.$oid) {
+        return id.$oid;
+      }
+
+      // Handle id property
+      if (id.id) {
+        return String(id.id);
+      }
+
+      // Last resort: JSON stringify
+      try {
+        return JSON.stringify(id);
+      } catch {
+        return '';
+      }
+    }
+
+    // Default fallback
+    return String(id);
   }
   
   // Navigate to order details

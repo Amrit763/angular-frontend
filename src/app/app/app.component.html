@@ -1,6 +1,6 @@
 <app-header *ngIf="shouldShowHeaderFooter()"></app-header>
 
-<main class="main-content">
+<main class="main-content" [ngClass]="{'chef-mode': isChefRoute}">
   <router-outlet></router-outlet>
 </main>
 

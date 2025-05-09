@@ -48,10 +48,12 @@ export class ReviewService {
     return this.http.get<{ success: boolean; canReview: boolean; reason?: string }>(
       `${this.orderApiUrl}/${orderId}/can-review/${productId}`
     ).pipe(
-      tap(response => console.log('canReviewProduct response:', response)),
+      tap(response => console.log(`canReviewProduct response for ${productId}:`, response)),
       catchError(error => {
         console.error('Error checking review eligibility:', error);
-        return of({ success: false, canReview: true, reason: 'Unable to verify review eligibility, but allowing review' });
+        // For testing purposes, you might want to return true here if the API is not fully implemented
+        // return of({ success: true, canReview: true, reason: 'API error, allowing review for testing' });
+        return of({ success: false, canReview: false, reason: 'Error checking review eligibility' });
       })
     );
   }
